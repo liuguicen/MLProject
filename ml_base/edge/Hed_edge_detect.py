@@ -57,7 +57,7 @@ def detectEdge(img):
     :return: 注意返回的是浮点格式的图像
     '''
     if isinstance(img, np.ndarray):
-        if img.shape[2] > 3:  # 变成RGB格式
+        if len(img.shape) == 3 and img.shape[2] > 3:  # 变成RGB格式
             img = img[:, :, 0:3]
 
     # size表示调整图像宽高到这个值，貌似500*500时效果才好, 训练就是这个大小？？

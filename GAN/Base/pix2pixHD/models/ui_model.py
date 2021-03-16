@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 import os
 from PIL import Image
-import util.util as util
+import my_util.util as util
 from .base_model import BaseModel
 from . import networks
 
@@ -259,7 +259,7 @@ class UIModel(BaseModel):
                         for cluster_idx in range(self.opt.multiple_output):  
                             self.set_features(idx, self.feat, cluster_idx)
                             fake_image = self.single_forward(net_input, self.feat_map[:,:,y_region,x_region])                            
-                            fake_image = util.tensor2im(fake_image[:,min_y-y_start:max_y-y_start,min_x-x_start:max_x-x_start])
+                            fake_image = my_utils.tensor2im(fake_image[:,min_y-y_start:max_y-y_start,min_x-x_start:max_x-x_start])
                             self.fake_image.append(fake_image)
                     else:
                         ### downsample
@@ -276,7 +276,7 @@ class UIModel(BaseModel):
                                 feat_map_batch = torch.cat((feat_map_batch, feat_map), dim=0)
                         fake_image_batch = self.single_forward(net_input_batch, feat_map_batch)
                         for i in range(self.opt.multiple_output):
-                            self.fake_image.append(util.tensor2im(fake_image_batch[i,:,min_y:max_y,min_x:max_x]))"""
+                            self.fake_image.append(my_utils.tensor2im(fake_image_batch[i,:,min_y:max_y,min_x:max_x]))"""
                                         
                 else:
                     self.set_features(idx, self.feat, style_id)

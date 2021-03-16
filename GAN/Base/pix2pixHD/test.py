@@ -4,9 +4,9 @@ from torch.autograd import Variable
 from options.test_options import TestOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
-import util.util as util
-from util.visualizer import Visualizer
-from util import html
+import my_util.util as util
+from my_util.visualizer import Visualizer
+from my_util import html
 import torch
 
 opt = TestOptions().parse(save=False)

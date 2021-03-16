@@ -11,8 +11,8 @@ def lcm(a,b): return abs(a * b)/fractions.gcd(a,b) if a and b else 0
 from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
-import util.util as util
-from util.visualizer import Visualizer
+import my_util.util as util
+from my_util.visualizer import Visualizer
 
 opt = TrainOptions().parse()
 iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.txt')

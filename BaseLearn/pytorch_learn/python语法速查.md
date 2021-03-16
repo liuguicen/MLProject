@@ -73,3 +73,24 @@ lib.C  #取出class C
 lib.C.c  #取出class C 中的c 方法
 或者lib.__dict__.items() 方法模块内部所有的类名字和类对象形成的dict对
 
+捕获异常
+```python
+
+try:
+    ...
+ except Exception as e: # Exception就是异常根父类
+    ... 
+    raise e   
+```
+文件相关
+创建父目录
+ os.makedirs
+os.walk 遍历目录树，包含自己
+如果想要只处理一级目录下的，那么只处理它的第一个返回值就行了
+
+获取父目录
+```python
+import os
+os.path.dirname('...')
+````
+ 
