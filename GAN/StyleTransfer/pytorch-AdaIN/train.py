@@ -88,7 +88,10 @@ writer = SummaryWriter(log_dir=str(log_dir))
 decoder = net.decoder
 vgg = net.vgg
 
-vgg.load_state_dict(torch.load(args.vgg))
+# vgg.load_state_dict(torch.load(args.vgg))
+import torch_to_pytorch
+
+vgg.load_state_dict(torch_to_pytorch.getVggPytorch())
 vgg = nn.Sequential(*list(vgg.children())[:31])
 network = net.Net(vgg, decoder)
 network.train()

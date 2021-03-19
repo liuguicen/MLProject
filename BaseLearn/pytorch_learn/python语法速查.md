@@ -89,8 +89,28 @@ os.walk 遍历目录树，包含自己
 如果想要只处理一级目录下的，那么只处理它的第一个返回值就行了
 
 获取父目录
-```python
-import os
 os.path.dirname('...')
-````
- 
+os.path.split(path)[0]
+获取路径中的文件名
+os.path.split(path)[1] # 带后缀
+os.path.splitext(带后缀的文件名)[0] # 不带后缀 
+获取后缀
+os.path.splitext(path)[1] # 带有一个.
+
+# 图片相关
+# PIL
+for PIL import Image
+打开图片文件,支持PNG，透明度在第4通道
+Image.open(path)
+
+与numpy互相转换
+numpy.array(im)
+Image.fromarray(img.astype('uint8')).convert('RGB')
+显示图片
+ plt.figure("dog")
+ plt.imshow(src)
+ plt.show()
+
+    
+保存图片
+im.save(path)

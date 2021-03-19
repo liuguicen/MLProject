@@ -2,6 +2,8 @@ import os
 
 import cv2
 import numpy as np
+from PIL import Image
+from matplotlib import pyplot as plt
 
 
 def colorConvert(img: np.ndarray, dst=None):
@@ -44,20 +46,50 @@ def transparence2white(img: np.ndarray):
 
 
 def cv_imread_CN(image_path):
+    '''
+    读取中文路径下的图片
+    支持透明通道
+    '''
     img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), -1)
     return img
-
-
-if __name__ == '__main__':
-    img = transparence2white(cv_imread_CN('111.png'))
-    img_w, img_h = img.shape[0], img.shape[1]
-    ratio = max(128 / img_w, 128 / img_h)
-    img = cv2.resize(img, None, fx=ratio, fy=ratio, interpolation=cv2.INTER_CUBIC)
-    cv2.imshow('..', img)
-    cv2.waitKey(0)
 
 
 def cv_imwrite_CN(save_path, img):
     if os.path.exists(save_path):
         os.remove(save_path)
-    cv2.imencode('.jpg', img)[1].tofile(save_path)
+    tail = os.path.splitext(save_path)[1]
+    cv2.imencode(tail, img)[1].tofile(save_path)
+
+
+def black2Alpha(img):
+    w, h = img.shape[0], img.shape[1]
+    dst = np.zeros((w, h, 4), np.uint8)
+    # 用黑色代表透明颜色的程度
+    for i in range(w):
+        for j in range(h):
+            if len(img.shape) == 2:
+                x = img[i, j]
+                dst[i, j] = [x, x, x, x]
+            else:
+                temp = img[i][j]
+                dst[i][j] = [temp[0], temp[1], temp[2], int(temp[0] * 0.75)]
+    return dst
+
+
+if __name__ == '__main__':
+    src = Image.open(
+        r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\52337457625514808391616091655396.jpg")  # type:Image
+
+    plt.figure("dog")
+    plt.imshow(src)
+    plt.show()
+
+    src = np.array(src)
+    res = black2Alpha(src)
+    res = Image.fromarray(res)
+
+    plt.figure('res')
+    plt.imshow(res)
+    plt.show()
+
+    res.save(r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\res.png")

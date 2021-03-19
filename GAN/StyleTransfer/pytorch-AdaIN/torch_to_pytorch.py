@@ -1,13 +1,13 @@
 from __future__ import print_function
 
 import argparse
-from functools import reduce
+from functools import reduce, partial
 
 import torch
-assert torch.__version__.split('.')[0] == '0', 'Only working on PyTorch 0.x.x'
+# assert torch.__version__.split('.')[0] == '0', 'Only working on PyTorch 0.x.x'
 import torch.nn as nn
 from torch.autograd import Variable
-from torch.utils.serialization import load_lua
+# from torch.utils.serialization import load_lua
 
 
 class LambdaBase(nn.Sequential):
@@ -311,12 +311,22 @@ class LambdaReduce(LambdaBase):
     torch.save(n.state_dict(), outputname + '.pth')
 
 
-parser = argparse.ArgumentParser(
-    description='Convert torch t7 model to pytorch')
-parser.add_argument('--model', '-m', type=str, required=True,
-                    help='torch model file in t7 format')
-parser.add_argument('--output', '-o', type=str, default=None,
-                    help='output file name prefix, xxx.py xxx.pth')
-args = parser.parse_args()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Convert torch t7 model to pytorch')
+    parser.add_argument('--model', '-m', type=str, required=True,
+                        help='torch model file in t7 format')
+    parser.add_argument('--output', '-o', type=str, default=None,
+                        help='output file name prefix, xxx.py xxx.pth')
+    args = parser.parse_args()
 
-torch_to_pytorch(args.model, args.output)
+    torch_to_pytorch(r"F:\重要_data_set__big_size\预训练模型\vgg_normalised.t7",
+                     r"F:\重要_data_set__big_size\预训练模型\vgg_normalised.pth")
+
+
+def getVggPytorch():
+    import pickle
+    pickle.load = partial(pickle.load, encoding="latin1")
+    pickle.Unpickler = partial(pickle.Unpickler, encoding="latin1")
+    return torch.load(r"F:\重要_data_set__big_size\预训练模型\vgg_normalised.t7", map_location=lambda storage, loc: storage,
+                          pickle_module=pickle)
