@@ -3,19 +3,6 @@ import torch.nn.functional as F
 from torchvision.models import vgg19
 
 
-def calc_mean_std(features):
-    """
-
-    :param features: shape of features -> [batch_size, c, h, w]
-    :return: features_mean, feature_s: shape of mean/std ->[batch_size, c, 1, 1]
-    """
-
-    batch_size, c = features.size()[:2]
-    features_mean = features.reshape(batch_size, c, -1).mean(dim=2).reshape(batch_size, c, 1, 1)
-    features_std = features.reshape(batch_size, c, -1).std(dim=2).reshape(batch_size, c, 1, 1) + 1e-6
-    return features_mean, features_std
-
-
 def adain(content_features, style_features):
     """
     Adaptive Instance Normalization
@@ -41,12 +28,13 @@ class VGGEncoder(nn.Module):
         for p in self.parameters():
             p.requires_grad = False
 
-    def forward(self, images):
+    def forward(self, images, output_last_feature=False):
         h1 = self.slice1(images)
         h2 = self.slice2(h1)
         h3 = self.slice3(h2)
         h4 = self.slice4(h3)
         return h4
+
 
 
 class RC(nn.Module):
@@ -96,31 +84,14 @@ class Decoder(nn.Module):
         return h
 
 
-import time
+import torch
 
 
 class Model(nn.Module):
-    def __init__(self, VGGEncoder):
+    def __init__(self):
         super().__init__()
-        self.vgg_encoder = VGGEncoder
+        self.vgg_encoder = VGGEncoder()
         self.decoder = Decoder()
-
-    # 这个是推理的时候用的，训练的时候forward，两者分开了的
-    def generate(self, content_images, style_images, alpha=1.0):
-        start_time = time.time()
-        content_features = self.vgg_encoder(content_images)
-        style_features = self.vgg_encoder(style_images)
-        # 99%的时间是花在上面这两步了，这里的这些东西都可以预处理，从而提高速度
-        # 把feature直接获取出来
-        print('vgg time', time.time() - start_time)
-        start_time = time.time()
-        t = adain(content_features, style_features)
-        t = alpha * t + (1 - alpha) * content_features
-        print('adain time', time.time() - start_time)
-        start_time = time.time()
-        out = self.decoder(t)
-        print('generate time', time.time() - start_time)
-        return out
 
     @staticmethod
     def calc_content_loss(out_features, t):

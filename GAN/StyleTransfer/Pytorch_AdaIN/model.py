@@ -54,6 +54,7 @@ class VGGEncoder(nn.Module):
 
 class RC(nn.Module):
     """A wrapper of ReflectionPad2d and Conv2d"""
+
     def __init__(self, in_channels, out_channels, kernel_size=3, pad_size=1, activated=True):
         super().__init__()
         self.pad = nn.ReflectionPad2d((pad_size, pad_size, pad_size, pad_size))
@@ -98,6 +99,9 @@ class Decoder(nn.Module):
         return h
 
 
+import time
+
+
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
@@ -105,11 +109,20 @@ class Model(nn.Module):
         self.decoder = Decoder()
 
     def generate(self, content_images, style_images, alpha=1.0):
-        content_features = self.vgg_encoder(content_images, output_last_feature=True)
+        curt = time.time()
+
         style_features = self.vgg_encoder(style_images, output_last_feature=True)
+        content_features = self.vgg_encoder(content_images, output_last_feature=True)
+        print('vgg time', time.time() - curt)
+        curt = time.time()
+
         t = adain(content_features, style_features)
         t = alpha * t + (1 - alpha) * content_features
+        print('adin time', time.time() - curt)
+        curt = time.time()
+
         out = self.decoder(t)
+        print('decoder time = ', time.time() - curt)
         return out
 
     @staticmethod

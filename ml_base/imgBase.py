@@ -1,7 +1,9 @@
 import os
 
 import cv2
+import cv2 as cv
 import numpy as np
+import torch
 from PIL import Image
 from matplotlib import pyplot as plt
 
@@ -74,6 +76,31 @@ def black2Alpha(img):
                 temp = img[i][j]
                 dst[i][j] = [temp[0], temp[1], temp[2], int(temp[0] * 0.75)]
     return dst
+
+
+def tensorToRgbArray(imTensor):
+    '''
+    将tensor转换成RGB图像格式
+    注意会改变tensor
+    pytorch中的tensor图像和一般的图像格式不同，
+    归一化，通道顺序等不同
+    '''
+    imTensor = imTensor.squeeze_().mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0)  # permute不能原地更改
+    out = imTensor.to('cpu', torch.uint8).numpy()
+    return out
+
+
+def seeTensorIm(tensorIm):
+    im = tensorToRgbArray(tensorIm)
+    plt.figure("  ")
+    plt.imshow(im)
+    plt.show()
+
+
+def imShow(im: np.ndarray):
+    plt.figure("  ")
+    plt.imshow(im)
+    plt.show()
 
 
 if __name__ == '__main__':
