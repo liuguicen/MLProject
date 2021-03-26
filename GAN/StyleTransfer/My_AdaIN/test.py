@@ -62,7 +62,7 @@ def testResIm(out):
     imgBase.imShow(im)
 
 
-def convertForAndroid(out):  # 转变成Android Studio易于处理的格式
+def convertForAndroid(out):  # 转变成Android Studio易于处理的格式 注意通道维度在最后 这个可以加速 变成图片时改过来
     out = out.squeeze_().mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).int()
 
     # testResIm()
@@ -126,12 +126,16 @@ class MyVgg(nn.Module):
         return h4
 
 
+from torch.utils.mobile_optimizer import optimize_for_mobile
+
+
 def exportModule(module, path):
     scripted_module = torch.jit.script(module)
     if os.path.exists(path):
         os.remove(path)
-
-    torch.jit.save(scripted_module, path)
+    # pytorch 提供的移动优化 实测似乎没什么用
+    torchscript_model_optimized = optimize_for_mobile(scripted_module)
+    torch.jit.save(torchscript_model_optimized, path)
     print('导出', path, '成功')
 
 
@@ -226,22 +230,19 @@ def main():
 
         out = adainDecoder(content_features, style_features, alpha)
 
-        # exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
-        exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
-                   dynamic_axes={'input_1': {1: 'width',
-                                             2: 'height'},
+        exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
+        # exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
+        #            dynamic_axes={'input_1': {1: 'width',
+        #                                      2: 'height'},
+        #
+        #                          'input_2': {1: 'width',
+        #                                      2: 'height'},
+        #
+        #                          'output': {1: 'width',
+        #                                     2: 'height'}
+        #                          })
 
-                                 'input_2': {1: 'width',
-                                             2: 'height'},
-
-                                 'output': {1: 'width',
-                                            2: 'height'}
-                                 })
-
-        # exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
-        torch.onnx.export(adainDecoder, (content_features, style_features, torch.tensor(1.)),
-                   os.path.join(savePath, 'adain_decoder.onnx')
-                   )
+        exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
         # content_features = model.vgg_encoder(c_tensor, output_last_feature=True)
         # style_features = model.vgg_encoder(s_tensor, output_last_feature=True)
         # # adain
