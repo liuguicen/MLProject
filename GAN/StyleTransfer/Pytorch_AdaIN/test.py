@@ -33,7 +33,7 @@ def main():
                         help='alpha control the fusion degree in Adain')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID(nagative value indicate CPU)')
-    parser.add_argument('--model_state_path', type=str, default='model_state.pth',
+    parser.add_argument('--model_state_path', type=str, default= r'F:\重要_data_set__big_size\预训练模型\pure_pyroch_adain_style.pth',
                         help='save directory for result and loss')
 
     args = parser.parse_args()

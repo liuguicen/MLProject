@@ -6,10 +6,12 @@ import torch
 import torch.nn as nn
 import torchvision
 from PIL import Image
+from torch.quantization import QuantStub, DeQuantStub
 from torchvision import transforms
 
 import imgBase
 from MUtil import Timer, Const
+from mobile.model_export import exportModule
 from model import Model
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -87,9 +89,12 @@ class AdainDecoder(nn.Module):
     def __init__(self, decoder):
         nn.Module.__init__(self)
         self.decoder = decoder
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
 
     def forward(self, content_features, style_features, alpha: float):
         # adain
+        input = self.quant(input)
         t = adain(content_features, style_features)
         t = alpha * t + (1 - alpha) * content_features
         # Timer.print_and_record('adain耗时 = ')
@@ -102,6 +107,7 @@ class AdainDecoder(nn.Module):
         out = convertForAndroid(out)
         # Timer.print_and_record('格式转换耗时 = ')
         # Timer.print_and_record('总耗时 = ', recordKey=Const.total)
+        out = self.dequant(out)
         return out
 
 
@@ -117,26 +123,17 @@ class MyVgg(nn.Module):
         self.slice4 = vgg[12: 21]
         for p in self.parameters():
             p.requires_grad = False
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
 
     def forward(self, input):
+        input = self.quant(input)
         h1 = self.slice1(input)
         h2 = self.slice2(h1)
         h3 = self.slice3(h2)
         h4 = self.slice4(h3)
+        h4 = self.dequant(h4)
         return h4
-
-
-from torch.utils.mobile_optimizer import optimize_for_mobile
-
-
-def exportModule(module, path):
-    scripted_module = torch.jit.script(module)
-    if os.path.exists(path):
-        os.remove(path)
-    # pytorch 提供的移动优化 实测似乎没什么用
-    torchscript_model_optimized = optimize_for_mobile(scripted_module)
-    torch.jit.save(torchscript_model_optimized, path)
-    print('导出', path, '成功')
 
 
 def exportOnnx(torch_model, input, path, dynamic_axes=None):
@@ -212,6 +209,30 @@ def main():
     myVgg = MyVgg()
     adainDecoder = AdainDecoder(model.decoder)
 
+    exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
+    # exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
+    #            dynamic_axes={'input_1': {1: 'width',
+    #                                      2: 'height'},
+    #
+    #                          'input_2': {1: 'width',
+    #                                      2: 'height'},
+    #
+    #                          'output': {1: 'width',
+    #                                     2: 'height'}
+    #                          })
+
+    exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
+    # content_features = model.vgg_encoder(c_tensor, output_last_feature=True)
+    # style_features = model.vgg_encoder(s_tensor, output_last_feature=True)
+    # # adain
+    # t = adain(content_features, style_features)
+    # t = alpha * t + (1 - alpha) * content_features
+    #
+    # # 解码
+    # out = model.decoder(t)
+    # out = denorm(out, 'cpu')
+    # save_img(args, c, out, s)
+
     c = Image.open(args.content)
     s = Image.open(args.style)
     c_tensor = trans(c).unsqueeze(0).to(device)
@@ -229,30 +250,6 @@ def main():
         Timer.print_and_record('编码')
 
         out = adainDecoder(content_features, style_features, alpha)
-
-        exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
-        # exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
-        #            dynamic_axes={'input_1': {1: 'width',
-        #                                      2: 'height'},
-        #
-        #                          'input_2': {1: 'width',
-        #                                      2: 'height'},
-        #
-        #                          'output': {1: 'width',
-        #                                     2: 'height'}
-        #                          })
-
-        exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
-        # content_features = model.vgg_encoder(c_tensor, output_last_feature=True)
-        # style_features = model.vgg_encoder(s_tensor, output_last_feature=True)
-        # # adain
-        # t = adain(content_features, style_features)
-        # t = alpha * t + (1 - alpha) * content_features
-        #
-        # # 解码
-        # out = model.decoder(t)
-        # out = denorm(out, 'cpu')
-        # save_img(args, c, out, s)
 
 
 if __name__ == '__main__':

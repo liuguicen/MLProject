@@ -1,5 +1,14 @@
 # MetaStyle
-速度并不快，这个
+cpu情况下速度比较快
+同一种内容图
+
+|     |     这个  |  adain |
+|-----|----------|--------|
+|gpu  |   1.16s  |  1.27s
+|cpu  |   1.17s  |  16s    
+ 
+gpu  s
+cpu  模式
 This repo contains the PyTorch code for our AAAI 2019 paper.  
 
 [MetaStyle: Three-Way Trade-Off Among Speed, Flexibility, and Quality in Neural Style Transfer](http://wellyzhang.github.io/attach/aaai19zhang.pdf)  
@@ -7,7 +16,7 @@ Chi Zhang, Yixin Zhu, Song-Chun Zhu
 *Proceedings of the AAAI Conference on Artificial Intelligence (AAAI)*, 2019.  
 
 In this paper, we propose to combine neural style transfer with bilevel optimization to trade off speed, flexibility, and quality. In contrast to previous methods, our approach could handle arbitrary artistic style (flexibility) in a real-time manner (speed) and achieves good image quality comparable to the impressive but slow iterative-optimization-based method proposed in Gatys *et al*. (quality). We instantiate the model using an image transformation network and solve it by Adam. The bilevel optimization encourages the model to first find the style-free representation of images (hence the name) and after super-fast model adaptation, we could have a model tailored to a style specifically. For further details, please refer to our [paper](http://wellyzhang.github.io/attach/aaai19zhang.pdf). 
-
+平衡速度、质量。灵活性
 ![framework](./images/readme/procedure.png)
 
 # Examples
@@ -54,7 +63,7 @@ python src/main.py fast --content-dataset <path-to-your-content-dataset> --style
 ```
 
 Usually fast adaptation requires only 100 to 200 post update steps and could be done in less than 30 seconds, depending on the GPU you have.
-
+通常快速适应需要100-200次更新步骤，能够在30s以内执行完，依赖于你的GPU
 ## Testing
 
 To stylize a content image, run

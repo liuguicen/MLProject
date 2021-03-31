@@ -1,13 +1,15 @@
 # 量化模型
+import os
+
 import torch
 import torch.nn as nn
-import os
 
 
 def print_size_of_model(model):
     torch.save(model.state_dict(), "temp.p")
     print('Size (MB):', os.path.getsize("temp.p") / 1e6)
     os.remove('temp.p')
+
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -25,6 +27,7 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+
 def evaluate(model, criterion, data_loader, neval_batches):
     model.eval()
     top1 = AverageMeter('Acc@1', ':6.2f')
@@ -36,16 +39,17 @@ def evaluate(model, criterion, data_loader, neval_batches):
             loss = criterion(output, target)
             cnt += 1
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
-            print('.', end = '')
+            print('.', end='')
             top1.update(acc1[0], image.size(0))
             top5.update(acc5[0], image.size(0))
             if cnt >= neval_batches:
-                 return top1, top5
+                return top1, top5
 
     return top1, top5
 
+
 # Fuse Conv+BN and Conv+BN+Relu modules prior to quantization
-    # This operation does not change the numerics
+# This operation does not change the numerics
 def fuse_model(model):
     for m in model.modules():
         if type(m) == ConvBNReLU:
@@ -69,6 +73,7 @@ def moreQuantization(per_channel_quantized_model):
     # print('Evaluation accuracy on %d images, %2.2f' % (num_eval_batches * eval_batch_size, top1.avg))
     # torch.jit.save(torch.jit.script(per_channel_quantized_model), path)
     return per_channel_quantized_model
+
 
 def quantization(myModel: nn.Module):
     num_calibration_batches = 32
@@ -104,3 +109,10 @@ def quantization(myModel: nn.Module):
     top1, top5 = evaluate(myModel, criterion, data_loader_test, neval_batches=num_eval_batches)
     print('Evaluation accuracy on %d images, %2.2f' % (num_eval_batches * eval_batch_size, top1.avg))
 
+
+def quantization2(model):
+    backend = "qnnpack"
+    model.qconfig = torch.quantization.get_default_qconfig(backend)
+    model_static_quantized = torch.quantization.prepare(model, inplace=False)
+    model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
+    return model_static_quantized

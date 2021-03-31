@@ -303,14 +303,18 @@ def fast_train(args):
     torch.save(transformer.state_dict(), save_model_path)
 
 
+from ml_base.mobile import model_export
+
+from transformer_net_infer import TransformerNet_infer
 def test(args):
     """Stylize a content image"""
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    transformer = TransformerNet().to(device)
+    transformer = TransformerNet_infer().to(device)
     if args.model:
         transformer.load_state_dict(torch.load(args.model))
 
+    model_export.exportModule(transformer, 'meta_style.pth')
     start_time = time.time()
     content_transform = transforms.Compose([
         transforms.Resize(args.content_size),
@@ -320,9 +324,10 @@ def test(args):
     content_image = utils.load_image(args.content_image)
     content_image = content_transform(content_image)
     content_image = content_image.unsqueeze(0).to(device)
-    print('time1 = ', time.time() - start_time)
+    print('图片预处理 时间 = ', time.time() - start_time)
+    start_time = time.time()
     output = transformer(content_image).cpu().detach()
-    print('time = ', (time.time() - start_time))
+    print('模型推理时间 = ', (time.time() - start_time))
     utils.save_image(args.output_image, output[0] * 255)
 
 
