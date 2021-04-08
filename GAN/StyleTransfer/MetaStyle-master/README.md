@@ -1,14 +1,6 @@
 # MetaStyle
-cpu情况下速度比较快
-同一种内容图
 
-|     |     这个  |  adain |
-|-----|----------|--------|
-|gpu  |   1.16s  |  1.27s
-|cpu  |   1.17s  |  16s    
- 
-gpu  s
-cpu  模式
+
 This repo contains the PyTorch code for our AAAI 2019 paper.  
 
 [MetaStyle: Three-Way Trade-Off Among Speed, Flexibility, and Quality in Neural Style Transfer](http://wellyzhang.github.io/attach/aaai19zhang.pdf)  

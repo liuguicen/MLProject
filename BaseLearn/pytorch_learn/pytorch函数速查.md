@@ -102,3 +102,13 @@ nn.Sequential(OrderedDict([
  # 模型导出
  详见模型导出文件
  
+ nn.xxx 和 nn.function.xx的区别
+ functional中的是函数化的，不保存参数，需要手动传入。
+ 
+# 不同维度、尺寸张量相乘：
+ broadcast
+点积是broadcast的。broadcast是torch的一个概念，简单理解就是在一定的规则下允许高维Tensor和低维Tensor之间的运算。broadcast的概念稍显复杂，在此不做展开，可以参考官方文档关于broadcast的介绍.  
+这里举一个点积broadcast的例子。在例子中，a是二维Tensor，b是三维Tensor， 则c[i,*,*] = a * b[i, *, *] 可以简单理解为a维度不够，那么直接在不够的维度上a乘以b的所有，对于a中尺寸不够，但是为1的，直接去掉这个维度，再按照维度不够相乘
+
+size 计算元素数量
+x.numel()

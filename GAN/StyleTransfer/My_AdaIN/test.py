@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 import torchvision
 from PIL import Image
-from torch.quantization import QuantStub, DeQuantStub
 from torchvision import transforms
 
 import imgBase
+from CommonModels.CommonModels import Vgg
 from MUtil import Timer, Const
 from mobile.model_export import exportModule
 from model import Model
@@ -20,7 +20,7 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
 trans = transforms.Compose([transforms.ToTensor(),
                             normalize])
 
-savePath = r'C:\Users\liugu\Downloads\android-demo-app-master\android-demo-app-master\HelloWorldApp\app\src\main\assets'
+savePath = r'D:\AndroidProject\ML_Android\StyleTransferDemo\app\src\main\assets'
 
 
 def calc_mean_std(features):
@@ -57,7 +57,7 @@ def denorm(tensor):
     return res
 
 
-def testResIm(out):
+def t_estResIm(out):
     out = out.to('cpu', torch.uint8).numpy()
     im = Image.fromarray(out)
     im.save('test.jpg')
@@ -89,12 +89,9 @@ class AdainDecoder(nn.Module):
     def __init__(self, decoder):
         nn.Module.__init__(self)
         self.decoder = decoder
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
 
     def forward(self, content_features, style_features, alpha: float):
         # adain
-        input = self.quant(input)
         t = adain(content_features, style_features)
         t = alpha * t + (1 - alpha) * content_features
         # Timer.print_and_record('adain耗时 = ')
@@ -107,33 +104,7 @@ class AdainDecoder(nn.Module):
         out = convertForAndroid(out)
         # Timer.print_and_record('格式转换耗时 = ')
         # Timer.print_and_record('总耗时 = ', recordKey=Const.total)
-        out = self.dequant(out)
         return out
-
-
-class MyVgg(nn.Module):
-    def __init__(self):
-        nn.Module.__init__(self)
-        vgg = torchvision.models.vgg19(pretrained=True).features[:21]
-        vgg.to('cpu')
-        vgg.cpu()
-        self.slice1 = vgg[: 2]
-        self.slice2 = vgg[2: 7]
-        self.slice3 = vgg[7: 12]
-        self.slice4 = vgg[12: 21]
-        for p in self.parameters():
-            p.requires_grad = False
-        self.quant = QuantStub()
-        self.dequant = DeQuantStub()
-
-    def forward(self, input):
-        input = self.quant(input)
-        h1 = self.slice1(input)
-        h2 = self.slice2(h1)
-        h3 = self.slice3(h2)
-        h4 = self.slice4(h3)
-        h4 = self.dequant(h4)
-        return h4
 
 
 def exportOnnx(torch_model, input, path, dynamic_axes=None):
@@ -184,8 +155,6 @@ def parseArgs():
                         help='Style image path e.g. image.jpg')
     parser.add_argument('--output_name', '-o', type=str, default=None,
                         help='Output path for generated image, no need to add ext, e.g. out')
-    parser.add_argument('--alpha', '-a', type=float, default=1,
-                        help='alpha control the fusion degree in Adain')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID(nagative value indicate CPU)')
     parser.add_argument('--model_state_path', type=str, default='model_state.pth',
@@ -196,8 +165,6 @@ def parseArgs():
 
 def main():
     args = parseArgs()
-    alpha = args.alpha
-
     device = 'cpu'
 
     # set model
@@ -206,7 +173,7 @@ def main():
         model.load_state_dict(torch.load(args.model_state_path, map_location=lambda storage, loc: storage))
     model = model.to(device)
 
-    myVgg = MyVgg()
+    myVgg = Vgg()
     adainDecoder = AdainDecoder(model.decoder)
 
     exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
@@ -249,7 +216,7 @@ def main():
 
         Timer.print_and_record('编码')
 
-        out = adainDecoder(content_features, style_features, alpha)
+        out = adainDecoder(content_features, style_features, 1)
 
 
 if __name__ == '__main__':
