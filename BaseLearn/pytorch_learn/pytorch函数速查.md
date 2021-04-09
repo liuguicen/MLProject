@@ -112,3 +112,13 @@ nn.Sequential(OrderedDict([
 
 size 计算元素数量
 x.numel()
+
+# conv2d参数 卷积参数 的解释
+group 分组卷积，详解自己笔记或者相关文档
+dilation 空洞卷积或者叫扩张卷积 比如设置为2，就是让卷积核去卷2倍长宽的区域，那么现在卷积核的一个点从四个点中选一个来卷
+
+# relu相关
+relu6 mobilenet发明
+leackrelu 参数为负时不为0，低斜率下降
+参数，inplace 表示tensor原地计算，不产生新的tensor 节省内存
+

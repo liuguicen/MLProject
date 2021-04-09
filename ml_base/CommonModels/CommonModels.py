@@ -1,8 +1,11 @@
+import torch
 import torchvision
 from torch import nn as nn
 
 
 class Vgg(nn.Module):
+    feature_channel = 512
+
     def __init__(self):
         nn.Module.__init__(self)
         vgg = torchvision.models.vgg19(pretrained=True).features[:21]
@@ -15,9 +18,12 @@ class Vgg(nn.Module):
         for p in self.parameters():
             p.requires_grad = False
 
-    def forward(self, input):
+    def forward(self, input, needMltiLayer: bool = False):
         h1 = self.slice1(input)
         h2 = self.slice2(h1)
         h3 = self.slice3(h2)
         h4 = self.slice4(h3)
-        return h4 # 这里只使用第四段的，有些情况下3段的都要使用
+        if not needMltiLayer:
+            return h4  # 刚好第4段第一层卷积后的激活，即relu4_1, 通道数 feature_channel = 512
+        else:
+            return torch.tensor((h1, h2, h3, h4))

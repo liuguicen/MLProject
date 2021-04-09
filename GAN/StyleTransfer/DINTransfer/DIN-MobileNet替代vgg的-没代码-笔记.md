@@ -58,25 +58,10 @@ DIN应用：
 上图为基于MobileNet的架构。主要包括图像编码器，DIN层，ImageDecoder。第一个模块，图像编码器，包括一个 stride-1卷积层、两个stride-2分段可分离卷积块和两个stride-1剩余层，灵感来自于（Johnson, Alahi, and Fei-Fei 2016）。解码器与编码器对称。特别地，图像解码器的中间特征图从几个单独的DIN层接收分级的规范化特征以供相加。（注：类似UNET结构）
 
 # 我的实现细节
-![](.DIN-MobileNet替代vgg的-没代码-笔记_images/eb5881a1.png)
-1、通道 应该是指的输出通道 group就是分组卷积，包括深度卷积
-2、是否添加规范层， 这个存疑，有的用的，有的没用如adain
-3、4*res 包括了编码器的2个残差块和解码器的两个残差块
+![](.DIN-MobileNet替代vgg的-没代码-笔记_images/eb5881a1.png)  
 4、padding 文中没有提到 应该是kernal_size // 2, 不是0
 5、文中说节省内存 但是中间层的tensor仍然有16倍 这没有多节约呀 使用vgg最多才20层 这种情况下 可以 
-6、DIN层的结构   
-![](.DIN-MobileNet替代vgg的-没代码-笔记_images/3d78676c.png)   
-动态卷积层那个圆圈叉叉符号 应该就是 就是 乘上 然后 加  
-从几个地方可以佐证：  
-6-1、大佬文章  
-https://blog.csdn.net/kevinoop/article/details/115099530?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522161773091516780274130898%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=161773091516780274130898&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~baidu_landing_v2~default-2-115099530.pc_search_result_before_js&utm_term=Dynamic+Instance+Normalization+for+Arbitrary+Style+Transfer  
-![](.DIN-MobileNet替代vgg的-没代码-笔记_images/6f18b859.png)  
-![](.DIN-MobileNet替代vgg的-没代码-笔记_images/702e431d.png)  
-6-2、这个很像adain 学到的就像是用来反规范化的参数，加和乘的   
-6-3、结构图中给出的符号应该就是加乘的意思，如果是其它的，不应该是这个符号   
-6-4、这个技术的原文Dynamic Filter Networks的样例代码应该就是直接加的
-![](.DIN-MobileNet替代vgg的-没代码-笔记_images/10e4db58.png)  
-6-5、1*1 的深度卷积，加上偏置，= x * w + b，相乘相加效果一样，所以把这个层说成卷积xx也是可以的  
 
-7、关于DIN层的VGG参数，生成风格特征VGG的层数
-论文中没有说明，采用和Adain一样的
+
+
+
