@@ -1,7 +1,11 @@
+import os
+
 import torch.nn.functional as F
 import torchvision
 
 import Din_Config
+import MLUtil
+import fileUtil
 
 
 def calc_mean_std(features):
@@ -63,10 +67,18 @@ def denorm(tensor, device):
     return res
 
 
+import ml_base.fileUtil
+
+
 def train():
+    print('train start！\n')
     print(f'# Minibatch-size: {Din_Config.batch_size}')
     print(f'# epoch: {Din_Config.epoch}')
     print('')
+
+    # 读取上次的运行配置
+    record = fileUtil.readRunLog(Din_Config.runRecordPath)
+    Din_Config.runRecord = record if record is not None else Din_Config.runRecord
 
     device = 'cuda:0'
     # 数据集和数据加载器
@@ -81,7 +93,7 @@ def train():
 
     test_content, test_style = next(test_iter)
     # 模型和优化器
-    dinModel = DINModel().to(device)
+    dinModel = DINModel().to(device)  # type:DINModel
 
     optEncoder = torch.optim.Adam(dinModel.encoder.parameters(), lr=Din_Config.learning_rate_enco_deco)
     optDecoder = torch.optim.Adam(dinModel.decoder.parameters(), lr=Din_Config.learning_rate_enco_deco)
@@ -113,11 +125,20 @@ def train():
                 content = test_content.to(device)
                 style = test_style.to(device)
                 with torch.no_grad():
+                    if Din_Config.debugMode:
+                        for model in dinModel.getMySubModel():
+                            MLUtil.registerMiddleFeaturePrinter(model)
                     out = dinModel(content, style)
+
                 content = denorm(content, device)
                 style = denorm(style, device)
                 res = torch.cat([content, style, out], dim=0)
                 res = res.to('cpu')
+                if not os.path.exists(Din_Config.test_res_dir):
+                    fileUtil.mkdir(Din_Config.test_res_dir)
+                if not os.path.exists(Din_Config.check_point):
+                    fileUtil.mkdir(Din_Config.check_point)
+
                 torchvision.utils.save_image(res, f'{Din_Config.test_res_dir}/{e}_epoch_{i}_iteration.png',
                                              nrow=Din_Config.batch_size)
                 torch.save(dinModel.state_dict(), f'{Din_Config.check_point}/{e}_epoch.pth')

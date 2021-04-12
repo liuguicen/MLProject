@@ -6,6 +6,7 @@ common_data/
 */*/*/*/.idea/
 *.idea/
 .idea
+.checkpoint
 DevelopingToolAndPackage/
 env/
 GAN/contrastive-unpaired-translation/

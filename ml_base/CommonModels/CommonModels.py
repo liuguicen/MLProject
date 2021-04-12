@@ -4,13 +4,10 @@ from torch import nn as nn
 
 
 class Vgg(nn.Module):
-    feature_channel = 512
 
     def __init__(self):
         nn.Module.__init__(self)
         vgg = torchvision.models.vgg19(pretrained=True).features[:21]
-        vgg.to('cpu')
-        vgg.cpu()
         self.slice1 = vgg[: 2]
         self.slice2 = vgg[2: 7]
         self.slice3 = vgg[7: 12]

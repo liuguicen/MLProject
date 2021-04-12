@@ -7,7 +7,9 @@ import Din_Config
 from ml_base.CommonModels.CommonModels import Vgg
 import ml_base
 from ml_base import MLUtil
+
 ml_base.CommonModels.CommonModels.use()
+
 
 class StyleConv(nn.Sequential):
     '''风格网络中所使用的卷积层，并且移动化， pad使用镜像pad，然后relu使用relu6
@@ -99,7 +101,7 @@ class MobileBased_Encoder(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
-        MLUtil.printMiddleFeature(x)
+        # MLUtil.printMiddleFeature(x)
         x2 = self.point1(self.deep1(x))
         x1 = self.point2(self.deep2(x2))
         x1 = self.resLayer1(x1)
@@ -133,7 +135,7 @@ class MobileNet_Based_Decoder(nn.Module):
         x = F.interpolate(x, scale_factor=2)
         x = self.point1(self.deep1(x))
 
-        x = x + x2
+        # x = x + x2
         x = F.interpolate(x, scale_factor=2)
         x = self.point2(self.deep2(x))
 
@@ -152,9 +154,10 @@ class Weight_Bias_Net(nn.Module):
 
         self.layer2 = StyleConv(128, 64, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=64)
 
-        self.layer3 = StyleConv(64, output_channel, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=output_channel)
+        self.layer3 = StyleConv(64, output_channel, kernel_size=Din_Config.dinLayer_filterSize, stride=2,
+                                groups=output_channel)
 
-    def forward(self, x, output_size: int):
+    def forward(self, x, output_size):
         x = self.layer1(x)
         x = self.layer2(x)
 
@@ -196,22 +199,25 @@ class DINModel(nn.Module):
         self.encoder = MobileBased_Encoder()
 
         self.vgg = Vgg()
-        self.dinLayer1 = DIN_layer(64, Vgg.feature_channel)
-        self.dinLayer2 = DIN_layer(32, Vgg.feature_channel)
+        self.dinLayer1 = DIN_layer(64, Din_Config.style_encode_channel)
+        self.dinLayer2 = DIN_layer(32, Din_Config.style_encode_channel)
 
         self.decoder = MobileNet_Based_Decoder()
 
     def forward(self, content, style):
         cFeature = self.encoder(content)
         # print('encode content')
-        styleFeature = self.vgg(style)
+        styleFeature = self.vgg(style, True)
         # print('encode style')
         dinFeature1 = self.dinLayer1(cFeature[0], torch.tensor([cFeature[0].size()[2], cFeature[0].size()[3]]),
-                                     styleFeature)
+                                     styleFeature[2])
         # print('din layer1')
         dinFeature2 = self.dinLayer2(cFeature[1], torch.tensor([cFeature[1].size()[2], cFeature[1].size()[3]]),
-                                     styleFeature)
+                                     styleFeature[2])
         # print('din layer2')
         out = self.decoder(dinFeature1, dinFeature2)
         # print('decode')
         return out
+
+    def getMySubModel(self):
+        return self.encoder, self.dinLayer1, self.dinLayer2, self.decoder

@@ -10,7 +10,7 @@ from torchvision import transforms
 
 import imgBase
 from CommonModels.CommonModels import Vgg
-from MUtil import Timer, Const
+from MLUtil import Timer, Const
 from mobile.model_export import exportModule
 from model import Model
 
@@ -176,7 +176,7 @@ def main():
     myVgg = Vgg()
     adainDecoder = AdainDecoder(model.decoder)
 
-    exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
+    # exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
     # exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
     #            dynamic_axes={'input_1': {1: 'width',
     #                                      2: 'height'},
@@ -188,7 +188,7 @@ def main():
     #                                     2: 'height'}
     #                          })
 
-    exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
+    # exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
     # content_features = model.vgg_encoder(c_tensor, output_last_feature=True)
     # style_features = model.vgg_encoder(s_tensor, output_last_feature=True)
     # # adain

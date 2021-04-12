@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from RunRecord import RunRecord
 
 # 注 文中存疑的地方，全都写的这个配置文件里面了，通过该配置确认这些地方
 ############################                         存疑的点                    ########################################
@@ -38,18 +40,20 @@ todo1 = 19
 todo2 = 1
 
 # batch_size 没有说明，参照adain
-# batch_size = 16
-batch_size = 2
+batch_size = 16
+# batch_size = 2
 
 # 激活层 没有说明 网上说用relu有问题，用leakyrelu才行，mobilenet用的relu6
 active_layer = nn.LeakyReLU(inplace=True)
 # active_layer = nn.ReLU6(inplace=True)
-# weight和bias用那种池化，文中没有说明, 网上说最大池化保留纹理信息，应该是这个
-# 因为输入的大小不固定，输出是固定的，所以采用自适应池化AdaptiveXxxPool，pytorch包装了，自己换算也可以的
-weight_bias_pool_layer = torch.nn.functional.adaptive_max_pool2d
+# weight和bias用那种池化，文中没有说明
+# 对于编码器：vgg是最大池化，
+# 解码器：MetaStyle-master 最近邻  LinearStyleTransfer 最近邻 adain 最近邻
+# 这里相当于编码器，因为输入的大小不固定，输出是固定的，所以采用自适应池化AdaptiveXxxPool，pytorch包装了，自己换算也可以的
+weight_bias_pool_layer = F.adaptive_max_pool2d
 
 
-# 根据卷积的输出size，反向计算输入size, 文中没有说明几倍，这里让其经过layer3之后是outputSize的两倍，先乘以2，再算出卷积前的大小
+# 根据卷积的输出size，反向计算输入size, 文中没有说明几倍，这里让其经过下一层layer之后是outputSize的两倍，先乘以2，再算出卷积前的大小
 # 卷积尺寸公式：size_out = (size_in + 2 * pad - k) / s + 1
 def get_adapool1_output_size(output_size):
     return (output_size * 2 - 1) * 2 + 1
@@ -72,13 +76,20 @@ learning_rate_din_layer = 0.001
 
 epoch = 20
 
-train_content_dir = 'content'
-train_style_dir = 'style'
-test_content_dir = 'content'
-test_style_dir = 'style'
+train_content_dir = r'E:\重要_data_set__big_size\COCO\train2014'
+train_style_dir = r'E:\重要_data_set__big_size\wikiart\train'
+test_content_dir = train_content_dir
+test_style_dir = train_style_dir
 
-checkpoint_interval = 10
-
+checkpoint_interval = 100
 
 test_res_dir = 'test_res'
 check_point = 'check_point'
+runRecord = RunRecord()
+
+runRecordPath = 'runRecord.pkl'
+
+style_encode_channel = 256
+
+
+debugMode = False
