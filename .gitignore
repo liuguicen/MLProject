@@ -4,6 +4,8 @@ common_data/
 */*/.idea/
 */*/*/.idea/
 */*/*/*/.idea/
+*.idea/
+.idea
 DevelopingToolAndPackage/
 env/
 GAN/contrastive-unpaired-translation/
