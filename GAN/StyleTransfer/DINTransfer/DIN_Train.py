@@ -1,7 +1,8 @@
 import torch.nn.functional as F
+import torchvision
 
 import Din_Config
-import torchvision
+
 
 def calc_mean_std(features):
     """
@@ -39,7 +40,7 @@ def compute_loss(vgg, out, content, style):
     contentFeature_h4 = vgg(content)
 
     outFeature_multiLayer = vgg(out, True)
-    outFeature_h4 = outFeature_multiLayer[4]
+    outFeature_h4 = outFeature_multiLayer[3]
 
     loss_c = calc_content_loss(outFeature_h4, contentFeature_h4)
 
@@ -67,7 +68,7 @@ def train():
     print(f'# epoch: {Din_Config.epoch}')
     print('')
 
-    device = 'gpu:0'
+    device = 'cuda:0'
     # 数据集和数据加载器
     train_dataset = PreprocessDataset(Din_Config.train_content_dir, Din_Config.train_style_dir)
     test_dataset = PreprocessDataset(Din_Config.test_content_dir, Din_Config.test_style_dir)
@@ -78,6 +79,7 @@ def train():
     test_loader = DataLoader(test_dataset, batch_size=Din_Config.batch_size, shuffle=False)
     test_iter = iter(test_loader)
 
+    test_content, test_style = next(test_iter)
     # 模型和优化器
     dinModel = DINModel().to(device)
 
@@ -87,29 +89,39 @@ def train():
     optDin1 = torch.optim.Adam(dinModel.dinLayer1.parameters(), lr=Din_Config.learning_rate_din_layer)
     optDin2 = torch.optim.Adam(dinModel.dinLayer2.parameters(), lr=Din_Config.learning_rate_din_layer)
 
-    for i in range(1, Din_Config.epoch + 1):
+    loss_list = []
+    batch_number = 0
+    for e in range(1, Din_Config.epoch + 1):
         for i, (content, style) in tqdm(enumerate(train_loader, 1)):
+            batch_number += 1
             optEncoder.zero_grad()
             optDecoder.zero_grad()
             optDin1.zero_grad()
 
+            content = content.to(device)
+            style = style.to(device)
             out = dinModel(content, style)
-            loss = compute_loss(out, content, style)
+            loss = compute_loss(dinModel.vgg, out, content, style)
+            loss_list.append(loss.item())
             loss.backward()
 
             optEncoder.step()
             optDecoder.step()
             optDin1.step()
             optDin2.step()
-            if i % Din_Config.snapshot_interval == 0:
-                content, style = next(test_iter)
-                content = content.to(device)
-                style = style.to(device)
+            if batch_number % Din_Config.checkpoint_interval == 0:
+                content = test_content.to(device)
+                style = test_style.to(device)
                 with torch.no_grad():
                     out = dinModel(content, style)
                 content = denorm(content, device)
                 style = denorm(style, device)
                 res = torch.cat([content, style, out], dim=0)
                 res = res.to('cpu')
-                torchvision.utils.save_image(res, f'{image_dir}/{e}_epoch_{i}_iteration.png', nrow=Din_Config.batch_size)
-                torch.save(dinModel.state_dict(), f'{model_state_dir}/{e}_epoch.pth')
+                torchvision.utils.save_image(res, f'{Din_Config.test_res_dir}/{e}_epoch_{i}_iteration.png',
+                                             nrow=Din_Config.batch_size)
+                torch.save(dinModel.state_dict(), f'{Din_Config.check_point}/{e}_epoch.pth')
+
+
+if __name__ == '__main__':
+    train()

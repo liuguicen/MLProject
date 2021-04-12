@@ -1,10 +1,13 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
 import Din_Config
 from ml_base.CommonModels.CommonModels import Vgg
-
+import ml_base
+from ml_base import MLUtil
+ml_base.CommonModels.CommonModels.use()
 
 class StyleConv(nn.Sequential):
     '''风格网络中所使用的卷积层，并且移动化， pad使用镜像pad，然后relu使用relu6
@@ -24,6 +27,7 @@ class StyleConv(nn.Sequential):
 
     def __init__(self, in_channel, out_channel, kernel_size, stride=1, groups=1, norm_layer=Din_Config.normal,
                  active_layer=Din_Config.active_layer):
+        nn.Module.__init__(self)
         padding = (kernel_size - 1) // 2
         self.sequential = nn.Sequential()
         if padding != 0:
@@ -56,6 +60,7 @@ class Bottleneck(nn.Module):
         self.conv1 = StyleConv(input_channel, middle_channel, kernel_size=1)
         self.conv2 = StyleConv(middle_channel, middle_channel, kernel_size=3)
         self.conv3 = StyleConv(middle_channel, input_channel, kernel_size=1, active_layer=None)
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         identity = x
@@ -65,7 +70,7 @@ class Bottleneck(nn.Module):
         out = self.conv3(out)
 
         out += identity
-        out = self.relu(out)
+        out = Din_Config.active_layer(out)
 
         return out
 
@@ -94,6 +99,7 @@ class MobileBased_Encoder(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
+        MLUtil.printMiddleFeature(x)
         x2 = self.point1(self.deep1(x))
         x1 = self.point2(self.deep2(x2))
         x1 = self.resLayer1(x1)
@@ -106,20 +112,19 @@ class MobileNet_Based_Decoder(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
         # 两个resblock
-        self.feature1 = Bottleneck(16, 64)
+        self.feature1 = Bottleneck(64, 16)
         self.feature2 = Bottleneck(64, 16)
 
         # 两个深度可分离
         self.deep1 = StyleConv(64, 32, kernel_size=3, groups=32)  # 深度卷积
         self.point1 = StyleConv(32, 32, kernel_size=1)  # 逐点卷积
 
-        self.deep2 = StyleConv(32, 16, kernel_size=3, stride=2, groups=16)
+        self.deep2 = StyleConv(32, 16, kernel_size=3, groups=16)
         self.point2 = StyleConv(16, 16, kernel_size=1)
 
         # 一个标准卷积
         # 最后一层不激活，大多数st模型都是这样做的
-        self.feature5 = StyleConv(16, 3, kernel_size=9,
-                                  active_layer=nn.functional.tanh if Din_Config.useTanh else None)
+        self.feature5 = StyleConv(16, 3, kernel_size=9, active_layer=None)
 
     def forward(self, x1, x2):
         x = self.feature1(x1)
@@ -133,18 +138,21 @@ class MobileNet_Based_Decoder(nn.Module):
         x = self.point2(self.deep2(x))
 
         x = self.feature5(x)
+
+        if Din_Config.useTanh:
+            x = torch.tanh(x)
         return x
 
 
 class Weight_Bias_Net(nn.Module):
-    def __init__(self, input_channel):
+    def __init__(self, input_channel, output_channel):
         nn.Module.__init__(self)
         # 文中提到，默认din 过滤器size设置为1，为了减少计算消耗，但是附录里面卷积核大小是3
         self.layer1 = StyleConv(input_channel, 128, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=128)
 
         self.layer2 = StyleConv(128, 64, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=64)
 
-        self.layer3 = StyleConv(64, 64, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=64)
+        self.layer3 = StyleConv(64, output_channel, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=output_channel)
 
     def forward(self, x, output_size: int):
         x = self.layer1(x)
@@ -160,13 +168,18 @@ class Weight_Bias_Net(nn.Module):
 
 class DIN_layer(nn.Module):
     def __init__(self, content_channel: int, style_channel: int):
+        '''
+        :param content_channel: 输入的内容的通道数
+        :param style_channel: 输入的风格的通道数
+        输出通道数和输入的内容通道数匹配，后面相加
+        '''
         nn.Module.__init__(self)
         self.IN = nn.InstanceNorm2d(content_channel)
-        self.weightN = Weight_Bias_Net(style_channel)  # 输出size = 输入size
-        self.biasN = Weight_Bias_Net(style_channel)
+        self.weightN = Weight_Bias_Net(style_channel, content_channel)  # 输出size = 输入size
+        self.biasN = Weight_Bias_Net(style_channel, content_channel)
 
     def forward(self, x, din_out_size: int, s_feature=None, para_w=None, para_b=None):
-        if s_feature == None:  # 推理过程，风格为空，使用参数
+        if s_feature is not None:  # 推理过程，风格为空，使用参数
             para_w = self.weightN(s_feature, din_out_size)
             para_b = self.biasN(s_feature, din_out_size)
         # para_w 的尺寸 = batch * 64 * din_out_size
@@ -184,16 +197,21 @@ class DINModel(nn.Module):
 
         self.vgg = Vgg()
         self.dinLayer1 = DIN_layer(64, Vgg.feature_channel)
-        self.dinLayer2 = DIN_layer(64, Vgg.feature_channel)
+        self.dinLayer2 = DIN_layer(32, Vgg.feature_channel)
 
         self.decoder = MobileNet_Based_Decoder()
 
     def forward(self, content, style):
         cFeature = self.encoder(content)
+        # print('encode content')
         styleFeature = self.vgg(style)
-
-        dinFeature1 = self.dinLayer1(cFeature[0], cFeature[0].size()[2:3] / 4, styleFeature)
-        dinFeature2 = self.dinLayer2(cFeature[1], cFeature[1].size()[2:3] / 4, styleFeature)
-
+        # print('encode style')
+        dinFeature1 = self.dinLayer1(cFeature[0], torch.tensor([cFeature[0].size()[2], cFeature[0].size()[3]]),
+                                     styleFeature)
+        # print('din layer1')
+        dinFeature2 = self.dinLayer2(cFeature[1], torch.tensor([cFeature[1].size()[2], cFeature[1].size()[3]]),
+                                     styleFeature)
+        # print('din layer2')
         out = self.decoder(dinFeature1, dinFeature2)
+        # print('decode')
         return out

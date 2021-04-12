@@ -38,7 +38,8 @@ todo1 = 19
 todo2 = 1
 
 # batch_size 没有说明，参照adain
-batch_size = 16
+# batch_size = 16
+batch_size = 2
 
 # 激活层 没有说明 网上说用relu有问题，用leakyrelu才行，mobilenet用的relu6
 active_layer = nn.LeakyReLU(inplace=True)
@@ -52,6 +53,7 @@ weight_bias_pool_layer = torch.nn.functional.adaptive_max_pool2d
 # 卷积尺寸公式：size_out = (size_in + 2 * pad - k) / s + 1
 def get_adapool1_output_size(output_size):
     return (output_size * 2 - 1) * 2 + 1
+
 
 # 将输出变到-1-1，网上说的用这个好， 但是
 
@@ -70,10 +72,13 @@ learning_rate_din_layer = 0.001
 
 epoch = 20
 
-train_content_dir = ''
-train_style_dir = ''
-test_content_dir = ''
-test_style_dir = ''
+train_content_dir = 'content'
+train_style_dir = 'style'
+test_content_dir = 'content'
+test_style_dir = 'style'
+
+checkpoint_interval = 10
 
 
-snapshot_interval = 1000
+test_res_dir = 'test_res'
+check_point = 'check_point'
