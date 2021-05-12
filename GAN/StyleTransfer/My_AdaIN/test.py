@@ -7,13 +7,14 @@ import torch.nn as nn
 import torchvision
 from PIL import Image
 from torchvision import transforms
+import AdaConfig
 
-import imgBase
-from CommonModels.CommonModels import Vgg
+import ImageBase
+from CommonModels.CommonModels import MyVgg
 from MLUtil import Timer, Const
 from mobile.model_export import exportModule
-from model import Model
-
+# from model import Model
+from mobileBaseModel import MobileBasedModel
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
@@ -61,7 +62,7 @@ def t_estResIm(out):
     out = out.to('cpu', torch.uint8).numpy()
     im = Image.fromarray(out)
     im.save('test.jpg')
-    imgBase.imShow(im)
+    ImageBase.imShow(im)
 
 
 def convertForAndroid(out):  # 转变成Android Studio易于处理的格式 注意通道维度在最后 这个可以加速 变成图片时改过来
@@ -146,34 +147,16 @@ def save_img(args, c, out, s):
     o.save(f'{args.output_name}_with_style_image.jpg', quality=95)
     print(f'result saved into files starting with {args.output_name}')
 
-
-def parseArgs():
-    parser = argparse.ArgumentParser(description='AdaIN Style Transfer by Pytorch')
-    parser.add_argument('--content', '-c', type=str, default=None,
-                        help='Content image path e.g. content.jpg')
-    parser.add_argument('--style', '-s', type=str, default=None,
-                        help='Style image path e.g. image.jpg')
-    parser.add_argument('--output_name', '-o', type=str, default=None,
-                        help='Output path for generated image, no need to add ext, e.g. out')
-    parser.add_argument('--gpu', '-g', type=int, default=0,
-                        help='GPU ID(nagative value indicate CPU)')
-    parser.add_argument('--model_state_path', type=str, default='model_state.pth',
-                        help='save directory for result and loss')
-    args = parser.parse_args()
-    return args
-
-
 def main():
-    args = parseArgs()
     device = 'cpu'
 
     # set model
-    model = Model()
-    if args.model_state_path is not None:
-        model.load_state_dict(torch.load(args.model_state_path, map_location=lambda storage, loc: storage))
+    model = MobileBasedModel()
+    # if AdaConfig.model_state_path is not None:
+    #     model.load_state_dict(torch.load(AdaConfig.model_state_path, map_location=lambda storage, loc: storage))
     model = model.to(device)
 
-    myVgg = Vgg()
+    encoder = MyVgg()
     adainDecoder = AdainDecoder(model.decoder)
 
     # exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
@@ -198,10 +181,10 @@ def main():
     # # 解码
     # out = model.decoder(t)
     # out = denorm(out, 'cpu')
-    # save_img(args, c, out, s)
+    # save_img(AdaConfig, c, out, s)
 
-    c = Image.open(args.content)
-    s = Image.open(args.style)
+    c = Image.open(AdaConfig.content)
+    s = Image.open(AdaConfig.style)
     c_tensor = trans(c).unsqueeze(0).to(device)
     s_tensor = trans(s).unsqueeze(0).to(device)
 
@@ -211,13 +194,12 @@ def main():
         Timer.record()
         Timer.record(Const.total)
 
-        content_features = myVgg(c_tensor)
-        style_features = myVgg(s_tensor)
+        content_features = encoder(c_tensor)
+        style_features = encoder(s_tensor)
 
         Timer.print_and_record('编码')
 
         out = adainDecoder(content_features, style_features, 1)
-
 
 if __name__ == '__main__':
     main()

@@ -4,11 +4,38 @@ import torch.nn.functional as F
 import torchvision
 
 import Din_Config
-from ml_base.CommonModels.CommonModels import Vgg
+from ml_base.CommonModels.CommonModels import MyVgg
 import ml_base
 from ml_base import MLUtil
 
 ml_base.CommonModels.CommonModels.use()
+
+
+def calc_mean_std(features):
+    """
+
+    :param features: shape of features -> [batch_size, c, h, w]
+    :return: features_mean, feature_s: shape of mean/std ->[batch_size, c, 1, 1]
+    """
+
+    batch_size, c = features.size()[:2]
+    features_mean = features.reshape(batch_size, c, -1).mean(dim=2).reshape(batch_size, c, 1, 1)
+    features_std = features.reshape(batch_size, c, -1).std(dim=2).reshape(batch_size, c, 1, 1) + 1e-6
+    return features_mean, features_std
+
+
+def adain(content_features, style_features):
+    """
+    Adaptive Instance Normalization
+
+    :param content_features: shape -> [batch_size, c, h, w]
+    :param style_features: shape -> [batch_size, c, h, w]
+    :return: normalized_features shape -> [batch_size, c, h, w]
+    """
+    content_mean, content_std = calc_mean_std(content_features)
+    style_mean, style_std = calc_mean_std(style_features)
+    normalized_features = style_std * (content_features - content_mean) / content_std + style_mean
+    return normalized_features
 
 
 class StyleConv(nn.Sequential):
@@ -36,7 +63,8 @@ class StyleConv(nn.Sequential):
             self.sequential.add_module('pad', nn.ReflectionPad2d((padding, padding, padding, padding)))
 
         self.sequential.add_module('conv',
-                                   nn.Conv2d(in_channel, out_channel, kernel_size, stride, groups=groups, bias=False))
+                                   nn.Conv2d(in_channel, out_channel, kernel_size, stride=stride, groups=groups,
+                                             bias=False))
 
         if norm_layer is not None:
             self.sequential.add_module('normal', norm_layer(out_channel))
@@ -150,9 +178,11 @@ class Weight_Bias_Net(nn.Module):
     def __init__(self, input_channel, output_channel):
         nn.Module.__init__(self)
         # 文中提到，默认din 过滤器size设置为1，为了减少计算消耗，但是附录里面卷积核大小是3
-        self.layer1 = StyleConv(input_channel, 128, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=128)
+        self.layer1 = StyleConv(input_channel, 128, kernel_size=Din_Config.dinLayer_filterSize,
+                                stride=Din_Config.dinLayer_stride, groups=128)
 
-        self.layer2 = StyleConv(128, 64, kernel_size=Din_Config.dinLayer_filterSize, stride=2, groups=64)
+        self.layer2 = StyleConv(128, 64, kernel_size=Din_Config.dinLayer_filterSize, stride=Din_Config.dinLayer_stride,
+                                groups=64)
 
         self.layer3 = StyleConv(64, output_channel, kernel_size=Din_Config.dinLayer_filterSize, stride=2,
                                 groups=output_channel)
@@ -164,6 +194,8 @@ class Weight_Bias_Net(nn.Module):
         x = Din_Config.weight_bias_pool_layer(x, Din_Config.get_adapool1_output_size(output_size))
         x = self.layer3(x)
         # 输出的通道数量 = 后面要处理的通道数量 = 卷积核个数（每个通道的参数给到一个卷积核？）
+        # 像adain那样加
+        # adain对称net
         # type: nn.AdaptiveMaxPool2d()
         x = Din_Config.weight_bias_pool_layer(x, output_size)
         return x
@@ -189,7 +221,12 @@ class DIN_layer(nn.Module):
         # para_b 的尺寸 = batch * 64 * din_out_size = para_w
         # x      的尺寸 = batch * 64 * din_out_size
         x = self.IN(x)
-        x = x * para_w + para_b
+        # 这里不是这样做的
+        #####################test##########################
+        w = calc_mean_std(para_w)
+        mean, std = w[0], w[1]
+        #####################test##########################
+        x = x * std + mean
         return x
 
 
@@ -198,13 +235,13 @@ class DINModel(nn.Module):
         nn.Module.__init__(self)
         self.encoder = MobileBased_Encoder()
 
-        self.vgg = Vgg()
+        self.vgg = MyVgg()
         self.dinLayer1 = DIN_layer(64, Din_Config.style_encode_channel)
         self.dinLayer2 = DIN_layer(32, Din_Config.style_encode_channel)
 
         self.decoder = MobileNet_Based_Decoder()
 
-    def forward(self, content, style):
+    def forward(self, content, style, alpha=1.):
         cFeature = self.encoder(content)
         # print('encode content')
         styleFeature = self.vgg(style, True)
@@ -214,10 +251,18 @@ class DINModel(nn.Module):
         # print('din layer1')
         dinFeature2 = self.dinLayer2(cFeature[1], torch.tensor([cFeature[1].size()[2], cFeature[1].size()[3]]),
                                      styleFeature[2])
+
+        # t = adain(cFeature[0], style_features)
+        # t = alpha * t + (1 - alpha) * content_features
         # print('din layer2')
         out = self.decoder(dinFeature1, dinFeature2)
         # print('decode')
-        return out
+        return out, dinFeature1
 
     def getMySubModel(self):
         return self.encoder, self.dinLayer1, self.dinLayer2, self.decoder
+
+# 肢体舒缓
+# 买一杯奶茶
+# 搜新疆
+# 搜南坪美食

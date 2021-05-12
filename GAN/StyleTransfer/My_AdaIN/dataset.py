@@ -11,7 +11,7 @@ from PIL import Image
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
-trans = transforms.Compose([transforms.RandomCrop(256),
+trans = transforms.Compose([transforms.RandomCrop(512),
                             transforms.ToTensor(),
                             normalize])
 
@@ -76,3 +76,5 @@ class PreprocessDataset(Dataset):
             content_image = self.transforms(content_image)
             style_image = self.transforms(style_image)
         return content_image, style_image
+
+

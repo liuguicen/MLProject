@@ -7,6 +7,8 @@ import torch
 from PIL import Image
 from matplotlib import pyplot as plt
 
+import FileUtil
+
 
 def colorConvert(img: np.ndarray, dst=None):
     '''
@@ -56,6 +58,9 @@ def cv_imread_CN(image_path):
     return img
 
 
+# 一般不要使用cv，接口不友好，不支持中文
+# 使用这个获得matplot都行
+# from PIL import Imageim = Image.fromarray(imgArr)im.save("out.png")
 def cv_imwrite_CN(save_path, img):
     if os.path.exists(save_path):
         os.remove(save_path)
@@ -120,3 +125,10 @@ if __name__ == '__main__':
     plt.show()
 
     res.save(r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\res.png")
+
+
+def saveImageNdArray(path, imgArr):
+    dir = os.path.dirname(path)
+    FileUtil.mkdir(dir)
+    im = Image.fromarray(imgArr)
+    im.save(path)

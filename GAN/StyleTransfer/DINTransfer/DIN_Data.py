@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 
 import numpy as np
@@ -8,7 +9,7 @@ from skimage import io, transform
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from ml_base import fileUtil
+from ml_base import FileUtil
 import Din_Config
 
 # 代码完全源自 adain
@@ -31,6 +32,7 @@ class PreprocessDataset(Dataset):
     def __init__(self, content_dir, style_dir, transforms=trans):
         content_dir_resized = content_dir + '_resized'
         style_dir_resized = style_dir + '_resized'
+
         if not os.path.exists(content_dir_resized):
             os.mkdir(content_dir_resized)
         if not os.path.exists(style_dir_resized):
@@ -47,8 +49,11 @@ class PreprocessDataset(Dataset):
 
     @staticmethod
     def _resize(source_dir, target_dir):
+
         print(f'Start resizing {source_dir} ')
-        start = Din_Config.runRecord.pre_process_content if 'COCO' in source_dir else Din_Config.runRecord.pre_process_style
+        runRecord = Din_Config.runRecord
+        start = runRecord.pre_process_content if 'COCO' in source_dir else runRecord.pre_process_style
+
         fileList = os.listdir(source_dir)
         if start >= len(fileList):
             return
@@ -71,14 +76,20 @@ class PreprocessDataset(Dataset):
                     image = transform.resize(image, (H, W), mode='reflect', anti_aliasing=True)
                     io.imsave(os.path.join(target_dir, filename), image)
                     if i % 100 == 0:
-                        if 'coco' in source_dir:
-                            Din_Config.runRecord.pre_process_content = item
+                        if 'COCO' in source_dir:
+                            runRecord.pre_process_content = i
                         else:
-                            Din_Config.runRecord.pre_process_style = item
-                        fileUtil.writeRunLog(Din_Config.runRecord, Din_Config.runRecordPath)
+                            runRecord.pre_process_style = i
+                        FileUtil.saveRunRecord(runRecord, Din_Config.runRecordPath)
             except:
+                logging.error('imge ', i, 'resize failed', source_dir)
                 continue
-
+        if 'COCO' in source_dir:
+            runRecord.pre_process_content = len(fileList) + 1
+        else:
+            runRecord.pre_process_style = len(fileList) + 1
+        FileUtil.saveRunRecord(runRecord, Din_Config.runRecordPath)
+    
     def __len__(self):
         return len(self.images_pairs)
 

@@ -5,7 +5,7 @@ import torchvision
 
 import Din_Config
 import MLUtil
-import fileUtil
+import FileUtil
 
 
 def calc_mean_std(features):
@@ -67,7 +67,7 @@ def denorm(tensor, device):
     return res
 
 
-import ml_base.fileUtil
+import ml_base.FileUtil
 
 
 def train():
@@ -77,7 +77,7 @@ def train():
     print('')
 
     # 读取上次的运行配置
-    record = fileUtil.readRunLog(Din_Config.runRecordPath)
+    record = FileUtil.readRunRecord(Din_Config.runRecordPath)
     Din_Config.runRecord = record if record is not None else Din_Config.runRecord
 
     device = 'cuda:0'
@@ -103,7 +103,7 @@ def train():
 
     loss_list = []
     batch_number = 0
-    for e in range(1, Din_Config.epoch + 1):
+    for e in range(0, Din_Config.epoch + 1):
         for i, (content, style) in tqdm(enumerate(train_loader, 1)):
             batch_number += 1
             optEncoder.zero_grad()
@@ -112,7 +112,7 @@ def train():
 
             content = content.to(device)
             style = style.to(device)
-            out = dinModel(content, style)
+            out, t = dinModel(content, style)
             loss = compute_loss(dinModel.vgg, out, content, style)
             loss_list.append(loss.item())
             loss.backward()
@@ -128,20 +128,23 @@ def train():
                     if Din_Config.debugMode:
                         for model in dinModel.getMySubModel():
                             MLUtil.registerMiddleFeaturePrinter(model)
-                    out = dinModel(content, style)
+                    out, middleFeature = dinModel(content, style)
 
                 content = denorm(content, device)
                 style = denorm(style, device)
                 res = torch.cat([content, style, out], dim=0)
                 res = res.to('cpu')
                 if not os.path.exists(Din_Config.test_res_dir):
-                    fileUtil.mkdir(Din_Config.test_res_dir)
+                    FileUtil.mkdir(Din_Config.test_res_dir)
                 if not os.path.exists(Din_Config.check_point):
-                    fileUtil.mkdir(Din_Config.check_point)
+                    FileUtil.mkdir(Din_Config.check_point)
 
                 torchvision.utils.save_image(res, f'{Din_Config.test_res_dir}/{e}_epoch_{i}_iteration.png',
                                              nrow=Din_Config.batch_size)
                 torch.save(dinModel.state_dict(), f'{Din_Config.check_point}/{e}_epoch.pth')
+
+                MLUtil.saveMiddleFeature(middleFeature, 5, f'{e}_epoch_{i}_iteration_middle_feature.png',
+                                         f'{Din_Config.test_res_dir}/{e}_epoch_{i}_iteration_middle_feature.png')
 
 
 if __name__ == '__main__':

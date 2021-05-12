@@ -7,8 +7,10 @@ from RunRecord import RunRecord
 ############################                         存疑的点                    ########################################
 
 # 是否添加规范层， 这个存疑，有的用的，有的没用如adain
-# normal = nn.BatchNorm2d
-normal = nn.InstanceNorm2d
+# 更正：adain说明了，规范化会规范掉风格，因为风格就是均值和方差，规范的时候就是调整了均值和方差，所以加了规范化就没了风格，故解码器不要加规范化
+# 自己一开始不知道这个，还是属于相关知识没了解充分，实验做不出来的，注意！注意！注意！
+normal = None
+# normal = nn.InstanceNorm2d
 
 # 文中提到，默认din 过滤器size设置为1，为了减少计算消耗，
 # 但是附录里面卷积核大小是3
@@ -37,11 +39,9 @@ todo1 = 19
 # 6-4、这个技术的原文Dynamic Filter Networks的样例代码应该就是直接加的
 # ![](.DIN-MobileNet替代vgg的-没代码-笔记_images/10e4db58.png)
 # 6-5、1*1 的深度卷积，加上偏置，= x * w + b，相乘相加效果一样，所以把这个层说成卷积xx也是可以的
-todo2 = 1
 
-# batch_size 没有说明，参照adain
-batch_size = 16
-# batch_size = 2
+# 实践发现上面的判断是错的！！！这个方法结果是生成风格图那样的内容了
+todo2 = 1
 
 # 激活层 没有说明 网上说用relu有问题，用leakyrelu才行，mobilenet用的relu6
 active_layer = nn.LeakyReLU(inplace=True)
@@ -51,6 +51,9 @@ active_layer = nn.LeakyReLU(inplace=True)
 # 解码器：MetaStyle-master 最近邻  LinearStyleTransfer 最近邻 adain 最近邻
 # 这里相当于编码器，因为输入的大小不固定，输出是固定的，所以采用自适应池化AdaptiveXxxPool，pytorch包装了，自己换算也可以的
 weight_bias_pool_layer = F.adaptive_max_pool2d
+
+# 论文中是2，但是这个会导致中间的图像太小出问题，这里选择1
+dinLayer_stride = 1
 
 
 # 根据卷积的输出size，反向计算输入size, 文中没有说明几倍，这里让其经过下一层layer之后是outputSize的两倍，先乘以2，再算出卷积前的大小
@@ -69,15 +72,17 @@ useTanh = True
 ############################                         存疑的点                    ########################################
 
 
+# batch_size 没有说明，参照adain
+batch_size = 24
+
 lam = 10
 
 learning_rate_enco_deco = 0.0001
 learning_rate_din_layer = 0.001
 
 epoch = 20
-
-train_content_dir = r'E:\重要_data_set__big_size\COCO\train2014'
-train_style_dir = r'E:\重要_data_set__big_size\wikiart\train'
+train_content_dir = r'E:\重要_dataset_model\COCO\train2014'
+train_style_dir = r'E:\重要_dataset_model\wikiart\train'
 test_content_dir = train_content_dir
 test_style_dir = train_style_dir
 
@@ -91,5 +96,13 @@ runRecordPath = 'runRecord.pkl'
 
 style_encode_channel = 256
 
-
 debugMode = False
+if debugMode:
+    checkpoint_interval = 10
+
+# 更改日志
+# 使用一个w_b网络同时得出均值和方差
+# 2021年4月16日 21.50
+# 看了adain的论文介绍，提到解码器不能用归一化，去掉，训练
+# 2021年4月17日 15:30
+# 编码器也去掉normal层，以期和解码器完全对称

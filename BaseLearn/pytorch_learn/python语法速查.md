@@ -82,20 +82,28 @@ try:
     ... 
     raise e   
 ```
-文件相关
+# 文件相关
 创建父目录
  os.makedirs
-os.walk 遍历目录树，包含自己
-如果想要只处理一级目录下的，那么只处理它的第一个返回值就行了
 
 获取父目录
 os.path.dirname('...')
 os.path.split(path)[0]
 获取路径中的文件名
-os.path.split(path)[1] # 带后缀
-os.path.splitext(带后缀的文件名)[0] # 不带后缀 
+# 带后缀
+os.path.basename(path) 
+ 或者
+os.path.split(path)[1]
+# 不带后缀
+os.path.splitext(带后缀的文件名)[0]
 获取后缀
 os.path.splitext(path)[1] # 带有一个.
+
+os.walk 遍历整个目录树，包含自己
+for root, dir, file in os.walk(path)
+第一个是文件夹，第二个是文件夹下面的文件夹名字，第三个是文件夹下面的文件的名字
+如果想要只处理一级目录下的，那么只处理它的第一个返回值就行了
+
 
 # 图片相关
 # PIL
@@ -141,3 +149,8 @@ super(子类名, self).__init__() #
 
 # 字符串
 判断子串 a in b
+字符串结尾 开始 a.endswith(b),a.startsWith(b)
+
+# 成员 属性 方法 相关
+获取属性名字和值列表 
+self.__dict__

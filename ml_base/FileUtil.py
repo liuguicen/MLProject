@@ -8,14 +8,15 @@ def mkdir(path):
         os.makedirs(path)
 
 
-def writeRunLog(obj, path):
+def saveRunRecord(obj, path):
     '''
     保存运行记录，直接用下面的代码就行，写在这里防止忘记
     '''
     with open(path, "wb") as f:
         pickle.dump(obj, f)
 
-def readRunLog(path):
+
+def readRunRecord(path):
     if os.path.exists(path):
         with open(path, "rb") as file:
             return pickle.load(file)

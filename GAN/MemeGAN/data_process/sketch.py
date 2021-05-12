@@ -2,7 +2,7 @@
 
 import cv2
 
-from ml_base import fileUtil
+from ml_base import FileUtil
 
 
 def useCanny(img):
@@ -12,16 +12,16 @@ def useCanny(img):
 
 
 import os
-import imgBase
+import ImageBase
 import numpy as np
 import edge.Hed_edge_detect as hed
 import json
 
 
 def getEdge(img_path):
-    img = imgBase.cv_imread_CN(img_path)  # type:np.ndarray
+    img = ImageBase.cv_imread_CN(img_path)  # type:np.ndarray
     # 将图片的透明背景改成白色的，因为透明背景会被当成黑色处理，实际上白色才更符合
-    img = imgBase.transparence2white(img)
+    img = ImageBase.transparence2white(img)
     img_w, img_h = img.shape[0], img.shape[1]
     if img_w < 64 or img_h < 64:  # 尺寸小的时候，hed无法检测出来，canny可以，单纯放大图像再使用hed也不行
         ratio = max(128 / img_w, 128 / img_h)
@@ -31,14 +31,14 @@ def getEdge(img_path):
     else:
         edges = hed.detectEdge(img)
         edges = np.uint8(edges * 255)
-    edges = imgBase.colorConvert(edges, edges)  # 颜色反转，使用黑色表示边缘，原来的算法输出的是白色表示边缘
+    edges = ImageBase.colorConvert(edges, edges)  # 颜色反转，使用黑色表示边缘，原来的算法输出的是白色表示边缘
     # cv2.imshow('edges', edges)
     return img, edges
     # cv2.waitKey(0)
 
 
 #
-# edges = getEdge('F:\\重要_data_set__big_size\\表情\\大黄脸\\bsc.webp')
+# edges = getEdge('E:\\重要_dataset_model\\表情\\大黄脸\\bsc.webp')
 # cv2.imshow('edges', edges)
 # cv2.waitKey(0)
 # exit()
@@ -58,7 +58,7 @@ def get_record():
 
 def make_edge_map(run_record, emoji_edge_id):
     src_dir, edge_dir = None, None
-    for root, dirs, files in os.walk('F:\\重要_data_set__big_size\\表情\\大黄脸\\'):
+    for root, dirs, files in os.walk('E:\\重要_dataset_model\\表情\\大黄脸\\'):
         # 创建目录
         preprocessDir = os.path.join(root, '预处理后的')
         src_dir = os.path.join(preprocessDir, 'src')
@@ -80,8 +80,8 @@ def make_edge_map(run_record, emoji_edge_id):
                 src_path = os.path.join(src_dir, file_name.split('.')[0] + '.jpg')
                 edge_path = os.path.join(edge_dir, file_name.split('.')[0] + '.jpg')
 
-                imgBase.cv_imwrite_CN(src_path, src_img)
-                imgBase.cv_imwrite_CN(edge_path, edges)
+                ImageBase.cv_imwrite_CN(src_path, src_img)
+                ImageBase.cv_imwrite_CN(edge_path, edges)
                 print(file_name, id, 'make edge finish')
             run_record[emoji_edge_id_key] = id
         break  # 只处理一级目录
@@ -100,11 +100,11 @@ def split_train_test(a_src_dir, b_src_dir, dst_dir):
 
     def prapare(path):
         trainPath = os.path.join(path, 'train')
-        fileUtil.mkdir(trainPath)
+        FileUtil.mkdir(trainPath)
         valPath = os.path.join(path, 'val')
-        fileUtil.mkdir(valPath)
+        FileUtil.mkdir(valPath)
         testPath = os.path.join(path, 'test')
-        fileUtil.mkdir(testPath)
+        FileUtil.mkdir(testPath)
         return trainPath, valPath, testPath
 
     def copyFile(src_dir, srcNameList, dst_dir):

@@ -3,6 +3,8 @@ import torch.nn.functional as F
 from torchvision.models import vgg19
 
 import AdaConfig
+import MLUtil
+from CommonModels import CommonModels
 
 
 def calc_mean_std(features):
@@ -90,6 +92,7 @@ class Decoder(nn.Module):
         h = F.interpolate(h, scale_factor=2)
         h = self.rc2(h)
         h = self.rc3(h)
+        h = F.interpolate(h, scale_factor=2)
         h = self.rc4(h)
         h = self.rc5(h)
         h = F.interpolate(h, scale_factor=2)
@@ -101,27 +104,27 @@ class Decoder(nn.Module):
         return h
 
 
+class MobileBasedDecoder(nn.Module):
+    def __init__(self):
+        nn.Module.__init__(self)
+
+
 import time
-import MLUtil
-
-MLUtil.use()
-from matplotlib import pyplot as plt
-
-plt.plot([1, 2, 3])
-plt.show()
 
 
-class Model(nn.Module):
+class MobileBasedModel(nn.Module):
     def __init__(self):
         super().__init__()
-        self.vgg_encoder = VGGEncoder()
+        self.vgg = VGGEncoder()
+        self.encoder = CommonModels.MyMobileNet()
+        self.encoder = self.vgg
         self.decoder = Decoder()
 
     def generate(self, content_images, style_images, alpha=1.0):
         curt = time.time()
 
-        style_features = self.vgg_encoder(style_images, output_last_feature=True)
-        content_features = self.vgg_encoder(content_images, output_last_feature=True)
+        style_features = self.encoder(style_images)
+        content_features = self.encoder(content_images)
         print('vgg time', time.time() - curt)
         curt = time.time()
 
@@ -130,11 +133,6 @@ class Model(nn.Module):
         print('adin time', time.time() - curt)
         curt = time.time()
 
-        if AdaConfig.debugMode:
-            MLUtil.printDivide()
-            MLUtil.printMiddleFeature(content_features)
-            MLUtil.printMiddleFeature(style_features)
-            MLUtil.printMiddleFeature(t)
         out = self.decoder(t)
         print('decoder time = ', time.time() - curt)
         return t, out
@@ -153,18 +151,18 @@ class Model(nn.Module):
         return loss
 
     def forward(self, content_images, style_images, alpha=1.0, lam=10):
-        content_features = self.vgg_encoder(content_images, output_last_feature=True)
-        style_features = self.vgg_encoder(style_images, output_last_feature=True)
+        content_features = self.encoder(content_images)
+        style_features = self.encoder(style_images)
         t = adain(content_features, style_features)
         t = alpha * t + (1 - alpha) * content_features
         out = self.decoder(t)
 
-        output_middle_features = self.vgg_encoder(out, output_last_feature=False)
-        # output_features = self.vgg_encoder(out, output_last_feature=True)
+        vgg_contentFeature = self.vgg(content_images, output_last_feature=True)
+        output_middle_features = self.vgg(out, output_last_feature=False)
         output_features = output_middle_features[-1]
-        style_middle_features = self.vgg_encoder(style_images, output_last_feature=False)
+        style_middle_features = self.vgg(style_images, output_last_feature=False)
 
-        loss_c = self.calc_content_loss(output_features, t)
-        loss_s = self.calc_style_loss(output_middle_features, style_middle_features)
-        loss = loss_c + lam * loss_s
+        loss_c = self.calc_content_loss(output_features, vgg_contentFeature)
+        # loss_s = self.calc_style_loss(output_middle_features, style_middle_features)
+        loss = loss_c  # + lam * loss_s
         return loss
