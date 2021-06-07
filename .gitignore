@@ -20,3 +20,7 @@ GAN/well-know-GAN-implement/
 GAN/pytorch-CycleGAN-and-pix2pix/
 ImageProcession/
 /GAN/PaddleGAN/
+./cv/Swin-Transformer/
+*.pth
+*/check_point
+__pycache__

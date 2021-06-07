@@ -112,3 +112,18 @@ if __name__ == '__main__':
 def use():
     # 占位
     pass
+
+
+def denormModelOutput(tensor: torch.Tensor):
+    std = torch.tensor([0.229, 0.224, 0.225]).reshape(-1, 1, 1).to(tensor.device)
+    mean = torch.tensor([0.485, 0.456, 0.406]).reshape(-1, 1, 1).to(tensor.device)
+    res = torch.clamp(tensor * std + mean, 0, 1)
+    return res
+
+
+def showModelOutImage(out: torch.Tensor):
+    out = out.detach()
+    out = denormModelOutput(out)
+    plt.figure("out")
+    plt.imshow(out.cpu().squeeze_().permute(1, 2, 0).numpy())
+    plt.show()

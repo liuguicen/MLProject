@@ -58,12 +58,18 @@ def cv_imread_CN(image_path):
     return img
 
 
-# 一般不要使用cv，接口不友好，不支持中文
-# 使用这个获得matplot都行
-# from PIL import Imageim = Image.fromarray(imgArr)im.save("out.png")
+# 保存图片里面的坑 还挺多的，
+# 1、OpenCV不支持中文，
+# 2、OpenCV默认通道顺序是Bgr和Rgb不一样
+# 3、PIL支持的数据格式为np.uint8 如下im = Image.fromarray(np.uint8(img))
+# 用OpenCV框架内的图像数据，保存的时候用这个，不然可能出问题，其它时候不用
+# 接口不友好，不支持中文
+# 使用matplot，或者PIL等很多方式
+
 def cv_imwrite_CN(save_path, img):
     if os.path.exists(save_path):
         os.remove(save_path)
+    FileUtil.mkdir(os.path.dirname(save_path))
     tail = os.path.splitext(save_path)[1]
     cv2.imencode(tail, img)[1].tofile(save_path)
 
@@ -110,14 +116,15 @@ def imShow(im: np.ndarray):
 
 if __name__ == '__main__':
     src = Image.open(
-        r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\52337457625514808391616091655396.jpg")  # type:Image
+        r"C:\Users\Administrator\Desktop\QQ截图20210528120031.png")  # type:Image
 
     plt.figure("dog")
     plt.imshow(src)
     plt.show()
 
     src = np.array(src)
-    res = black2Alpha(src)
+
+    # res = black2Alpha(src)
     res = Image.fromarray(res)
 
     plt.figure('res')
