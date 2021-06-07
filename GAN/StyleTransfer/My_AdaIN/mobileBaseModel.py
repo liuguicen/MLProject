@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torchvision.models import vgg19
 
 import AdaConfig
-import MLUtil
+import MlUtil
 from CommonModels import CommonModels
 
 

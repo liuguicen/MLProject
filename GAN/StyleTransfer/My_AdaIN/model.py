@@ -64,12 +64,12 @@ class RC(nn.Module):
         self.activated = activated
 
     def forward(self, x):
-        h = self.pad(x)
-        h = self.conv(h)
+        # x = self.pad(x)
+        x = self.conv(x)
         if self.activated:
-            return F.relu(h)
+            return F.relu(x)
         else:
-            return h
+            return x
 
 
 class Decoder(nn.Module):
@@ -102,14 +102,9 @@ class Decoder(nn.Module):
 
 
 import time
-import MLUtil
+import MlUtil
 
-MLUtil.use()
-from matplotlib import pyplot as plt
-
-plt.plot([1, 2, 3])
-plt.show()
-
+MlUtil.use()
 
 class Model(nn.Module):
     def __init__(self):
@@ -131,10 +126,10 @@ class Model(nn.Module):
         curt = time.time()
 
         if AdaConfig.debugMode:
-            MLUtil.printDivide()
-            MLUtil.printMiddleFeature(content_features)
-            MLUtil.printMiddleFeature(style_features)
-            MLUtil.printMiddleFeature(t)
+            MlUtil.printDivide()
+            MlUtil.printMiddleFeature(content_features)
+            MlUtil.printMiddleFeature(style_features)
+            MlUtil.printMiddleFeature(t)
         out = self.decoder(t)
         print('decoder time = ', time.time() - curt)
         return t, out

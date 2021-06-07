@@ -6,7 +6,7 @@ import torchvision
 import Din_Config
 from ml_base.CommonModels.CommonModels import MyVgg
 import ml_base
-from ml_base import MLUtil
+from ml_base import MlUtil
 
 ml_base.CommonModels.CommonModels.use()
 

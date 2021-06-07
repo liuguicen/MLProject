@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torchvision
 
 import Din_Config
-import MLUtil
+import MlUtil
 import FileUtil
 
 
@@ -127,7 +127,7 @@ def train():
                 with torch.no_grad():
                     if Din_Config.debugMode:
                         for model in dinModel.getMySubModel():
-                            MLUtil.registerMiddleFeaturePrinter(model)
+                            MlUtil.registerMiddleFeaturePrinter(model)
                     out, middleFeature = dinModel(content, style)
 
                 content = denorm(content, device)
@@ -143,7 +143,7 @@ def train():
                                              nrow=Din_Config.batch_size)
                 torch.save(dinModel.state_dict(), f'{Din_Config.check_point}/{e}_epoch.pth')
 
-                MLUtil.saveMiddleFeature(middleFeature, 5, f'{e}_epoch_{i}_iteration_middle_feature.png',
+                MlUtil.saveMiddleFeature(middleFeature, 5, f'{e}_epoch_{i}_iteration_middle_feature.png',
                                          f'{Din_Config.test_res_dir}/{e}_epoch_{i}_iteration_middle_feature.png')
 
 

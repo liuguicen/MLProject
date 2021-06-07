@@ -10,7 +10,7 @@ import os
 # mpl.use('Agg')
 
 import matplotlib.pyplot as plt
-import MLUtil
+import MlUtil
 from tqdm import tqdm
 import torch
 from torch.optim import Adam
@@ -52,7 +52,7 @@ def saveCheckPoint(model, test_content, test_style, loss_list, epoch, iter):
     torchvision.utils.save_image(res, f'{record.tes_res_dir}/{img_name}',
                                  nrow=AdaConfig.batch_size)
     img_name = f'{epoch}_epoch_{iter}_iteration_m.png'
-    MLUtil.saveMiddleFeature(t, 10, img_name, f'{record.tes_res_dir}/{img_name}')
+    MlUtil.saveMiddleFeature(t, 10, img_name, f'{record.tes_res_dir}/{img_name}')
     # MLUtil.printAllMiddleFeature(model, content, style, type=torchvision.models.mobilenetv2.InvertedResidual)
     # MLUtil.printAllMiddleFeature(model, content, style, type=RC)
     # plt绘制并保存loss

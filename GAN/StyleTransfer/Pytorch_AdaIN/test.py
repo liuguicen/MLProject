@@ -1,5 +1,7 @@
 import os
 import argparse
+
+import onnx
 from PIL import Image
 import torch
 from torchvision import transforms
@@ -7,6 +9,7 @@ from torchvision.utils import save_image
 
 import AdaConfig
 import FileUtil
+import MlUtil
 from model import Model
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -49,8 +52,10 @@ def main():
     # set model
     model = Model()
     if AdaConfig.model_state_path is not None:
-        model.load_state_dict(torch.load(AdaConfig.model_state_path, map_location=lambda storage, loc: storage))
+        model.load_state_dict(torch.load(AdaConfig.oringalModelState, map_location=lambda storage, loc: storage))
     model = model.to(device)
+    encoder2Onnx(model.vgg_encoder, 'adain_ecoder.onnx')
+    decoder2Onnx(model.decoder, 'adain_decoder.onnx')
 
     c = Image.open(AdaConfig.content)
     s = Image.open(AdaConfig.style)
@@ -58,7 +63,6 @@ def main():
     s_tensor = trans(s).unsqueeze(0).to(device)
     with torch.no_grad():
         out = model.generate(c_tensor, s_tensor, AdaConfig.alpha)
-
     out = denorm(out, device)
 
     if AdaConfig.output_name is None:
@@ -78,13 +82,12 @@ def main():
     demo.paste(s, (c.width, c.height - s.height))
     demo.save(f'{AdaConfig.output_name}_style_transfer_demo.jpg', quality=95)
 
-    o.paste(s,  (0, o.height - s.height))
+    o.paste(s, (0, o.height - s.height))
     o.save(f'{AdaConfig.output_name}_with_style_image.jpg', quality=95)
 
     print(f'result saved into files starting with {AdaConfig.output_name}')
 
     # test_multi_size_0(args, device, model)
-
 
 def t1est_multi_size_0(args, device, model):
     c = Image.open(AdaConfig.content)

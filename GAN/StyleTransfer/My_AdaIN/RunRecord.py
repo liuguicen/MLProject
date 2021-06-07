@@ -1,6 +1,6 @@
-import AdaConfig
 from ml_base.BaseRunRecord import BaseRunRecord
-
+import pickle
+import os
 
 class RunRecord(BaseRunRecord):
     def __init__(self, checkPointPath='check_point'):

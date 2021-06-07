@@ -2,6 +2,7 @@ import argparse
 import os
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torchvision
@@ -9,12 +10,15 @@ from PIL import Image
 from torchvision import transforms
 import AdaConfig
 
-import ImageBase
+import ImageUtil
+import MlUtil
 from CommonModels.CommonModels import MyVgg
-from MLUtil import Timer, Const
+from MlUtil import Timer, Const
 from mobile.model_export import exportModule
 # from model import Model
 from mobileBaseModel import MobileBasedModel
+import onnx
+
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
@@ -52,8 +56,8 @@ def adain(content_features, style_features):
 
 
 def denorm(tensor):
-    std = torch.tensor([0.229, 0.224, 0.225]).reshape(-1, 1, 1)
-    mean = torch.tensor([0.485, 0.456, 0.406]).reshape(-1, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225]).reshape(-1, 1, 1).to(device)
+    mean = torch.tensor([0.485, 0.456, 0.406]).reshape(-1, 1, 1).to(device)
     res = torch.clamp(tensor * std + mean, 0, 1)
     return res
 
@@ -62,70 +66,7 @@ def t_estResIm(out):
     out = out.to('cpu', torch.uint8).numpy()
     im = Image.fromarray(out)
     im.save('test.jpg')
-    ImageBase.imShow(im)
-
-
-def convertForAndroid(out):  # 转变成Android Studio易于处理的格式 注意通道维度在最后 这个可以加速 变成图片时改过来
-    out = out.squeeze_().mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).int()
-
-    # testResIm()
-
-    # out.type(torch.uint8) jit不支持这个函数
-    #
-    # out.type(bytes)
-    # out = out.int()
-    # out = out.byte() # 转换成byte，Android不支持
-
-    # w, h = out.size()[0], out.size()[1]
-    # for i in range(w):
-    #     for j in range(h):  # 透明通道不能赋值，赋值python直接溢出报错，有毒阿，这你管个啥
-    #         out[i][j][0] = out[i][j][0].item() << 16 | out[i][j][1].item() << 8 | out[i][j][2].item()
-    result = OrderedDict()
-    result['wh'] = torch.tensor([out.size()[1], out.size()[0]], dtype=torch.int32)  # 这里是先高后宽
-    result['im'] = out
-    return result
-
-
-class AdainDecoder(nn.Module):
-    def __init__(self, decoder):
-        nn.Module.__init__(self)
-        self.decoder = decoder
-
-    def forward(self, content_features, style_features, alpha: float):
-        # adain
-        t = adain(content_features, style_features)
-        t = alpha * t + (1 - alpha) * content_features
-        # Timer.print_and_record('adain耗时 = ')
-
-        # 解码
-        out = self.decoder(t)
-        # Timer.print_and_record('decoder耗时= ')
-
-        out = denorm(out)
-        out = convertForAndroid(out)
-        # Timer.print_and_record('格式转换耗时 = ')
-        # Timer.print_and_record('总耗时 = ', recordKey=Const.total)
-        return out
-
-
-def exportOnnx(torch_model, input, path, dynamic_axes=None):
-    torch_model.eval()
-    torch.onnx.export(torch_model,  # model being run
-                      input,  # model input (or a tuple for multiple inputs)
-                      path, verbose=True,
-                      dynamic_axes=dynamic_axes
-                      )
-    import onnx
-
-    # Load the ONNX model
-    model = onnx.load(path)
-
-    # Check that the IR is well formed
-    onnx.checker.check_model(model)
-
-    # Print a human readable representation of the graph
-    onnx.helper.printable_graph(model.graph)
-    print('导出oxx模型并验证完成， path = \n', path)
+    ImageUtil.imShow(im)
 
 
 def save_img(args, c, out, s):
@@ -147,41 +88,160 @@ def save_img(args, c, out, s):
     o.save(f'{args.output_name}_with_style_image.jpg', quality=95)
     print(f'result saved into files starting with {args.output_name}')
 
-def main():
+
+def convertForAndroid(out):
+    '''
+    转变成Android中易于处理的格式 注意其中通道维度在最后，因为这个在pytorch里面可以加速 变成图片时改过来
+    '''
+    out = out.squeeze_().mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).int()
+    return out
+    # testResIm()
+
+    # out.type(torch.uint8) jit不支持这个函数
+    #
+    # out.type(bytes)
+    # out = out.int()
+    # out = out.byte() # 转换成byte，Android不支持
+
+    # w, h = out.size()[0], out.size()[1]
+    # for i in range(w):
+    #     for j in range(h):  # 透明通道不能赋值，赋值python直接溢出报错，有毒阿，这你管个啥
+    #         out[i][j][0] = out[i][j][0].item() << 16 | out[i][j][1].item() << 8 | out[i][j][2].item()
+    # result = OrderedDict()
+    # result['wh'] = torch.tensor([out.size()[1], out.size()[0]], dtype=torch.int32)  # 这里是先高后宽
+    # result['im'] = out
+    # return result
+
+
+if AdaConfig.isExportModel:
     device = 'cpu'
+else:
+    device = MlUtil.gpu
 
+
+class AdainDecoder(nn.Module):
+    def __init__(self, decoder):
+        nn.Module.__init__(self)
+        self.decoder = decoder
+
+    def forward(self, content_features, style_features, alpha):
+        # adain
+        t = adain(content_features, style_features)
+
+        t = alpha * t + (1 - alpha) * content_features
+        # Timer.print_and_record('adain耗时 = ')
+
+        # 解码
+        out = self.decoder(t)
+        # Timer.print_and_record('decoder耗时= ')
+
+        out = denorm(out)
+        #
+        out = convertForAndroid(out)
+        # Timer.print_and_record('格式转换耗时 = ')
+        # Timer.print_and_record('总耗时 = ', recordKey=Const.total)
+        return out
+
+
+def encoder2Onnx(torch_model, path):
+    torch_model.to("cpu")
+    torch_model.eval()
+    input = torch.rand(1, 3, 1024, 1024)
+    output = torch.rand(1, 512, 128, 128)
+    input_names = ["input"]
+    output_names = ["output"]
+    dynamic_axes = {
+        "input": {2: "width", 3: "height"}
+    }
+    torch.onnx.export(torch_model,  # model being run
+                      args=input,  # model input (or a tuple for multiple inputs)
+                      f=path,
+                      verbose=True,
+                      example_outputs=output,
+                      input_names=input_names,
+                      output_names=output_names,
+                      dynamic_axes=dynamic_axes,
+                      opset_version=11
+                      )
+
+    # 下面验证导出结果是否正确
+    # Load the ONNX model
+    model = onnx.load(path)
+    # Check that the IR is well formed
+    onnx.checker.check_model(model)
+    # Print a human readable representation of the graph
+    onnx.helper.printable_graph(model.graph)
+    print('导出oxx模型并验证完成， path = \n', path)
+
+
+def decoder2Onnx(torch_model, path):
+    torch_model.to("cpu")
+    torch_model.eval()
+    input = (torch.rand(1, 512, 128, 128), torch.rand(1, 512, 128, 128), torch.tensor(1, dtype=float))
+    # Define attributes for ONNX export
+    input_names = ["content", "style", "alpha"]
+    output_names = ["output"]
+    dynamic_axes = {
+        "content": {2: "width", 3: "height"},
+        "style": {2: "width", 3: "height"},
+        "output": {2: "width", 3: "height"}
+    }
+    torch.onnx.export(torch_model,  # model being run
+                      args=input,  # model input (or a tuple for multiple inputs)
+                      f=path,
+                      verbose=True,
+                      example_outputs=torch.rand(1, 1000, 1000, 3),
+                      input_names=input_names,
+                      output_names=output_names,
+                      dynamic_axes=dynamic_axes,
+                      opset_version=11
+                      )
+
+    # 下面验证导出结果是否正确
+    # Load the ONNX model
+    model = onnx.load(path)
+
+    # Check that the IR is well formed
+    onnx.checker.check_model(model)
+
+    # Print a human readable representation of the graph
+    onnx.helper.printable_graph(model.graph)
+    print('导出oxx模型并验证完成， path = \n', path)
+
+def onnx_to_tf(onnx_path, tf_path):
+    """
+    Converts ONNX model to TF 2.X saved file
+    :param onnx_path: ONNX model path to load
+    :param tf_path: TF path to save
+    """
+    onnx_model = onnx.load(onnx_path)
+    onnx.checker.check_model(onnx_model)  # Checks signature
+    tf_rep = prepare(onnx_model)  # Prepare TF representation
+    tf_rep.export_graph(tf_path)  # Export the model
+
+
+
+from model import Model
+
+from CommonModels.CommonModels import MyVgg_Inference
+
+
+def main():
     # set model
-    model = MobileBasedModel()
-    # if AdaConfig.model_state_path is not None:
-    #     model.load_state_dict(torch.load(AdaConfig.model_state_path, map_location=lambda storage, loc: storage))
-    model = model.to(device)
+    # model = MobileBasedModel()
+    encoder = MyVgg_Inference()
+    encoder.to(device)
 
-    encoder = MyVgg()
+    model = Model()
+    if AdaConfig.model_state_path is not None:
+        model.load_state_dict(torch.load(AdaConfig.oringalModelState, map_location=lambda storage, loc: storage))
+    model = model.to(device)
     adainDecoder = AdainDecoder(model.decoder)
 
-    # exportModule(myVgg, os.path.join(savePath, 'vgg_encoder.pt'))
-    # exportOnnx(myVgg, c_tensor, os.path.join(savePath, 'vgg_encoder.onnx'),
-    #            dynamic_axes={'input_1': {1: 'width',
-    #                                      2: 'height'},
-    #
-    #                          'input_2': {1: 'width',
-    #                                      2: 'height'},
-    #
-    #                          'output': {1: 'width',
-    #                                     2: 'height'}
-    #                          })
+    if AdaConfig.isExportModel:
+        encoder2Onnx(encoder, 'adain_encoder.onnx')
+        decoder2Onnx(adainDecoder, 'adain_decoder.onnx')
 
-    # exportModule(adainDecoder, os.path.join(savePath, 'adain_decoder.pt'))
-    # content_features = model.vgg_encoder(c_tensor, output_last_feature=True)
-    # style_features = model.vgg_encoder(s_tensor, output_last_feature=True)
-    # # adain
-    # t = adain(content_features, style_features)
-    # t = alpha * t + (1 - alpha) * content_features
-    #
-    # # 解码
-    # out = model.decoder(t)
-    # out = denorm(out, 'cpu')
-    # save_img(AdaConfig, c, out, s)
 
     c = Image.open(AdaConfig.content)
     s = Image.open(AdaConfig.style)
@@ -199,7 +259,9 @@ def main():
 
         Timer.print_and_record('编码')
 
-        out = adainDecoder(content_features, style_features, 1)
+        out = adainDecoder(content_features, style_features, torch.tensor(1, dtype=float))
+        MlUtil.showModelOutImage(out)
+
 
 if __name__ == '__main__':
     main()

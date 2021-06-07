@@ -1,4 +1,4 @@
-torch.range(start=1, end=6)的结果是会包含end的
+\torch.range(start=1, end=6)的结果是会包含end的
 而torch.arange(start=1, end=6)的结果并不包含end
 两者创建的tensor的类型也不一样,前者float32，后者int64
 

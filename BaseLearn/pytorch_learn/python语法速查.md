@@ -83,11 +83,11 @@ try:
     raise e   
 ```
 # 文件相关
-创建父目录
+创建目录
  os.makedirs
 
-获取父目录
-os.path.dirname('...')
+获取父目录路径
+os.path.dirname('...') # 注意写的是名字，实际上就是路径
 os.path.split(path)[0]
 获取路径中的文件名
 # 带后缀
@@ -100,8 +100,8 @@ os.path.splitext(带后缀的文件名)[0]
 os.path.splitext(path)[1] # 带有一个.
 
 os.walk 遍历整个目录树，包含自己
-for root, dir, file in os.walk(path)
-第一个是文件夹，第二个是文件夹下面的文件夹名字，第三个是文件夹下面的文件的名字
+for root, dir_list, file_list in os.walk(path)
+第一个是文件夹，第二个是文件夹下面的文件夹名字列表，第三个是文件夹下面的文件的名字列表
 如果想要只处理一级目录下的，那么只处理它的第一个返回值就行了
 
 

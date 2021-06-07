@@ -12,16 +12,16 @@ def useCanny(img):
 
 
 import os
-import ImageBase
+import ImageUtil
 import numpy as np
 import edge.Hed_edge_detect as hed
 import json
 
 
 def getEdge(img_path):
-    img = ImageBase.cv_imread_CN(img_path)  # type:np.ndarray
+    img = ImageUtil.cv_imread_CN(img_path)  # type:np.ndarray
     # 将图片的透明背景改成白色的，因为透明背景会被当成黑色处理，实际上白色才更符合
-    img = ImageBase.transparence2white(img)
+    img = ImageUtil.transparence2white(img)
     img_w, img_h = img.shape[0], img.shape[1]
     if img_w < 64 or img_h < 64:  # 尺寸小的时候，hed无法检测出来，canny可以，单纯放大图像再使用hed也不行
         ratio = max(128 / img_w, 128 / img_h)
@@ -31,7 +31,7 @@ def getEdge(img_path):
     else:
         edges = hed.detectEdge(img)
         edges = np.uint8(edges * 255)
-    edges = ImageBase.colorConvert(edges, edges)  # 颜色反转，使用黑色表示边缘，原来的算法输出的是白色表示边缘
+    edges = ImageUtil.colorConvert(edges, edges)  # 颜色反转，使用黑色表示边缘，原来的算法输出的是白色表示边缘
     # cv2.imshow('edges', edges)
     return img, edges
     # cv2.waitKey(0)
@@ -80,8 +80,8 @@ def make_edge_map(run_record, emoji_edge_id):
                 src_path = os.path.join(src_dir, file_name.split('.')[0] + '.jpg')
                 edge_path = os.path.join(edge_dir, file_name.split('.')[0] + '.jpg')
 
-                ImageBase.cv_imwrite_CN(src_path, src_img)
-                ImageBase.cv_imwrite_CN(edge_path, edges)
+                ImageUtil.cv_imwrite_CN(src_path, src_img)
+                ImageUtil.cv_imwrite_CN(edge_path, edges)
                 print(file_name, id, 'make edge finish')
             run_record[emoji_edge_id_key] = id
         break  # 只处理一级目录

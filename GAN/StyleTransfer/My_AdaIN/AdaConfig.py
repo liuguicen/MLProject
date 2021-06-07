@@ -7,6 +7,7 @@ style = r'D:\MLProject\GAN\StyleTransfer\Pytorch_AdaIN\style\antimonocromatismo.
 output_name = r'res'
 alpha = 1
 model_state_path = r'D:\MLProject\GAN\StyleTransfer\My_AdaIN\check_point\model_state\8_epoch_1199_iteration.pth',
+oringalModelState = r'E:\重要_dataset_model\预训练模型\adain原始权重\model_state.pth'
 
 batch_size = 12  #
 epoch = 20
@@ -26,6 +27,7 @@ debugMode = False
 use_check_point_state = True
 use_mobile_based = False
 
+isExportModel = True
 if debugMode:
     use_check_point_state = False
     check_point_interval = 10
