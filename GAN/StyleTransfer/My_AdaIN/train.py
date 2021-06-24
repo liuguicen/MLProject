@@ -3,6 +3,7 @@ import warnings
 import torchvision
 
 import AdaConfig
+import BaseRunRecord
 import FileUtil
 
 import os
@@ -67,7 +68,7 @@ def saveCheckPoint(model, test_content, test_style, loss_list, epoch, iter):
     print(f'Loss saved in {record.loss_dir}')
 
     # pkl保存对象
-    FileUtil.saveRunRecord(record, 'runRecord.pkl')
+    record.saveRunRecord('runRecord.pkl')
 
 
 def main():
@@ -105,12 +106,6 @@ def main():
     for e in range(record.check_point_epoch, AdaConfig.epoch + 1):
         print(f'Start {e} epoch')
         for i, (content, style) in tqdm(enumerate(train_loader, 0)):
-            # i已经超过了上次训练的，这一轮的剩余数量，跳过，因为随机打乱了数据，从前面开始也行
-            # 不知道python怎么设置迭代器的开始位置，不然不用这样弄
-            if e == record.check_point_epoch and i > len(train_loader) - record.check_point_iter:
-                print('pass for had trained')
-                break
-
             content = content.to(device)
             style = style.to(device)
             loss = model(content, style)

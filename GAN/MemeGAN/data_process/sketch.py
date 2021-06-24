@@ -80,8 +80,8 @@ def make_edge_map(run_record, emoji_edge_id):
                 src_path = os.path.join(src_dir, file_name.split('.')[0] + '.jpg')
                 edge_path = os.path.join(edge_dir, file_name.split('.')[0] + '.jpg')
 
-                ImageUtil.cv_imwrite_CN(src_path, src_img)
-                ImageUtil.cv_imwrite_CN(edge_path, edges)
+                ImageUtil.cv_save_image_CN(src_path, src_img)
+                ImageUtil.cv_save_image_CN(edge_path, edges)
                 print(file_name, id, 'make edge finish')
             run_record[emoji_edge_id_key] = id
         break  # 只处理一级目录

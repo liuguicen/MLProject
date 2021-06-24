@@ -7,6 +7,7 @@ def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
 def writeList(list, path):
     '''
     path txt文件
@@ -35,5 +36,13 @@ def getChildPath_firstLeve(path):
     for root, dir_name, file_list in os.walk(path):
         for file_name in file_list:
             child_list.append(os.path.join(root, file_name))
+        return child_list
 
+
+def getChildPath_AllLeve(dir, suffix: str):
+    child_list = []
+    for root, dir_name, file_list in os.walk(dir):
+        for file_name in file_list:  # type:str
+            if suffix is None or file_name.endswith(suffix):
+                child_list.append(os.path.join(root, file_name))
     return child_list

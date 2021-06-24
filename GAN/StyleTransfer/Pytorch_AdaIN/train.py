@@ -1,8 +1,12 @@
 import warnings
+
+import CommonDataSet
+
 warnings.simplefilter("ignore", UserWarning)
 import os
 import argparse
 import matplotlib as mpl
+
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -16,23 +20,23 @@ from model import Model
 
 def main():
     parser = argparse.ArgumentParser(description='AdaIN Style Transfer by Pytorch')
-    parser.add_argument('--batch_size', '-b', type=int, default=8,
+    parser.add_argument('--batch_size', '-b', type=int, default=48,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID(nagative value indicate CPU)')
-    parser.add_argument('--learning_rate', '-lr', type=int, default=5e-5,
+    parser.add_argument('--learning_rate', '-lr', type=int, default=10e-5,
                         help='learning rate for Adam')
-    parser.add_argument('--snapshot_interval', type=int, default=1000,
+    parser.add_argument('--snapshot_interval', type=int, default=256,
                         help='Interval of snapshot to generate image')
-    parser.add_argument('--train_content_dir', type=str, default='content',
+    parser.add_argument('--train_content_dir', type=str, default=CommonDataSet.cocoPath,
                         help='content images directory for train')
-    parser.add_argument('--train_style_dir', type=str, default='style',
+    parser.add_argument('--train_style_dir', type=str, default=CommonDataSet.wikiartPath,
                         help='style images directory for train')
-    parser.add_argument('--test_content_dir', type=str, default='content',
+    parser.add_argument('--test_content_dir', type=str, default=CommonDataSet.cocoPath,
                         help='content images directory for test')
-    parser.add_argument('--test_style_dir', type=str, default='style',
+    parser.add_argument('--test_style_dir', type=str, default=CommonDataSet.wikiartPath,
                         help='style images directory for test')
     parser.add_argument('--save_dir', type=str, default='result',
                         help='save directory for result and loss')
@@ -95,7 +99,7 @@ def main():
             loss.backward()
             optimizer.step()
             print(f'[{e}/total {args.epoch} epoch],[{i} /'
-                  f'total {round(iters/args.batch_size)} iteration]: {loss.item()}')
+                  f'total {round(iters / args.batch_size)} iteration]: {loss.item()}')
 
             if i % args.snapshot_interval == 0:
                 content, style = next(test_iter)

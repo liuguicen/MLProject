@@ -64,12 +64,12 @@ class RC(nn.Module):
         self.activated = activated
 
     def forward(self, x):
-        # x = self.pad(x)
-        x = self.conv(x)
+        h = self.pad(x)
+        h = self.conv(h)
         if self.activated:
-            return F.relu(x)
+            return F.relu(h)
         else:
-            return x
+            return h
 
 
 class Decoder(nn.Module):

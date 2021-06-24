@@ -48,7 +48,7 @@ def extra_and_save_keyframes(video_path):
             ret, frame = cap.read()
             outname = video_name + '_' + str(i) + '_frame_' + str(frame_no) + '.jpg'
             # cv2.imshow('video', frame)
-            ImageUtil.cv_imwrite_CN(os.path.join(res_dir, outname), frame)
+            ImageUtil.cv_save_image_CN(os.path.join(res_dir, outname), frame)
             print('Saved: ' + outname)
         print('save key frame finish')
         cap.release()

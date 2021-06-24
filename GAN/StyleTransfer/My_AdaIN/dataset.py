@@ -8,10 +8,13 @@ from torchvision import transforms
 from skimage import io, transform
 from PIL import Image
 
+import AdaConfig
+import FileUtil
+
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
-trans = transforms.Compose([transforms.RandomCrop(512),
+trans = transforms.Compose([transforms.RandomCrop(AdaConfig.input_size),
                             transforms.ToTensor(),
                             normalize])
 
@@ -27,11 +30,11 @@ class PreprocessDataset(Dataset):
     def __init__(self, content_dir, style_dir, transforms=trans):
         content_dir_resized = content_dir + '_resized'
         style_dir_resized = style_dir + '_resized'
-        if not (os.path.exists(content_dir_resized) and
-                os.path.exists(style_dir_resized)):
+        if not os.path.exists(content_dir_resized):
             os.mkdir(content_dir_resized)
-            os.mkdir(style_dir_resized)
             self._resize(content_dir, content_dir_resized)
+        if not os.path.exists(style_dir_resized):
+            os.mkdir(style_dir_resized)
             self._resize(style_dir, style_dir_resized)
         content_images = glob.glob((content_dir_resized + '/*'))
         np.random.shuffle(content_images)
@@ -43,7 +46,7 @@ class PreprocessDataset(Dataset):
     @staticmethod
     def _resize(source_dir, target_dir):
         print(f'Start resizing {source_dir} ')
-        for i in tqdm(os.listdir(source_dir)):
+        for i in tqdm(FileUtil.getChildPath_AllLeve(source_dir, 'jpg')):
             filename = os.path.basename(i)
             try:
                 image = io.imread(os.path.join(source_dir, i))
@@ -76,5 +79,3 @@ class PreprocessDataset(Dataset):
             content_image = self.transforms(content_image)
             style_image = self.transforms(style_image)
         return content_image, style_image
-
-

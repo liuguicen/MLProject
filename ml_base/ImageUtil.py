@@ -66,13 +66,18 @@ def cv_imread_CN(image_path):
 # 接口不友好，不支持中文
 # 使用matplot，或者PIL等很多方式
 
-def cv_imwrite_CN(save_path, img):
+def cv_save_image_CN(save_path, img):
     if os.path.exists(save_path):
         os.remove(save_path)
     FileUtil.mkdir(os.path.dirname(save_path))
     tail = os.path.splitext(save_path)[1]
     cv2.imencode(tail, img)[1].tofile(save_path)
 
+def saveImageNdArray(path, imgArr):
+    dir = os.path.dirname(path)
+    FileUtil.mkdir(dir)
+    im = Image.fromarray(imgArr)
+    im.save(path)
 
 def black2Alpha(img):
     w, h = img.shape[0], img.shape[1]
@@ -132,10 +137,3 @@ if __name__ == '__main__':
     plt.show()
 
     res.save(r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\res.png")
-
-
-def saveImageNdArray(path, imgArr):
-    dir = os.path.dirname(path)
-    FileUtil.mkdir(dir)
-    im = Image.fromarray(imgArr)
-    im.save(path)

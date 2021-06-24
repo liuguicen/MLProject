@@ -9,6 +9,9 @@ import gzip
 
 import torch.utils.data
 
+wikiartPath = r'E:\重要_dataset_model\wikiart\train'
+animatePath = r'E:\重要_dataset_model\动画漫画\动画漫画'
+cocoPath = r'E:\重要_dataset_model\COCO\train2014'
 
 class Minist(torch.utils.data.Dataset):
     def load_data(self, dir, isTest: bool = False):

@@ -104,9 +104,9 @@ import BaseRunRecord
 
 
 def run(runRecord):
-    styleList = FileUtil.getChildPath_firstLeve(r'E:\重要_dataset_model\wikiart\train')
-    contentList = FileUtil.getChildPath_firstLeve(r'test_content')
-    rstDir = r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel'
+    styleList = FileUtil.getChildPath_firstLeve(r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\选择的\resize_style_256')
+    contentList = FileUtil.getChildPath_firstLeve(r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\可以做例子的\content')
+    rstDir = r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\可以做例子的\rst'
     FileUtil.mkdir(rstDir)
 
     for id, stylePath in enumerate(styleList):
@@ -142,10 +142,9 @@ def run(runRecord):
 if __name__ == '__main__':
     finish = False
     runRecord = BaseRunRecord.readRunRecord()
-    runRecord.common_iter_count += 1
     if runRecord is None:
         runRecord = BaseRunRecord.BaseRunRecord()
-        runRecord.common_iter_count = 2600
+    runRecord.common_iter_count += 1
     while not finish:
         try:
             run(runRecord)

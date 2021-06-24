@@ -9,7 +9,7 @@ default_record_path = os.path.join(default_dir, 'RunRecord.pkl')
 
 class BaseRunRecord:
     def __init__(self, check_point_dir=default_dir):
-        self.common_iter_count = ''
+        self.common_iter_count = 0
         '''
         通用的循环迭代次数
         '''
@@ -42,6 +42,14 @@ class BaseRunRecord:
         '''
         with open(path, "wb") as f:
             pickle.dump(self, f)
+
+
+def saveRunRecord(record, path=default_record_path):
+    '''
+    保存运行记录，直接用下面的代码就行，写在这里防止忘记
+    '''
+    with open(path, "wb") as f:
+        pickle.dump(record, f)
 
 
 def readRunRecord(path=default_record_path):
