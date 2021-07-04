@@ -4,11 +4,13 @@ import traceback
 
 import PIL.Image as Image
 import numpy as np
+import common_dataset
+from os import path
 
 name = r'style_100398_ss.jpg'
 print(re.search(r'\d_', name))
 
-root = r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\选择的'
+root = path.join(common_dataset.dataset_dir, r'wikiart\StyleRstGoogleModel\选择的')
 allList = os.listdir(root)
 for name in allList:
     path = os.path.join(root, name)

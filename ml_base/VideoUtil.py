@@ -9,7 +9,7 @@ import numpy
 
 import FileUtil
 
-file_path = r'E:\重要_dataset_model\动画漫画\宫崎骏\天空之城.mp4'
+file_path = path.join(common_dataset.dataset_dir, r'动画漫画\宫崎骏\天空之城.mp4'
 
 import ImageUtil
 

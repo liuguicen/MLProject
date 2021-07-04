@@ -2,13 +2,19 @@
 而torch.arange(start=1, end=6)的结果并不包含end
 两者创建的tensor的类型也不一样,前者float32，后者int64
 
-torch.view()
+tensor.view()
+1、共享内存，改变tensor展现出来的形状，但是不能改变元素数量，这就是取名为view的意思，改变形状外观,但不改变元素数量，要注意因为共享内存，改其中一个的数据值，另外一个的数据值也会跟着改变。
 
-在pytorch中view函数的作用为重构张量的维度尺寸，相当于numpy中resize（）的功能，但是用法可能不太一样。如下例所示
-torch.view(可变长参数表示各个维度重构后的大小)
+注意按照前面说的，view不是改变自己外观，而是返回改变外观的tensor
+
+如下例所示
+tensor.view(可变长参数表示各个维度重构后的大小)
 维度大小为-1 表示该维度自动计算
-torch.view(-1) 比如，变成一维, 长度自动计算
-torch.view(2, 3, -1, 4, 5 ) 第三个维度自动计算
+tensor.view(-1) 比如，变成一维, 长度自动计算
+tensor.view(2, 3, -1, 4, 5 ) 第三个维度自动计算
+
+tensor.resize()
+相对于view，改变形状，并且还可以改变总元素数量，增加减少都行
 
 permute()
 permute译为重新排列，高维转置操作，从代数上理解就是加入就是通过permute(..j...)，将第j个维度放到第i个维度上，
@@ -122,3 +128,14 @@ relu6 mobilenet发明
 leackrelu 参数为负时不为0，低斜率下降
 参数，inplace 表示tensor原地计算，不产生新的tensor 节省内存
 
+# 创建，类型处理 
+2.类型转换
+方法一：简单后缀转换
+
+tensor.int()
+tensor.float()
+tensor.double()
+方法二：使用torch.type()函数
+
+tensor.type(torch.FloatTensor)
+方法三：使用type_as（tensor）将tensor转换为指定tensor的类型

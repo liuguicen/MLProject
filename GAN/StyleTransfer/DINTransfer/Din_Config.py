@@ -81,8 +81,8 @@ learning_rate_enco_deco = 0.0001
 learning_rate_din_layer = 0.001
 
 epoch = 20
-train_content_dir = r'E:\重要_dataset_model\COCO\train2014'
-train_style_dir = r'E:\重要_dataset_model\wikiart\train'
+train_content_dir = path.join(common_dataset.dataset_dir, r'COCO\train2014')
+train_style_dir = path.join(common_dataset.dataset_dir, r'wikiart\train')
 test_content_dir = train_content_dir
 test_style_dir = train_style_dir
 

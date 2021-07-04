@@ -39,7 +39,7 @@ def main():
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID(nagative value indicate CPU)')
     parser.add_argument('--model_state_path', type=str,
-                        default=r'E:\重要_dataset_model\预训练模型\pure_pyroch_adain_style.pth',
+                        default=path.join(common_dataset.dataset_dir, r'预训练模型\pure_pyroch_adain_style.pth',
                         help='save directory for result and loss')
 
     # set device on GPU if available, else CPU
@@ -54,8 +54,8 @@ def main():
     if AdaConfig.model_state_path is not None:
         model.load_state_dict(torch.load(AdaConfig.oringalModelState, map_location=lambda storage, loc: storage))
     model = model.to(device)
-    encoder2Onnx(model.vgg_encoder, 'adain_ecoder.onnx')
-    decoder2Onnx(model.decoder, 'adain_decoder.onnx')
+    # encoder2Onnx(model.vgg_encoder, 'adain_ecoder.onnx')
+    # decoder2Onnx(model.decoder, 'adain_decoder.onnx')
 
     c = Image.open(AdaConfig.content)
     s = Image.open(AdaConfig.style)

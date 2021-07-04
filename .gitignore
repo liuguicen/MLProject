@@ -5,6 +5,11 @@ common_data/
 */*/*/.idea/
 */*/*/*/.idea/
 *.idea/
+*/check_point/
+*/*/check_point/
+*/*/*/check_point/
+*/*/*/*/check_point/
+check_point/
 .idea
 .checkpoint
 DevelopingToolAndPackage/

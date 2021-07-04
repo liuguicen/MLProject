@@ -6,11 +6,14 @@ import glob
 from PIL import Image
 import time
 
+import common_dataset
+from os import path
+
 # *****************************************测试图片、模型路径******************************************
 # 图片集文件夹名称
 testFileName = '1'
 # 图片集路径
-image_dir = r'E:\重要_dataset_model\wikiart\train'
+image_dir = path.join(common_dataset.dataset_dir, r'wikiart\train')
 # 得到图片集列表
 img_name_list = glob.glob(image_dir + os.sep + '*')
 

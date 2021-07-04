@@ -100,13 +100,16 @@ def styleTransfer(style, content):
 
 from matplotlib import pyplot as plt
 import matplotlib
-import BaseRunRecord
-
+import run_record
+import common_dataset
+from os import path
 
 def run(runRecord):
-    styleList = FileUtil.getChildPath_firstLeve(r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\选择的\resize_style_256')
-    contentList = FileUtil.getChildPath_firstLeve(r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\可以做例子的\content')
-    rstDir = r'E:\重要_dataset_model\wikiart\StyleRstGoogleModel\可以做例子的\rst'
+    styleList = FileUtil.getChildPath_firstLeve(
+        path.join(common_dataset.dataset_dir, r'wikiart\StyleRstGoogleModel\选择的\resize_style_256'))
+    contentList = FileUtil.getChildPath_firstLeve(
+        path.join(common_dataset.dataset_dir, r'wikiart\StyleRstGoogleModel\可以做例子的\content'))
+    rstDir = path.join(common_dataset.dataset_dir, r'wikiart\StyleRstGoogleModel\可以做例子的\rst')
     FileUtil.mkdir(rstDir)
 
     for id, stylePath in enumerate(styleList):
@@ -141,9 +144,9 @@ def run(runRecord):
 
 if __name__ == '__main__':
     finish = False
-    runRecord = BaseRunRecord.readRunRecord()
+    runRecord = BaseRunRecord.readFromDisk()
     if runRecord is None:
-        runRecord = BaseRunRecord.BaseRunRecord()
+        runRecord = BaseRunRecord.RunRecord()
     runRecord.common_iter_count += 1
     while not finish:
         try:

@@ -55,7 +55,7 @@ class MyMobileNet(nn.Module):
         nn.Module.__init__(self)
         # type:torchvision.models.MobileNetV2
         moblieNet = torchvision.models.mobilenet_v2(pretrained=False)
-        moblieNet.load_state_dict(torch.load(r'E:\重要_dataset_model\预训练模型\mobilenet_v2-b0353104.pth'))
+        moblieNet.load_state_dict(torch.load(path.join(common_dataset.dataset_dir, r'预训练模型\mobilenet_v2-b0353104.pth'))
         self.slice1 = moblieNet.features[:1]
         self.slice2 = moblieNet.features[1:2]
         self.slice3 = moblieNet.features[2:4]
