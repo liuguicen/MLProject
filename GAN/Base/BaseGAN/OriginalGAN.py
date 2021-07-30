@@ -30,15 +30,14 @@ class Config:
     输入生成器的尺寸
     '''
     # input_w = 10
-    input_w = 10
+    input_w = 4
     # 生成器每一层尺寸
-    # layers = [4 * 4, 7 * 7, 14 * 14, 28 * 28]
-    layers = [input_w * input_w, 128, 256, 512, 1024, 784]
+    layers = [4 * 4, 7 * 7, 14 * 14, 28 * 28]
+    # layers = [input_w * input_w, 128, 256, 512, 1024, 784]
     '''
     判别器每一层的深度
     '''
     depth = [8, 16, 32]
-
 
 
 from CommonModels import NormalConvLayer
@@ -203,7 +202,9 @@ def train():
 
             if iter % Config.checkPointCount == 0:
                 # torchvision.utils.save_image(image[0:8], f'{runRecord.tes_res_dir}/{epoch}_{iter}_real.jpg')
-
+                if epoch == 13:
+                    for p in G.parameters():
+                        print(p.grad)
                 testOut = G(test_z)
                 torchvision.utils.save_image(testOut, f'{runRecord.tes_res_dir}/{epoch}_{iter}_generate.jpg')
                 runRecord.saveRunRecord(epoch, iter)

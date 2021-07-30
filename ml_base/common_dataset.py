@@ -9,8 +9,10 @@ import gzip
 
 import torch.utils.data
 from torchvision import transforms
+
 dataset_dir = 'E:\重要_dataset_model_数据集'
 from os import path
+from torchvision import datasets
 
 wikiartPath = path.join(dataset_dir, r'\wikiart\train')
 animatePath = path.join(dataset_dir, r'l\动画漫画\动画漫画')
@@ -18,7 +20,31 @@ cocoPath = path.join(dataset_dir, r'l\COCO\train2014')
 
 ministTransforms = transforms.Normalize((0.1307,), (0.3081,))
 
+
+def getMinistDataLoader():
+    '''
+    使用Pytorch自带的方式加载
+    '''
+    dataloader = torch.utils.data.DataLoader(
+        datasets.MNIST(
+            os.path.join(dataset_dir, 'MNIST'),
+            train=True,
+            download=True,
+            transform=transforms.Compose(
+                [transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
+            ),
+        ),
+        batch_size=64,
+        shuffle=True,
+    )
+    return dataloader
+
+
 class Minist(torch.utils.data.Dataset):
+    '''
+    返回的归一化到-1-1的minist数据
+    '''
+
     def load_data(self, dir, isTest: bool = False):
         self.isTest = isTest
         files = [
