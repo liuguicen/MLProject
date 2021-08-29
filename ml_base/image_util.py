@@ -114,6 +114,8 @@ def seeTensorIm(tensorIm):
     plt.imshow(im)
     plt.show()
 
+def showImage(im: np.ndarray):
+    imShow(im)
 
 def imShow(im: np.ndarray):
     plt.figure("  ")
