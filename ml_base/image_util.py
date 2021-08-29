@@ -49,12 +49,12 @@ def transparence2white(img: np.ndarray):
     return img
 
 
-def cv_imread_CN(image_path):
+def cv_imread_CN(image_path, cv2_im_read_mode=-1):
     '''
     读取中文路径下的图片
     支持透明通道
     '''
-    img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), -1)
+    img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2_im_read_mode)
     return img
 
 
@@ -73,11 +73,13 @@ def cv_save_image_CN(save_path, img):
     tail = os.path.splitext(save_path)[1]
     cv2.imencode(tail, img)[1].tofile(save_path)
 
+
 def saveImageNdArray(path, imgArr):
     dir = os.path.dirname(path)
     FileUtil.mkdir(dir)
     im = Image.fromarray(imgArr)
     im.save(path)
+
 
 def black2Alpha(img):
     w, h = img.shape[0], img.shape[1]
