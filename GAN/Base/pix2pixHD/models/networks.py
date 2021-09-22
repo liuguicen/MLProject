@@ -432,7 +432,7 @@ class Vgg19(torch.nn.Module):
     def __init__(self, requires_grad=False):
         super(Vgg19, self).__init__()
         vgg_module = models.vgg19(pretrained=False)
-        vgg_module.load_state_dict(torch.load(r'F:\重要_data_set__big_size\预训练模型\vgg19-dcbb9e9d.pth'))
+        vgg_module.load_state_dict(torch.load(path.join(common_dataset.dataset_dir, r'\预训练模型\vgg19-dcbb9e9d.pth'))
         vgg_pretrained_features = vgg_module.features
 
         self.slice1 = torch.nn.Sequential()

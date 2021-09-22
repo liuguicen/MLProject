@@ -108,7 +108,7 @@ def tensorToRgbArray(imTensor):
     return out
 
 
-def seeTensorIm(tensorIm):
+def showTensorIm(tensorIm):
     im = tensorToRgbArray(tensorIm)
     plt.figure("  ")
     plt.imshow(im)
