@@ -10,7 +10,7 @@ import gzip
 import torch.utils.data
 from torchvision import transforms
 
-dataset_dir = 'E:\重要_dataset_model_数据集'
+dataset_dir = 'E:\dataset'
 from os import path
 from torchvision import datasets
 
