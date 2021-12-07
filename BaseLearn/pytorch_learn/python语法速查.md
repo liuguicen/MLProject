@@ -139,7 +139,8 @@ transforms.ToTensor()(x)
 注意父类成员和之类成员之间的继承关系
 - Python里面的继承只会继承类成员，不会继承实例成员。
 - Python不主动调用父类初始化，要手动调用，方式如下
-1、super().__init__(不要self的其它参数)
+1、super().__init__(处理self的其它参数)
+
 还有两种语法规定的形式，难以理解，不管它
 2、父类名.__init__(self,其它参数)
 3、super(子类名, self).__init__()
