@@ -1,0 +1,2 @@
+TransGAN:Two Transformers Can Make One Strong GAN
+最近在Transformer上的探索表明，transformer已经证明了它成为**计算机视觉任务的强力的通用模型**的潜力。例如分类，检测和分割。但是，transformer能走多远，他准备好解决一些著名的计算机视觉领域的问题吗，比如GAN。受这个好奇的推动，我们实施了第一个完全不使用CNN的纯Transformer架构的GAN的研究。组成是内存友好的基于transformer的生成器。减少嵌入维度的同时渐进的增长特征尺寸，一个分块的判别器也是基于transformer的。我们展示了TransGAN能显著的从数据增强中收益（比标准GAN多）。
