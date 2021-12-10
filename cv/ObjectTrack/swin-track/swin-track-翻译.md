@@ -72,7 +72,7 @@ In order to improve [1] in dealing with scale variation, the method of [26] inco
 2.3. Transformer in Visual Tracking
 Several Transformer based trackers have been proposed. [7] [41] [18] are the very first works that introduce the Transformer architecture to the visual object tracking. [7] propose the ECA and CFA modules. The modules replace the traditional correlation operation with cross attention. [41] improves the Siamese matching and DiMP based tracking frameworks by Transformer enhanced template features and search features. [44] explores the Spatiotemporal Transformer by integrating the model updating operations into a Transformer module.
 目前已经提出了几种基于Transformer的跟踪器。[7][41][18]是第一批将Transformer架构引入视觉对象跟踪的作品。[7]提出了ECA和CFA模块。**这些模块用交叉注意力取代了传统的关联操作。**[41]通过Transformer增强的模板特性和搜索特性，改进了基于孪生匹配和DiMP的跟踪框架。[44]通过将模型更新操作集成到一个Transformer模块中来探索时空Transformer。
-
+![img_1.png](img_1.png)
  3 Swin Transformer Tracking
  3.1. Overview
 Our tracker is based on the Siamese network architecture [4], as shown in 2. Four main components comprise our fully attentional tracker: the Swin-Transformer backbone, the attentional encoder-decoder network, positional encoding, and the head network. 
