@@ -73,7 +73,7 @@ Put the tracking datasets in ./data. It should look like:
 ## Set project paths
 Run the following command to set paths for this project
 ```
-python tracking/create_default_local_file.py --workspace_dir . --data_dir ./data --save_dir .
+python tracking/create_default_local_file.py --workspace_dir . --data_dir /E/dataset/ObjectTracking --save_dir .
 ```
 After running this command, you can also modify paths by editing these two files
 ```

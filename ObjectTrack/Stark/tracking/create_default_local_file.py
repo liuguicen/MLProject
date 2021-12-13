@@ -16,7 +16,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    workspace_dir = os.path.realpath(args.workspace_dir)
+    workspace_dir = os.path.dirname(os.path.realpath(args.workspace_dir))
     data_dir = os.path.realpath(args.data_dir)
     save_dir = os.path.realpath(args.save_dir)
     create_default_local_file_ITP_train(workspace_dir, data_dir)

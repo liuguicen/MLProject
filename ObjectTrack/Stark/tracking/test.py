@@ -55,6 +55,7 @@ def main():
     run_tracker(args.tracker_name, args.tracker_param, args.runid, args.dataset_name, seq_name, args.debug,
                 args.threads, num_gpus=args.num_gpus)
 
-
+# 参数
+# stark_st baseline --dataset lasot --threads 0
 if __name__ == '__main__':
     main()
