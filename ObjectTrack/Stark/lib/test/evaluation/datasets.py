@@ -2,6 +2,7 @@ from collections import namedtuple
 import importlib
 from lib.test.evaluation.data import SequenceList
 
+# 类似dict 但是可以以属性的方式设置和访问数据
 DatasetInfo = namedtuple('DatasetInfo', ['module', 'class_name', 'kwargs'])
 
 pt = "lib.test.evaluation.%sdataset"  # Useful abbreviations to reduce the clutter
@@ -29,6 +30,9 @@ def load_dataset(name: str):
         raise ValueError('Unknown dataset \'%s\'' % name)
 
     m = importlib.import_module(dset_info.module)
+    # 获取m的属性，这个属性是一个数据集类的类对象，调用它的构造方法创建对应数据集类的对像,比如下面的
+    from lib.test.evaluation import lasotdataset
+    # type: lasotdataset
     dataset = getattr(m, dset_info.class_name)(**dset_info.kwargs)  # Call the constructor
     return dataset.get_sequence_list()
 

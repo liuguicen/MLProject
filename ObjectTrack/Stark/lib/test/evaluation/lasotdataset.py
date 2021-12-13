@@ -15,10 +15,12 @@ class LaSOTDataset(BaseDataset):
 
     Download the dataset from https://cis.temple.edu/lasot/download.html
     """
+
     def __init__(self):
         super().__init__()
         self.base_path = self.env_settings.lasot_path
         self.sequence_list = self._get_sequence_list()
+        '''应该是每个视频的类别名字'''
         self.clean_list = self.clean_seq_list()
 
     def clean_seq_list(self):
@@ -26,15 +28,18 @@ class LaSOTDataset(BaseDataset):
         for i in range(len(self.sequence_list)):
             cls, _ = self.sequence_list[i].split('-')
             clean_lst.append(cls)
-        return  clean_lst
+        return clean_lst
 
     def get_sequence_list(self):
         return SequenceList([self._construct_sequence(s) for s in self.sequence_list])
 
     def _construct_sequence(self, sequence_name):
+        '''
+        顾名思义，构造序列，就是构造用于模型处理的视频的序列数据对象，序列中的元素以视频帧为中心，包含相关的各种信息，如帧路径，对象框位置，对象是否消失等信息
+        '''
         class_name = sequence_name.split('-')[0]
         anno_path = '{}/{}/{}/groundtruth.txt'.format(self.base_path, class_name, sequence_name)
-
+        # 目标框以文本的形式，按行排列，直接加载进来
         ground_truth_rect = load_text(str(anno_path), delimiter=',', dtype=np.float64)
 
         occlusion_label_path = '{}/{}/{}/full_occlusion.txt'.format(self.base_path, class_name, sequence_name)
@@ -49,7 +54,8 @@ class LaSOTDataset(BaseDataset):
 
         frames_path = '{}/{}/{}/img'.format(self.base_path, class_name, sequence_name)
 
-        frames_list = ['{}/{:08d}.jpg'.format(frames_path, frame_number) for frame_number in range(1, ground_truth_rect.shape[0] + 1)]
+        frames_list = ['{}/{:08d}.jpg'.format(frames_path, frame_number) for frame_number in
+                       range(1, ground_truth_rect.shape[0] + 1)]
 
         target_class = class_name
         return Sequence(sequence_name, frames_list, 'lasot', ground_truth_rect.reshape(-1, 4),
@@ -140,27 +146,27 @@ class LaSOTDataset(BaseDataset):
             #              'guitar-8',
             #              'guitar-10',
             #              'guitar-16',
-        'person-1',
-        'person-2',
-        'person-3',
-        'person-4',
-        'person-5',
-        'person-6',
-        'person-7',
-        'person-8',
-        'person-9',
-        'person-10',
-        'person-11',
-        'person-12',
-        'person-13',
-        'person-14',
-        'person-15',
-        'person-16',
-        'person-17',
-        'person-18',
-        'person-19',
-        'person-20',
-        #              'pig-2',
+            'person-1',
+            'person-2',
+            'person-3',
+            'person-4',
+            'person-5',
+            'person-6',
+            'person-7',
+            'person-8',
+            'person-9',
+            'person-10',
+            'person-11',
+            'person-12',
+            'person-13',
+            'person-14',
+            'person-15',
+            'person-16',
+            'person-17',
+            'person-18',
+            'person-19',
+            'person-20',
+            #              'pig-2',
             #              'pig-10',
             #              'pig-13',
             #              'pig-18',
@@ -356,5 +362,5 @@ class LaSOTDataset(BaseDataset):
             #              'volleyball-13',
             #              'volleyball-18',
             #              'volleyball-19'
-                     ]
+        ]
         return sequence_list

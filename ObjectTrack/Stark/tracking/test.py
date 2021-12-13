@@ -25,7 +25,7 @@ def run_tracker(tracker_name, tracker_param, run_id=None, dataset_name='otb', se
     """
 
     dataset = get_dataset(dataset_name)
-
+    # 代码读到这里，2021.12.14
     if sequence is not None:
         dataset = [dataset[sequence]]
 
@@ -36,12 +36,15 @@ def run_tracker(tracker_name, tracker_param, run_id=None, dataset_name='otb', se
 
 def main():
     parser = argparse.ArgumentParser(description='Run tracker on sequence or dataset.')
+    # 文中提到几种模型：只有空间信息的基线模型，包含时空信息的模型，骨干网络也可以选择不同的，比如resnet50，resnet101
     parser.add_argument('tracker_name', type=str, help='Name of tracking method.')
     parser.add_argument('tracker_param', type=str, help='Name of config file.')
     parser.add_argument('--runid', type=int, default=None, help='The run id.')
-    parser.add_argument('--dataset_name', type=str, default='otb', help='Name of dataset (otb, nfs, uav, tpl, vot, tn, gott, gotv, lasot).')
+    parser.add_argument('--dataset_name', type=str, default='otb',
+                        help='Name of dataset (otb, nfs, uav, tpl, vot, tn, gott, gotv, lasot).')
     parser.add_argument('--sequence', type=str, default=None, help='Sequence number or name.')
     parser.add_argument('--debug', type=int, default=0, help='Debug level.')
+    # 这里实际上是进程
     parser.add_argument('--threads', type=int, default=0, help='Number of threads.')
     parser.add_argument('--num_gpus', type=int, default=8)
 
@@ -54,6 +57,7 @@ def main():
 
     run_tracker(args.tracker_name, args.tracker_param, args.runid, args.dataset_name, seq_name, args.debug,
                 args.threads, num_gpus=args.num_gpus)
+
 
 # 参数
 # stark_st baseline --dataset lasot --threads 0

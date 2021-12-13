@@ -31,6 +31,7 @@ class Sequence:
         self.target_visible = target_visible
         self.object_ids = object_ids
         self.multiobj_mode = multiobj_mode
+        '''这个是处理的帧的位置'''
         self.init_data = self._construct_init_data(init_data)
         self._ensure_start_frame()
 
@@ -54,6 +55,9 @@ class Sequence:
             self.init_data = {frame-start_frame: val for frame, val in self.init_data.items()}
 
     def _construct_init_data(self, init_data):
+        '''
+        就是把第一帧的数据放到dict中
+        '''
         if init_data is not None:
             if not self.multiobj_mode:
                 assert self.object_ids is None or len(self.object_ids) == 1
