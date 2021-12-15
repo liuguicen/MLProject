@@ -2,7 +2,8 @@ from _collections import OrderedDict
 
 
 class BaseTracker:
-    """Base class for all trackers."""
+    """Base class for all trackers.
+    跟踪器基础类，里面没什么特别的内容"""
 
     def __init__(self, params):
         self.params = params

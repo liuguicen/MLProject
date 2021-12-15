@@ -60,6 +60,6 @@ def main():
 
 
 # 参数
-# stark_st baseline --dataset lasot --threads 0
+# stark_st baseline --dataset lasot --debug 1 --threads 0
 if __name__ == '__main__':
     main()

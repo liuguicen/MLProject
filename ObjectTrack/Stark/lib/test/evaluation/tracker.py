@@ -26,6 +26,7 @@ def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids = Non
 
 class Tracker:
     """Wraps the tracker for evaluation and running purposes.
+    跟踪器的包装类，方便评估和运行跟踪器
     args:
         name: Name of tracking method.
         parameter_name: Name of parameter file.
