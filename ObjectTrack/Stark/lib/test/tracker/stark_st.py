@@ -43,6 +43,9 @@ class STARK_ST(BaseTracker):
         self.num_extra_template = len(self.update_intervals)
 
     def initialize(self, image, info: dict):
+        '''
+        初始化，截取目标区域图像，输入backbone，获取特征，并设置好位置编码
+        '''
         # initialize z_dict_list
         self.z_dict_list = []
         # get the 1st template
@@ -67,7 +70,7 @@ class STARK_ST(BaseTracker):
     def track(self, image, info: dict = None):
         H, W, _ = image.shape
         self.frame_id += 1
-        # get the t-th search region
+        # get the t-th search region 搜索区域是目标区域面积的search_factor^2 = 5^2倍，然后缩放到search_size = 320*320大小
         x_patch_arr, resize_factor, x_amask_arr = sample_target(image, self.state, self.params.search_factor,
                                                                 output_sz=self.params.search_size)  # (x1, y1, w, h)
         search = self.preprocessor.process(x_patch_arr, x_amask_arr)

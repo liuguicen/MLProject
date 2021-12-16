@@ -80,7 +80,7 @@ class BackboneBase(nn.Module):
         self.num_channels = num_channels
 
     def forward(self, tensor_list: NestedTensor):
-        xs = self.body(tensor_list.tensors)
+        xs = self.body(tensor_list.tensors) # 变成了 batch_size * n * 8 * 8的尺寸了
         out: Dict[str, NestedTensor] = {}
         for name, x in xs.items():
             m = tensor_list.mask
@@ -130,12 +130,12 @@ class Joiner(nn.Sequential):
         super().__init__(backbone, position_embedding)
 
     def forward(self, tensor_list: NestedTensor, mode=None):
-        xs = self[0](tensor_list)
+        xs = self[0](tensor_list) # 先运行backbone 位置就是上面的basebackbone
         out: List[NestedTensor] = []
         pos = []
         for name, x in xs.items():
             out.append(x)
-            # position encoding
+            # position encoding 再进行位置编码
             pos.append(self[1](x).to(x.tensors.dtype))
 
         return out, pos

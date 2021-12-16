@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 """
+杂项功能
 Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.

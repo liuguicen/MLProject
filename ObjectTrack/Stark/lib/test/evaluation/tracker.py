@@ -119,6 +119,9 @@ class Tracker:
         image = self._read_image(seq.frames[0])
 
         start_time = time.time()
+        from lib.test.tracker import stark_st
+        # type:stark_st.STARK_ST.initialize()
+        # 等
         out = tracker.initialize(image, init_info)
         if out is None:
             out = {}

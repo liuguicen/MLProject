@@ -77,6 +77,7 @@ class Transformer(nn.Module):
         :param feat: (H1W1+H2W2, bs, C)
         :param mask: (bs, H1W1+H2W2)
         :param query_embed: (N, C) or (N, B, C)
+        todo decoder的输入，来自于一个嵌入层的参数，但是为什么是这样，不知道
         :param pos_embed: (H1W1+H2W2, bs, C)
         :param mode: run the whole transformer or encoder only
         :param return_encoder_output: whether to return the output of encoder (together with decoder)
@@ -119,6 +120,7 @@ class TransformerEncoder(nn.Module):
                 src_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
                 return_intermediate=False):
+        print('编码器 forward')
         if return_intermediate:
             output_list = []
             output = src
@@ -135,12 +137,12 @@ class TransformerEncoder(nn.Module):
         else:
             output = src
 
-            for layer in self.layers:
+            for layer in self.layers: # 就是一层一层的传递就完事儿了
                 output = layer(output, src_mask=mask,
                                src_key_padding_mask=src_key_padding_mask, pos=pos)
 
             if self.norm is not None:
-                output = self.norm(output)
+                output = self.norm(output) # 加上一个norm
 
             return output
 
@@ -178,6 +180,7 @@ class TransformerEncoderLite(nn.Module):
 class TransformerDecoder(nn.Module):
 
     def __init__(self, decoder_layer, num_layers, norm=None, return_intermediate=False):
+        # 直接克隆完全一样的layer形成编码器，解码器
         super().__init__()
         self.layers = _get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
@@ -191,6 +194,12 @@ class TransformerDecoder(nn.Module):
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
                 query_pos: Optional[Tensor] = None):
+        '''
+        tgt 解码器自身的输入
+        memory 编码器的输入
+
+        '''
+        print("进入decode的forward")
         output = tgt
 
         intermediate = []
@@ -221,8 +230,10 @@ class TransformerEncoderLayer(nn.Module):
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1,
                  activation="relu", normalize_before=False, divide_norm=False):
         super().__init__()
+        # 这里还挺简单，直接使用pytorch的多头自注意力类就完事儿了，注意这个不需要固定输入序列长度，也就是输入序列任意长度的向量都行
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
+        # 输出维度没有变化，
         self.linear1 = nn.Linear(d_model, dim_feedforward)
         self.dropout = nn.Dropout(dropout)
         self.linear2 = nn.Linear(dim_feedforward, d_model)
@@ -239,13 +250,14 @@ class TransformerEncoderLayer(nn.Module):
         self.scale_factor = float(d_model // nhead) ** 0.5
 
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
-        return tensor if pos is None else tensor + pos
+        return tensor if pos is None else tensor + pos # 如论文所述，直接加上就完事儿了
 
     def forward_post(self,
                      src,
                      src_mask: Optional[Tensor] = None,
                      src_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None):
+        print("进入transform编码器的一个block")
         q = k = self.with_pos_embed(src, pos)  # add pos to src
         if self.divide_norm:
             # print("encoder divide by norm")
@@ -255,9 +267,11 @@ class TransformerEncoderLayer(nn.Module):
                               key_padding_mask=src_key_padding_mask)[0]
         src = src + self.dropout1(src2)
         src = self.norm1(src)
+        # 标准的sa，然后相加，在norm
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
         src = src + self.dropout2(src2)
         src = self.norm2(src)
+        # 也是标准linear，然后相加，再norm
         return src
 
     def forward_pre(self, src,
@@ -346,9 +360,12 @@ class TransformerEncoderLayerLite(nn.Module):
 
 
 class TransformerDecoderLayer(nn.Module):
-
+    '''
+    解码器的层
+    '''
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1,
                  activation="relu", normalize_before=False, divide_norm=False):
+        print("创建解码器的层")
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
@@ -380,6 +397,12 @@ class TransformerDecoderLayer(nn.Module):
                      memory_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None,
                      query_pos: Optional[Tensor] = None):
+        '''
+          tgt 解码器自身的输入
+            memory 编码器的输入
+        '''
+        print('进入解码器的forward')
+        # 先经过一个sa层
         # self-attention
         q = k = self.with_pos_embed(tgt, query_pos)  # Add object query to the query and key
         if self.divide_norm:
@@ -389,6 +412,8 @@ class TransformerDecoderLayer(nn.Module):
                               key_padding_mask=tgt_key_padding_mask)[0]
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
+        # 然后是cross attention
+        # todo 这里的层的输入为什么还要做位置嵌入
         # mutual attention
         queries, keys = self.with_pos_embed(tgt, query_pos), self.with_pos_embed(memory, pos)
         if self.divide_norm:

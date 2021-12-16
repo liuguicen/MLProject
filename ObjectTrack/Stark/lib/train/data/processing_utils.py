@@ -10,7 +10,10 @@ Add a variable called att_mask for computing attention and positional encoding l
 
 
 def sample_target(im, target_bb, search_area_factor, output_sz=None, mask=None):
-    """ Extracts a square crop centered at target_bb box, of area search_area_factor^2 times target_bb area
+    """
+    提取目标区域
+    注意提取的是以目标区域中心为中心的，面积为目标区域面积 search_area_factor^2 倍的区域，并不是目标区域，也不是目标区域缩放
+    Extracts a square crop centered at target_bb box, of area search_area_factor^2 times target_bb area
 
     args:
         im - cv image
@@ -21,6 +24,7 @@ def sample_target(im, target_bb, search_area_factor, output_sz=None, mask=None):
     returns:
         cv image - extracted crop
         float - the factor by which the crop has been resized to make the crop size equal output_size
+        cv image 获取目标区域时超出边界的，用true表示，没有的就是false
     """
     if not isinstance(target_bb, list):
         x, y, w, h = target_bb.tolist()
@@ -49,7 +53,7 @@ def sample_target(im, target_bb, search_area_factor, output_sz=None, mask=None):
     if mask is not None:
         mask_crop = mask[y1 + y1_pad:y2 - y2_pad, x1 + x1_pad:x2 - x2_pad]
 
-    # Pad
+    # Pad,超出边界的区域用copyMakeBorder填充
     im_crop_padded = cv.copyMakeBorder(im_crop, y1_pad, y2_pad, x1_pad, x2_pad, cv.BORDER_CONSTANT)
     # deal with attention mask
     H, W, _ = im_crop_padded.shape
@@ -59,7 +63,7 @@ def sample_target(im, target_bb, search_area_factor, output_sz=None, mask=None):
         end_y = None
     if x2_pad == 0:
         end_x = None
-    att_mask[y1_pad:end_y, x1_pad:end_x] = 0
+    att_mask[y1_pad:end_y, x1_pad:end_x] = 0 # 这个att_mask 就是copyMakeBorder填充到的区域值为1
     if mask is not None:
         mask_crop_padded = F.pad(mask_crop, pad=(x1_pad, x2_pad, y1_pad, y2_pad), mode='constant', value=0)
 

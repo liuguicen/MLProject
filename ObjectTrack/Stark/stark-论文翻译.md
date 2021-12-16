@@ -146,13 +146,13 @@ The feature maps output from the backbone require pre-processing before feeding 
 从主干网输出的特征映射在输入编码器之前需要进行预处理。   
 To be specific, a bottleneck layer is first used to reduce the channel number from C to d.  
 具体来说，首先使用瓶颈层将通道数从C减少到d。  
-Then the feature maps are flattened and concatenated along the spatial dimension, pro-ducing a feature sequence with length of   +  and dimension of d,  which  servers  as the input for the transformer encoder.
-然后将特征图沿空间维度（就是长宽维度）扁平连接，得到一个长度为HzsWzs+HxsWxs、通道数量为d的特征序列，作为transformer编码器的输入。
+Then the feature maps are flattened and concatenated along the spatial dimension, pro-ducing a feature sequence with length of $H _z/s * W_z / s + H_x/s * W_x/s$  and dimension of d,  which  servers  as the input for the transformer encoder.
+然后将特征图沿空间维度（就是长宽维度）扁平连接，得到一个长度为 $H _z/s * W_z / s + H_x/s * W_x/s$ 、通道数量为d的特征序列，作为transformer编码器的输入。
 
 The encoder consists of N encoder layers,  each of which is made up of a multi-head  self-attention module with a feed-forward network. 
 编码器由N个编码器层组成，每个层由具有前馈网络多头自注意力组成。 
 Due to the permutation-invariance of the original transformer [53], we add sinusoidal positional embeddings to the input sequence.   
-由于对原变压器[53]的排列不变性，我们向输入序列添加正弦位置嵌入。（这个就是最原始的attention is all you need提出的位置编码方法）
+由于对原变压器[53]的排列不变性，我们向输入序列添加正弦位置嵌入。（这个原理上就是最原始的attention is all you need提出的位置编码方法）
 The encoder captures the feature dependencies among all elements in the sequence and reinforces the original features with global contextual information, thus allowing the model to learn discriminative features for object localization.  
 编码器捕获序列中所有元素之间的特征依赖性，并使用全局上下文信息强化原始特征，从而允许模型学习用于对象定位的有判别力的特征。
 

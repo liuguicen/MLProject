@@ -49,9 +49,10 @@ class STARKS(nn.Module):
         """The input type is NestedTensor, which consists of:
                - tensor: batched images, of shape [batch_size x 3 x H x W]
                - mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+            返回  特征，mask，pos编码的形状
         """
         assert isinstance(input, NestedTensor)
-        # Forward the backbone
+        # Forward the backbone 输出的是特征和位置编码
         output_back, pos = self.backbone(input)  # features & masks, position embedding for the search
         # Adjust the shapes
         return self.adjust(output_back, pos)
@@ -93,12 +94,14 @@ class STARKS(nn.Module):
 
     def adjust(self, output_back: list, pos_embed: list):
         """
+        设置特征，mask，pos编码的形状
         """
         src_feat, mask = output_back[-1].decompose()
         assert mask is not None
         # reduce channel
         feat = self.bottleneck(src_feat)  # (B, C, H, W)
         # adjust shapes
+        # todo 为什么是hw* batch * c的形状排列
         feat_vec = feat.flatten(2).permute(2, 0, 1)  # HWxBxC
         pos_embed_vec = pos_embed[-1].flatten(2).permute(2, 0, 1)  # HWxBxC
         mask_vec = mask.flatten(1)  # BxHW

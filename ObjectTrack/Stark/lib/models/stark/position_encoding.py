@@ -29,6 +29,12 @@ class PositionEmbeddingSine(nn.Module):
         mask = tensor_list.mask
         assert mask is not None
         not_mask = ~mask # (b,h,w)
+        # Returns the cumulative sum of elements of input in the dimension dim.
+        # 返回输入中维度 dim 中元素的累积和。
+        # For example, if input is a vector of size N,
+        # the result will also be a vector of size N, with elements.
+        # 例如，如果输入是大小为 n 的向量，那么结果也将是大小为 n 的向量，包含个元素。
+        # y_i = x_1 + x_2 + x_3 + .... + x_i
         y_embed = not_mask.cumsum(1, dtype=torch.float32)  # cumulative sum along axis 1 (h axis) --> (b, h, w)
         x_embed = not_mask.cumsum(2, dtype=torch.float32)  # cumulative sum along axis 2 (w axis) --> (b, h, w)
         if self.normalize:
@@ -44,6 +50,8 @@ class PositionEmbeddingSine(nn.Module):
         pos_x = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).flatten(3) # (b,h,w,d/2)
         pos_y = torch.stack((pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4).flatten(3) # (b,h,w,d/2)
         pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)  # (b,h,w,d)
+        # todo 图片的编码方式和一维序列不同，还涉及到mask，会用mask累加，原理在哪儿，怎么解锁
+        # todo 这里编码是吧x和y直接加起来的，为什么呢？？
         return pos
 
 
