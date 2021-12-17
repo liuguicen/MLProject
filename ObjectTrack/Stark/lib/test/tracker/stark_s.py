@@ -70,7 +70,7 @@ class STARK_S(BaseTracker):
         if self.debug:
             x1, y1, w, h = self.state
             image_BGR = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            cv2.rectangle(image_BGR, (int(x1),int(y1)), (int(x1+w),int(y1+h)), color=(0,0,255), thickness=2)
+            cv2.rectangle(image_BGR, (int(x1), int(y1)), (int(x1 + w), int(y1 + h)), color=(0, 0, 255), thickness=2)
             save_path = os.path.join(self.save_dir, "%04d.jpg" % self.frame_id)
             cv2.imwrite(save_path, image_BGR)
         if self.save_all_boxes:
@@ -92,7 +92,7 @@ class STARK_S(BaseTracker):
 
     def map_box_back_batch(self, pred_box: torch.Tensor, resize_factor: float):
         cx_prev, cy_prev = self.state[0] + 0.5 * self.state[2], self.state[1] + 0.5 * self.state[3]
-        cx, cy, w, h = pred_box.unbind(-1) # (N,4) --> (N,)
+        cx, cy, w, h = pred_box.unbind(-1)  # (N,4) --> (N,)
         half_side = 0.5 * self.params.search_size / resize_factor
         cx_real = cx + (cx_prev - half_side)
         cy_real = cy + (cy_prev - half_side)

@@ -172,5 +172,30 @@ m(参数)
 
 # dict
 a.update(b) # 把b的键值对更新到a中
+python字典遍历的几种方法
+（1）遍历key值
+a = {'a': '1', 'b': '2', 'c': '3'}
+>>> for key in a:
+print(key+':'+a[key])
+a:1
+b:2
+c:3
+默认遍历的是key
+>>> for key in a.keys():
+print(key+':'+a[key])
 
+（2）遍历value值
+>>> for value in a.values():
+print(value)
+（3）遍历字典项
+>>> for kv in a.items():
+print(kv)
+('a', '1')
+('b', '2')
+('c', '3')
+（4）遍历字典健值
+>>> for key,value in a.items():
+print(key+':'+value)
+
+ 
 小技巧:

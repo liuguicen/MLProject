@@ -36,6 +36,7 @@ class Tracker:
 
     def __init__(self, name: str, parameter_name: str, dataset_name: str, run_id: int = None, display_name: str = None,
                  result_only=False):
+        print('开始创建跟踪器包装类对象')
         assert run_id is None or isinstance(run_id, int)
 
         self.name = name
@@ -55,7 +56,9 @@ class Tracker:
         tracker_module_abspath = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                               '..', 'tracker', '%s.py' % self.name))
         if os.path.isfile(tracker_module_abspath):
+            # 这里是用来确定使用那种tracker 这里包含了两级分类
             tracker_module = importlib.import_module('lib.test.tracker.{}'.format(self.name))
+            # 第二级分类的
             self.tracker_class = tracker_module.get_tracker_class()
         else:
             self.tracker_class = None
@@ -72,7 +75,7 @@ class Tracker:
             debug: Set debug level (None means default value specified in the parameters).
             multiobj_mode: Which mode to use for multiple objects.
         """
-        params = self.get_parameters()
+        params = self.get_parameters()  # 获取跟踪器的配置参数， 不是模型权重参数
 
         debug_ = debug
         if debug is None:
@@ -80,7 +83,7 @@ class Tracker:
 
         params.debug = debug_
 
-        # Get init information
+        # Get init information 就是第一帧信息什么的
         init_info = seq.init_info()
 
         tracker = self.create_tracker(params)

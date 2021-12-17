@@ -161,7 +161,7 @@ def run_dataset(dataset, trackers, debug=False, threads=0, num_gpus=8):
         debug: Debug level.
         threads: Number of threads to use (default 0).
     """
-    multiprocessing.set_start_method('spawn', force=True)
+    multiprocessing.set_start_method('spawn', force=True) # python多进程中的一种模式
 
     print('Evaluating {:4d} trackers on {:5d} sequences'.format(len(trackers), len(dataset)))
 

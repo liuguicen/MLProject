@@ -239,6 +239,7 @@ class RepVGG(nn.Module):
         return nn.Sequential(*blocks)
 
     def forward(self, x):
+        print('repvgg forward')
         out = self.stage0(x)
         out = self.stage1(out)
         if self.last_layer != 'stage1':
