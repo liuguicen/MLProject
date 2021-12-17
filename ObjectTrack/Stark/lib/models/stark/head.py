@@ -55,6 +55,7 @@ class Corner_Predictor(nn.Module):
 
     def forward(self, x, return_dist=False, softmax=True):
         """ Forward pass with input x. """
+        print("corner预测头forward")
         score_map_tl, score_map_br = self.get_score_map(x)
         if return_dist:
             coorx_tl, coory_tl, prob_vec_tl = self.soft_argmax(score_map_tl, return_dist=True, softmax=softmax)
@@ -286,6 +287,7 @@ class MLP(nn.Module):
                                         for n, k in zip([input_dim] + h, h + [output_dim]))
 
     def forward(self, x):
+        print("分类网络 forward")
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x

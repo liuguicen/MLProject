@@ -73,7 +73,7 @@ class Transformer(nn.Module):
 
     def forward(self, feat, mask, query_embed, pos_embed, mode="all", return_encoder_output=False):
         """
-
+        整个transformer的forward
         :param feat: (H1W1+H2W2, bs, C)
         :param mask: (bs, H1W1+H2W2)
         :param query_embed: (N, C) or (N, B, C)
