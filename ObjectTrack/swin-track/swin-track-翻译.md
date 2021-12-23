@@ -18,7 +18,7 @@ Swin-Transformer employs a hierarchical window
 attention-based architecture to address two major challenges in the Transformer architecture:
 双Transformer采用基于分层窗口注意的架构来解决Transformer架构中的两个主要挑战：
  the variety of visual elements in scale and the high computational complexity on high-resolution images. Unlike the ViT family using a fixed-size feature map, Swin-Transformer builds the feature map by gradually merging neighbor patches from large to small.
-**高分辨率图像的尺度问题和高计算复杂度问题**，与使用固定大小的特征图的ViT家族不同，双Transformer通过逐步合并从大到小的邻居补丁来构建特征图。
+**高分辨率图像的尺度问题和高计算复杂度问题**，与使用固定大小的特征图的ViT家族不同，swin-Transformer通过逐步合并从大到小的邻居补丁来构建特征图。
 With hierarchical feature maps, traditional multiscale prediction techniques can be used to overcome the scaling problem. Besides, Swin-Transformer introduces a non-overlapping window partition operation. Self-attention computing is limited within the window. As a result, the computational complexity is greatly reduced. Furthermore, the partition windows are shifted periodically to bridge the windows in preceding layers.
 利用层次特征图，可以利用传统的多尺度预测来克服缩放问题。此外，Swin-Transformer引入了一个不重叠的窗口分区操作。Self-Attention计算仅限于窗口内。从而大大降低了计算复杂度。此外，分区窗口定期移动以桥接前一层中的窗口。
 The advantages of Transformer are widely acknowledged to be due to two factors [39]: 
