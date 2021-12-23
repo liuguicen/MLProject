@@ -19,6 +19,12 @@ class STARK_LightningXtrt(BaseTracker):
     def __init__(self, params, dataset_name):
         super(STARK_LightningXtrt, self).__init__(params)
         network = build_stark_lightning_x_trt(params.cfg, phase='test')
+        para = torch.load(self.params.checkpoint, map_location='cpu')['net']
+        p = 0
+        for k in para:
+            p += para[k].numel()
+        print("参数量 = ", p)
+        print("加载模型文件")
         network.load_state_dict(torch.load(self.params.checkpoint, map_location='cpu')['net'], strict=True)
         repvgg_model_convert(network)
         network.deep_sup = False  # disable deep supervision during the test stage
@@ -58,6 +64,7 @@ class STARK_LightningXtrt(BaseTracker):
             x_dict = self.network.forward_backbone(search, zx="search", mask=search_mask)
             # merge the template and the search
             feat_dict_list = [self.z_dict1, x_dict]
+            # todo qkv的获取方式和课程讲的不一样，直接获取的
             q, k, v, key_padding_mask = get_qkv(feat_dict_list)
             # run the transformer
             out_dict, _, _ = self.network.forward_transformer(q=q, k=k, v=v, key_padding_mask=key_padding_mask)
@@ -170,7 +177,7 @@ class STARK_LightningXtrt_onnx(BaseTracker):
 
 
 def get_tracker_class():
-    use_onnx = True
+    use_onnx = False
     if use_onnx:
         print("Using onnx model")
         return STARK_LightningXtrt_onnx

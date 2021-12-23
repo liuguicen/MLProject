@@ -85,6 +85,8 @@ class Backbone(nn.Module):
                 replace_stride_with_dilation=[False, dilation, False],
                 pretrained=is_main_process(), norm_layer=norm_layer, last_layer='layer3')
             self.num_channels = 256 if name in ('resnet18', 'resnet34') else 1024
+        # 参考https://blog.csdn.net/weixin_48249563/article/details/115030808
+        # 简单的说，这个网络的优势就是速度快  结构类似于VGG
         elif "RepVGG" in name:
             print("#" * 10 + "  Warning: Dilation is not valid in current code  " + "#" * 10)
             repvgg_func = get_RepVGG_func_by_name(name)

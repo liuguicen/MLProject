@@ -34,6 +34,7 @@ class STARKST(STARKS):
         if self.aux_loss:
             raise ValueError("Deep supervision is not supported.")
         # Forward the transformer encoder and decoder
+        # 返回的第二个值是编码器的输出
         output_embed, enc_mem = self.transformer(seq_dict["feat"], seq_dict["mask"], self.query_embed.weight,
                                                  seq_dict["pos"], return_encoder_output=True)
         # Forward the corner head
@@ -42,7 +43,7 @@ class STARKST(STARKS):
 
     def forward_head(self, hs, memory, run_box_head=False, run_cls_head=False):
         """
-        hs: output embeddings (1, B, N, C)
+        hs: output embeddings (1, B, N, C), 解码器的输出
         memory: encoder embeddings (HW1+HW2, B, C)"""
         out_dict = {}
         if run_cls_head:
@@ -50,6 +51,8 @@ class STARKST(STARKS):
             out_dict.update({'pred_logits': self.cls_head(hs)[-1]})
         if run_box_head:
             # forward the box prediction head
+            from lib.models.stark.head import Corner_Predictor
+            # type:Corner_Predictor
             out_dict_box, outputs_coord = self.forward_box_head(hs, memory)
             # merge results
             out_dict.update(out_dict_box)

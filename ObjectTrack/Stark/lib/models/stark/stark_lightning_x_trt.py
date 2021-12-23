@@ -55,7 +55,7 @@ class STARKLightningXtrt(nn.Module):
                - mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
         """
         assert isinstance(img, torch.Tensor)
-        """run the backbone"""
+        print("run the backbone")
         output_back = self.backbone(img)  # features & masks, position embedding for the search
         """get the positional encoding"""
         bs = img.size(0)  # batch size

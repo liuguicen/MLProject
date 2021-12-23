@@ -1,3 +1,6 @@
+Learning Spatio-Temporal Transformer for Visual Tracking
+
+
 Abstract
 本文提出了一种以编码器-解码器变压器为关键组成对象的新型跟踪体系结构。编码器对目标对象和搜索重复之间的全局时空特征依赖进行建模，解码器学习查询嵌入来预先预测目标对象的空间位置。我们的方法将对象跟踪转换为一个直接边界框预测问题，而不使用任何建议或预定义的条件。对于编码器-解码器变压器，对象的准备只需使用一个简单的全卷积网络工作，它可以直接估计对象的各个角。整个方法都是端到端的，不需要任何余弦窗口和边界框光滑化等后处理步骤，从而在很大程度上简化了现有的跟踪管道。所提出的跟踪器在多个具有挑战性的短期和长期基准测试上实现了最先进的性能，同时以实时速度运行，比SiamR-CNN[54]快6×。代码和模型在https://github.com/researchmm/Stark上都是开源的。
 
@@ -161,10 +164,27 @@ The decoder takes a target query and the en-hanced feature  sequence from the en
 解码器解码器从编码器中获取一个目标查询和被输入的特征序列作为输入。
 Different from DETR [5] adopting 100 object queries, we only input one single query into the decoder to predict one bounding box of the target object.  
 与采用100个对象查询的DETR[5]不同，我们只在解码器中输入一个查询来预测目标对象的一个边界框。Besides, since there is only one prediction, we remove the Hungarian algorithm [27] used in DETR for prediction association.  此外，由于只有一个预测，我们删除了DETR中用于预测关联的匈牙利算法[27]。Similar to the encoder, the decoder stacks M decoder layers, each of which consists of a self-attention, an encoder-decoder atten-tion, and a feed-forward network. 与编码器类似，解码器堆栈M个解码器层，每个层由一个自注意、一个编码器-解码器激活和一个前馈网络组成。 In the encoder-decoder attention module, the target query can attend to all positions on the template and the search region features, thus learning robust representations for the final bounding box prediction.在编码器-解码器注意模块中，目标查询可以关注模板上的所有位置和搜索区域特征，从而学习最终边界框预测的鲁棒表示。
-Head.   DETR  [5]  adopts  a three-layer perceptron to predict object box coordinates.   However,  as pointed by GFLoss [32], directly regressing the coordinates is equiv-alent to fitting a Dirac delta distribution, which fails to con-sider the ambiguity and uncertainty in the datasets.  然而，正如GFLoss[32]所指出的，直接回归坐标相当于拟合狄拉克分布，这并没有考虑到数据集中的模糊性和不确定性。This representation is not flexible and not robust to challenges such as occlusion and cluttered background in object tracking. 这种表示对于对象跟踪中的遮挡和杂乱背景等挑战不灵活且不鲁棒。 To improve the box estimation quality, we design a new prediction head through estimating the probability dis-tribution of the box corners.  为了提高box估计质量，通过估计框角的概率分配，设计了一种新的预测头。As shown in Fig. 3, we first take the search region features from the encoder’s output sequence, then compute the similarity between the search region features and the output embedding from the decoder. 如图3所示 首先从编码器的输出序列中获取搜索区域特征，然后计算搜索区域特征与解码器的输出嵌入的相似性。Next, the similarity scores are element-wisely multiplied with the search region features to enhance important regions and weaken the less discriminative ones. 接下来，将相似度得分逐元素的地与搜索区域特征相乘，以增强重要区域，削弱区分性较差的区域。 The new feature sequence is reshaped to a feature map f  , and then fed into a simple fully-convolutional network (FCN). 将新的特征序列重构为特征图f，然后输入一个简单的全卷积网络(FCN)。The FCN consists of L stacked Conv-BN-ReLU layers and outputs two probability maps Ptl(x,y) and Pbr(x,y) for the top-left and the bottom-right corners of object bound-ing boxes, respectively.  FCN由L个堆叠的Conv-BN-ReLU层组成，分别为对象绑定框的左上角和右下角输出两个概率映射Ptl(x、y)和Pbr(x、y)。Finally, the predicted box coordi-nates (l , l) and (r , r) are obtained by computing the expectation of corners’ probability distribution as shown in Eq. (2).  最后，通过如公式2所示的方式计算角概率分布的期望，得到预测的盒坐标(l、l)和(r、r)，Compared with DETR, our method explicitly models uncertainty in the coordinate estimation, generating more accurate and robust predictions for object tracking.与DETR相比，我们的方法明确地对坐标估计中的不确定性进行了建模，为目标跟踪产生了更准确和鲁棒的预测。
+## Head  
+DETR  [5]  adopts  a three-layer perceptron to predict object box coordinates.   However,  as pointed by GFLoss [32], directly regressing the coordinates is equiv-alent to fitting a Dirac delta distribution, which fails to con-sider the ambiguity and uncertainty in the datasets. This representation is not flexible and not robust to challenges such as occlusion and cluttered background in object tracking.
+然而，正如GFLoss[32]所指出的，直接回归坐标相当于拟合狄拉克分布，这并没有考虑到数据集中的模糊性和不确定性。  这种表示对于对象跟踪中的遮挡和杂乱背景等挑战不灵活且不鲁棒。    
+To improve the box estimation quality, we design a new prediction head through estimating the probability dis-tribution of the box corners.    
+为了提高box估计质量，通过估计框角的概率分配，设计了一种新的预测头。  
+
+As shown in Fig. 3, we first take the search region features from the encoder’s output sequence, then compute the similarity between the search region features and the output embedding from the decoder.   
+如图3所示 首先从编码器的输出序列中获取搜索区域特征，然后计算搜索区域特征与解码器的输出嵌入的相似性。  
+Next, the similarity scores are element-wisely multiplied with the search region features to enhance important regions and weaken the less discriminative ones.   
+接下来，将相似度得分逐元素的地与搜索区域特征相乘，以增强重要区域，削弱区分性较差的区域。   
+The new feature sequence is reshaped to a feature map f  , and then fed into a simple fully-convolutional network (FCN).   
+将新的特征序列重构为特征图f，然后输入一个简单的全卷积网络(FCN)。  
+The FCN consists of L stacked Conv-BN-ReLU layers and outputs two probability maps Ptl(x,y) and Pbr(x,y) for the top-left and the bottom-right corners of object bound-ing boxes, respectively.    
+FCN由L个堆叠的Conv-BN-ReLU层组成，分别为对象绑定框的左上角和右下角输出两个概率映射Ptl(x、y)和Pbr(x、y)。  
+Finally, the predicted box coordi-nates (l , l) and (r , r) are obtained by computing the expectation of corners’ probability distribution as shown in Eq. (2). 
+最后，通过如公式2所示的方式计算角概率分布的期望，得到预测的盒坐标(l、l)和(r、r)，  
+Compared with DETR, our method explicitly models uncertainty in the coordinate estimation, generating more accurate and robust predictions for object tracking.  
+与DETR相比，我们的方法明确地对坐标估计中的不确定性进行了建模，为目标跟踪产生了更准确和鲁棒的预测。
 
 
-Training and Inference. 
+## Training and Inference. 
 Our baseline tracker is trained in an end-to-end fashion with the combination of the ℓ1 Loss and the generalized IoU loss [48] as in DETR. The loss function can be written as 我们的基线跟踪器以端到端方式进行训练，并结合了ℓ1损失和广义欠条损失[48]，如DETR中所述。损失函数可以写成
 L = λiouLiou(bi , i) + λL1 L1 (bi , i).         (1)
 where bi and i represent the groundtruth and the predicted box respectively and λiou,λL1    ∈ R are hyperparameters. 
@@ -179,7 +199,7 @@ H    W                              H    W
 (r , r) = (X Xx · Pbr(x,y), X Xy · Pbr(x,y)),
 y=0 x=0                          y=0 x=0
 (2)
-3.2. Spatio-Temporal Transformer Tracking
+## 3.2. Spatio-Temporal Transformer Tracking
 Since  the  appearance  of a  target  object  may  change significantly as time proceeds, it is important to capture the latest state of the target for tracking.  In this section, we demonstrate how to exploit spatial and temporal infor-mation simultaneously based on the previously introduced baseline. 如何在前面所述的基线模型上增加考虑时空信息的结合呢？Three key differences are made, including the net-work inputs, an extra score head, and the training & inference strategy.有三个关键的区别，包括网络工作输入，一个额外的分数头，以及训练和推理策略。 We elaborate them one by one as below. The spatio-temporal architecture is shown in Fig. 4.我们一个接一个地详细阐述它们，如下所示。其时空结构如图所示。 4.
 Input.  Different from the baseline method which only uses the first and the current frames, the spatio-temporal method introduces a dynamically updated template sampled from intermediate frames as an additional input, as shown in Fig. 4.  Beyond the spatial information from the initial
 
@@ -193,7 +213,7 @@ Training  and  Inference.    As  pointed  out  by  recent works [8, 50], jointly
 Lce = yilog (Pi) + (1 − yi)log (1 − Pi) ,       (3)
 where yi  is the groundtruth label and Pi  is the predicted confidence , and all other parameters are frozen to avoid af-fecting the localization capacity. In this way, the final model learn both localization and classification capabilities after the two-stage training.其中Yi为基真标签，Pi为预测的置信度，所有其他参数都被冻结，以避免影响定位能力。这样，最终的模型在两阶段训练后同时学习本地化和分类能力。
 During inference, two templates and corresponding fea-tures are initialized in the first frame.在推理过程中，在第一帧中初始化两个模板和相应的功能。 Then a search region is cropped and fed into the network, generating one bound-ing box and a confidence score.  The dynamic template is updated only when the update interval is reached and the confidence score is higher than the threshold τ. 然后裁剪一个搜索区域并输入网络，生成一个边界框和一个置信分数。只有当达到更新间隔且置信度得分高于阈值τ时，才会更新动态模板。 For effi-ciency, we set the update interval as Tu frames.  The new template is cropped from the original image and then fed into the backbone for feature extraction. 为了提高效率，我们将更新间隔设置为Tu帧。将新的模板从原始图像中裁剪出来，然后输入到主干中进行特征提取。
-4. Experiments
+# 4. Experiments
 This section first presents the implementation details and the results of our STARK tracker on multiple benchmarks, with comparisons to state-of-the-art methods.  本节首先介绍了我们的严格跟踪器在多个基准测试上的实现细节和结果，并与最先进的方法进行了比较。Then, abla-tion studies are presented to analyze the effects of the key  
 
 

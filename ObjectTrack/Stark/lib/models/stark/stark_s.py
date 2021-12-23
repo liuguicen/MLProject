@@ -69,8 +69,9 @@ class STARKS(nn.Module):
 
     def forward_box_head(self, hs, memory):
         """
-        hs: output embeddings (1, B, N, C)
-        memory: encoder embeddings (HW1+HW2, B, C)"""
+        hs: output embeddings (1, B, N, C) 解码器的输出
+        memory: encoder embeddings (HW1+HW2, B, C) 编码器的输出
+        """
         if self.head_type == "CORNER":
             # adjust shape
             enc_opt = memory[-self.feat_len_s:].transpose(0, 1)  # encoder output for the search region (B, HW, C)

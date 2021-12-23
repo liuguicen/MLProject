@@ -40,10 +40,10 @@ def main():
     parser.add_argument('tracker_name', type=str, help='Name of tracking method.')
     parser.add_argument('tracker_param', type=str, help='Name of config file.')
     parser.add_argument('--runid', type=int, default=None, help='The run id.')
-    parser.add_argument('--dataset_name', type=str, default='otb',
+    parser.add_argument('--dataset_name', type=str, default='lasot',
                         help='Name of dataset (otb, nfs, uav, tpl, vot, tn, gott, gotv, lasot).')
     parser.add_argument('--sequence', type=str, default=None, help='Sequence number or name.')
-    parser.add_argument('--debug', type=int, default=0, help='Debug level.')
+    parser.add_argument('--debug', type=int, default=1, help='Debug level.')
     # 这里实际上是进程
     parser.add_argument('--threads', type=int, default=0, help='Number of threads.')
     parser.add_argument('--num_gpus', type=int, default=8)
@@ -60,6 +60,10 @@ def main():
 
 
 # 参数
-# stark_st baseline --dataset lasot --debug 1 --threads 0
+'''
+stark_st baseline --dataset lasot --debug 1 --threads 0
+# lite版本
+stark_lightning_X_trt baseline_rephead_4_lite_search5 --threads 0 --num_gpus 1
+'''
 if __name__ == '__main__':
     main()
