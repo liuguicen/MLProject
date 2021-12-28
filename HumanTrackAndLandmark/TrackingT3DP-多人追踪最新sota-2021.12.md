@@ -1,39 +1,62 @@
 这篇文章也是属于多目标跟踪的类型，主框架是类似的。
 
-检测，提取人体掩模等，再利用xxx网络提取和生成3D特征，再结合这些特征和一些其它信息，生成位置，姿势，外观，结合多帧，得到它们的序列，然后预测后面n帧的位置，姿势，外貌，最后在当前帧检测获取出上面的3种数据，与预测数据关联对比，判断是否是同一个人，over。
+检测，提取人体掩模等，再利用xxx网络提取和生成3D特征，再结合这些特征和一些其它信息，生成位置，姿势，外观，结合多帧，得到它们的序列，然后用预测网络，预测后面n帧的位置，姿势，外貌，最后在当前帧检测获取出上面的3种数据，与预测数据关联对比，判断是否是同一个人，over。
 
 似乎参数和计算主要在提取特征，生成3D数据，预测这几个面，后面的轨迹关联不需要了。
 
 Tracking People by Predicting 3D Appearance, Location & Pose
 # Abstract
-In this paper, we present an approach for tracking people in monocular videos, by predicting their future 3D representations. To achieve this, we first lift people to 3D from a single frame in a robust way. This lifting includes information about the 3D pose of the person, his or her location in   the 3D space, and the 3D appearance. As we track a person, we collect 3D observations over time in a tracklet representation. Given the 3D nature of our observations, we build temporal models for each one of the previous attributes. We use these models to predict the future state of the tracklet, including 3D location, 3D appearance, and 3D pose. For a future frame, we compute the similarity between the predicted state of a tracklet and the single frame observations in a probabilistic manner. Association is solved with simple Hungarian matching, and the matches are used to update the respective tracklets. We evaluate our approach on various benchmarks and report state-of-the-art results.
+In this paper, we present an approach for tracking people in monocular videos, by predicting their future 3D representations. To achieve this, we first lift people to 3D from a single frame in a robust way. This lifting includes information about the 3D pose of the person, his or her location in the 3D space, and the 3D appearance. As we track a person, we collect 3D observations over time in a tracklet representation. Given the 3D nature of our observations, we build temporal models for each one of the previous attributes. We use these models to predict the future state of the tracklet, including 3D location, 3D appearance, and 3D pose. For a future frame, we compute the similarity between the predicted state of a tracklet and the single frame observations in a probabilistic manner. Association is solved with simple Hungarian matching, and the matches are used to update the respective tracklets. We evaluate our approach on various benchmarks and report state-of-the-art results.
 
-在本文中，我们提出了一种方法来跟踪单眼视频中的人，通过预测他们未来的三维表示。为了实现这一点，我们首先以一种鲁棒的方式将人们从单一帧提升到3D。这个提升包括关于这个人的3D姿势、他或她在3D空间中的位置以及3D外观等信息。当我们跟踪一个人时，我们以随时间变化的轨迹表示的形式收集3D观察结果。鉴于我们观察的3D性质，我们为之前的每个属性建立了时间模型。我们使用这些模型来预测轨迹的未来状态，包括三维位置、三维外观和三维姿态。对于未来的一帧，我们以概率的方式计算一个轨迹的预测状态和单帧观测值之间的相似性。关联用简单的匈牙利匹配解决，匹配用于更新各自的轨迹。我们根据各种基准来评估我们的方法，并报告最先进的结果。
+在本文中，我们提出了一种方法来跟踪单目视频中的人，通过预测他们未来的三维表示。为了实现这一点，我们首先以一种鲁棒的方式从单一帧中将人们提升到3D。这个提升包括关于这个人的3D姿势、他或她在3D空间中的位置以及3D外观等信息。当我们跟踪一个人时，我们收集随时间变化的3D观察结果为轨迹的形式。鉴于我们观察的3D性质，我们为之前的每个属性建立了时间模型。我们使用这些模型来预测轨迹的未来状态，包括三维位置、三维外观和三维姿态。对于未来的一帧，我们以概率的方式计算一个轨迹的预测状态和单帧观测值之间的相似性。关联用简单的匈牙利匹配解决，匹配用于更新各自的轨迹。我们根据多种基准来评估我们的方法，并报告最先进的结果。
 
 # 1. Introduction
-When we watch a video, we can segment out individual people, cars, or other objects and track them over time.The corresponding task in computer vision has been studied for several decades now, with a fundamental choice being whether to do the tracking in 2D in the image plane, or of 3D objects in the world. The former seems simpler because it obviates the need for inferring 3D, but if we do take the step of back-projecting from the image to the world, other aspects such as dealing with occlusion become easier. In the 3D world the tracked object doesn’t disappear,
-and even young infants are aware of its persistence behind the occluder.  
-当我们看一段视频时，我们可以分割出个人、汽车或其他物体，并随着时间的推移跟踪它们。计算机视觉中相应的相应任务已经研究了几十年，一个基本的选择是在图像平面上进行二维跟踪，还是对世界上的三维物体进行跟踪。前者看起来更简单，因为它排除了推断3D的需要，但如果我们确实采取从图像反向投影到世界的步骤，其他方面，如处理遮挡变得更容易。在3D世界中，被跟踪的物体不会消失，甚至婴儿也意识到它在封堵器后面的持久性。
+When we watch a video, we can segment out individual people, cars, or other objects and track them over time.The corresponding task in computer vision has been studied for several decades now, with a fundamental choice being whether to do the tracking in 2D in the image plane, or of 3D objects in the world. The former seems simpler because it obviates the need for inferring 3D, but if we do take the step of back-projecting from the image to the world, other aspects such as dealing with occlusion become easier. In the 3D world the tracked object doesn’t disappear, and even young infants are aware of its persistence behind the occluder.  
+
+当我们人看一段视频时，我们可以分割出个人、汽车或其他物体，并随着时间的推移跟踪它们。计算机视觉中相应的相应任务已经研究了几十年，一个基本的选择是在图像平面上进行二维跟踪，还是对真实世界上的三维物体进行跟踪。前者看起来更简单，因为它排除了推断3D的需要，但如果我们确实采取从图像反向投影到世界的步骤，其他方面，如处理遮挡变得更容易。在3D世界中，被跟踪的物体不会消失，甚至婴儿也意识到它在遮挡物后面的持久性。
 
 A recent paper, Rajasegaran et al. [32] argues convincingly on the 3D side of this debate for people tracking, and presents experimental  evidence that indeed performance is better with 3D representations. In this paper, we will take this as granted, and proceed to develop a system in the 3D setting of the problem. While our approach broadly applies to any object category where parameterized 3D models are available and can be inferred from images, we will limit ourselves in this paper to studying people, the most important case in practice.
-Rajasegaran等人[32]在最近的一篇论文中，对人们跟踪这一争论的3D方面进行了令人信服的论证，并提供了实验证据，证明3D表现确实更好。在本文中，我们将把这视为理所当然，并着手在这个问题上基于3D开发一个系统。虽然我们的方法广泛适用于任何可以使用参数化三维模型并可以从图像推断的对象类别，但在本文中，我们将仅限于研究人，这是实践中最重要的案例。
+
+**Rajasegaran等人[32]在最近的一篇论文中，对人们跟踪这一争论的3D方面进行了令人信服的论证，并提供了实验证据，证明3D下跟踪性能确实更好。在本文中，我们将把这视为理所当然，**并着手在这个问题上基于3D开发一个系统。虽然我们的方法广泛适用于任何可以使用参数化三维模型并可以从图像推断的对象类别，但在本文中，我们将仅限于研究人，这是实践中最重要的案例。
 
 ![](.Tracking T3DP-多人追踪最新sota-2021.12_images/315cbe44.png)   
 Figure 1. Tracking people by predicting and matching in 3D.
 The top row shows our tracking results at three different frames. The results are visualized by a colored head-mask for unique identities. The second and third rows show renderings of the 3D states of the two people in their associated tracklets. The bottom row shows the bottom-up detections in each image frame which, after being lifted to 3D, will be matched with the 3D predictions of each tracklet in the corresponding frame. Note how in the middle frame of second row, the 3D representation of the person persists even though he is occluded in the image. More videos at project site.
-图1。通过3D中的预测和匹配来跟踪人。最上面一行显示了我们在三个不同帧下的跟踪结果。结果是通过一个彩色的头面罩可视化来表示唯一身份。第二行和第三行显示两个人在关联的轨迹中的3D状态的渲染。下面一行显示了每一个图像帧中自下而上的检测结果，在被提升到3D后，将与相应帧中每个轨迹的三维预测相匹配。请注意，在第二行的中间一帧中，即使这个人在图像中被遮挡，他的3D表示仍然存在。更多视频请访问项目网站。
+
+图1 通过3D中的预测和匹配来跟踪人。最上面一行显示了我们在三个不同帧下的跟踪结果。结果是通过一个彩色的头面罩可视化来表示唯一身份。第二行和第三行显示两个人在关联的轨迹中的3D状态的渲染。最下面一行显示了每一个图像帧中自下而上的检测结果，在被提升到3D后，将与相应帧中每个轨迹的三维预测相匹配。请注意，在第二行的中间一帧中，即使这个人在图像中被遮挡，他的3D表示仍然存在。更多视频请访问项目网站。
 
 
 Once we have accepted the philosophy that we are tracking 3D objects in a 3D world, but from 2D images as raw data, it is natural to adopt the vocabulary from control theory and estimation theory going back to the 1960s. We are interested in the “state” of objects in 3D, but all we have access to are “observations” which are RGB pixels in 2D.
-一旦我们接受了在3D世界中跟踪3D对象的理念，但将2D图像作为原始数据，我们自然会采用20世纪60年代控制理论和估计理论的词汇。我们对3D世界中对象的“状态”感兴趣，但我们所能获得的只是2D世界中的“观察”，即RGB像素。 
-In an online setting, we observe a person across multiple time frames, and keep recursively updating our estimate of the person’s state — his or her appearance, location in the world, and pose (configuration of joint angles). Since we have a dynamic model (a “tracklet”), we can also predict states at future times. When the next image frame comes in, we detect the people in it, lift them to 3D, and in that setting solve the association problem between these bottomup detections and the top-down predictions of the different tracklets for this frame.
-在在线环境中，我们在多个时间范围内观察一个人，并不断递归地更新我们对该人状态的估计——他或她的外貌、在世界上的位置和姿势（关节角度的配置）。由于我们有一个动态模型（“tracklet”），我们还可以预测未来的状态。当下一个图像帧出现时，我们检测其中的人，将他们提升到3D，并在该设置中解决这些自底向上检测与该帧不同轨迹的自顶向下预测之间的关联问题。 
 
-Once the observations have been associated with the tracklets, the state of each person is reestimated and the process continues. Fig. 1 shows this process at work on a real video. Note that during a period of occlusion of a tracklet, while no new observations are coming in, the state of the person keeps evolving following his or her dynamics. It is not the case that “Out of sight, out of mind”!
+一旦我们接受了在3D世界中跟踪3D对象的理念，但将2D图像作为原始数据，我们自然会采用20世纪60年代控制理论和估计理论的词汇。我们对3D世界中对象的“状态”感兴趣，但我们所能获得的只是2D世界中的“观察”，即RGB像素。
+
+In an online setting, we observe a person across multiple time frames, and keep recursively updating our estimate of the person’s state — his or her appearance, location in the world, and pose (configuration of joint angles). Since we have a dynamic model (a “tracklet”), we can also predict states at future times. When the next image frame comes in, we detect the people in it, lift them to 3D, and in that setting solve the association problem between these bottomup detections and the top-down predictions of the different tracklets for this frame.
+
+在在线环境中，**我们在多个时间帧范围内观察一个人，并不断递归地更新我们对该人状态的估计——他或她的外貌、在世界上的位置和姿势（关节角度的配置）**。由于我们有一个动态模型（“tracklet”），我们还可以预测未来的状态。当下一个图像帧出现时，我们检测其中的人，将他们提升到3D，并在该设置中解决这些自底向上检测与该帧不同轨迹的自顶向下预测之间的关联问题。 
+
+Once the observations have been associated with the tracklets, the state of each person is reestimated and the process continues. Fig. 1 shows this process at work on a real video. Note that during a period of occlusion of a tracklet, while no new observations are coming in, the state of the person keeps evolving following his or her dynamics. It is not the case that “Out of sight, out of mind”!  
+
 一旦观察结果与轨迹关联，将重新估计每个人的状态，并继续此过程。图1示出了在真实视频上工作的该过程。请注意，在轨迹闭塞的一段时间内，虽然没有新的观察结果出现，但人的状态会随着其动力学而不断变化。不是“眼不见心理就没了”！
 
 In an abstract form, the procedure sketched in the previous paragraph is basically the same as that followed in multiple computer vision papers from the 1980s and 1990s. The difference is that in 2021 we can actually make it work thanks to the advances brought about by deep learning and big data, that enable consistent and reliable lifting of people to 3D. For this initial lifting, we rely on the HMAR model [32]. This is applied on every detected bounding box of the input video and provides us with their initial, single frame, observations for 3D pose, appearance as well as location of the person in the 3D space.
 
+在一个抽象的形式中，上一段中概述的过程基本上与20世纪80年代和90年代的多篇计算机视觉论文中所遵循的过程相同。**不同的是，在2021，我们可以使它的工作得益于深度学习和大数据带来的进步，使人们能够一致和可靠地将人提升到3D。** 对于初始提升，我们依赖HMAR模型[32]。这将应用于输入视频中检测到的每个边界框，并为我们提供其初始的、单帧的、3D姿势观察、外观以及3D空间中人员的位置。  
+ 
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/798b6a9d.png)  
+Figure 2. PHALP: Predicting Human Appearance, Location and Pose for Tracking: We perform  tracking of humans in 3D from monocular video. For every input bounding box, we estimate a 3D representation based on the 3D appearance, 3D pose and 3D location of the person. During  tracking, these are integrated to form corresponding tracklet-based representations. We perform  tracking by predicting the future representation of each person and using it to solve for association given the detected bounding boxes of a future frame.
+图2 PHALP：预测跟踪的人类外观、位置和姿势：我们通过单目视频在3D中对人类进行跟踪。**对于每个输入边界框，我们根据人物的3D外观、3D姿势和3D位置估计3D表示。**在跟踪过程中，这些被集成起来，形成相应的基于轨迹的表示。我们通过预测每个人的未来表示来执行跟踪，并使用它来解决给定未来帧的检测边界框的关联。
+
+As we link individual detections into tracklets, these representations are aggregated across each tracklet, allowing us to form temporal models, i.e., functions for the aggregation and prediction of each representation separately (see left side of Fig. 2). More specifically, for appearance, we use the canonical UV map of the SMPL model to aggregate appearance, and employ its most recent version as a prediction of a person’s appearance. For pose, we aggregate  information using a modification of the HMMR model [15], where through its “movie strip” representation, we can produce 3D pose predictions. Finally, for 3D location, we use linear regression to predict the future location of the person.  
+
+当我们将单个检测链接到tracklet中时，这些表示在每个tracklet中聚合，使我们能够形成时间模型，即，分别用于聚合和预测每个表示的函数（参见图2的左侧）。更具体地说，对于外观，我们使用SMPL模型的规范UV映射来聚合外观，并使用其最新版本来预测一个人的外观。对于姿势，我们使用修改的HMMR模型[15]的来聚合信息，通过其“电影带”表示，我们可以生成3D姿势预测。最后，对于三维定位，我们使用线性回归预测人的未来位置。
+
+This modeling enables us to develop our tracking system, PHALP (Predicting Human Appearance, Location and Pose for tracking), which aggregates information over time, uses it to predict future states, and then associates the predictions with the detections. First, we predict the 3D location, 3D pose and 3D appearance for each tracklet for a short period of time (right side of Fig. 2). For a future frame, these predictions need to be associated with the detected people of the frame. To measure similarity, we adopt a probabilistic interpretation and compute the posterior probabilities of every detection belonging to each one of the tracklets, based on the three basic attributes.   
+
+这种建模使我们能够开发我们的跟踪系统PHALP（预测跟踪的人类外观、位置和姿势），该系统随着时间的推移聚集信息，使用信息预测未来状态，然后将预测与检测相关联。首先，我们预测短时间内每个轨迹的3D位置、3D姿势和3D外观（图2右侧）。对于未来的帧，这些预测需要与帧中检测到的人相关联。为了度量相似性，我们采用概率解释，并基于三个基本属性计算属于每个轨迹的每个检测的后验概率。   
+
+With the appropriate similarity  metric, association is then easily resolved by means of the Hungarian algorithm. The newly linked detections can now update the temporal model of the corresponding tracklets for 3D pose, 3D appearance and 3D location in an online manner and we continue the procedure by rolling-out further prediction steps. The final output is an identity label for each detected bounding box in the video. Notably, this approach can also be applied on videos with shot changes, e.g., movies [10], with minor modifications. Effectively, we only modify our similarity to include only appearance and 3D pose information for these transitions, since they (unlike location) are not affected by the shot boundary.
+
+通过适当的相似性度量，关联可以通过匈牙利算法轻松解决。新链接的检测现在可以在线更新3D姿势、3D外观和3D位置的相应轨迹的时间模型，我们通过推出进一步的预测步骤继续该过程。最终输出是视频中每个检测到的边界框的标识标签。**值得注意的是，这种方法也可以应用于镜头发生变化的视频，例如电影[10]，只需稍加修改。实际上，我们只修改我们的相似性，以便只包含这些过渡的外观和三维姿势信息，因为它们（不同于位置）不受镜头边界的影响.**
 
 # 3. Method
 Tracking humans using 3D representations has significant advantages, including that appearance is independent of pose variations and the ability to have amodal completion for humans during partial occlusion. Our tracking algorithm accumulates these 3D representations over time, to achieve better association with the detections. PHALP has three main stages: 1) lifting humans into 3D representations in each frame, 2) aggregating single frame representations over time and predicting future representations, 3) associating tracks with detections using predicted representations in a probabilistic framework. We explain each stage in the next sections.
@@ -41,10 +64,12 @@ Tracking humans using 3D representations has significant advantages, including t
 使用3D表示跟踪人类具有显著的优势，包括外观独立于姿势变化，并且能够在部分遮挡期间为人类完成多模态？我们的跟踪算法随着时间的推移累积这些3D表示，以实现更好的检测关联。PHALP有三个主要阶段：1）在每一帧中将人类提升为3D表示，2）随着时间的推移聚合单帧表示并预测未来表示，3）在概率框架中使用预测表示将轨迹与检测关联。我们将在下一节中解释每个阶段。
 
 3.1. Single-frame processing
-The input to our system is a set of person detections along with their estimated segmentation masks, provided by conventional detection networks, like Mask-RCNN [12].Each detection is processed by our feature extraction backbone that computes the basic representations for pose, appearance and location on a single-frame basis.
+The input to our system is a set of person detections along with their estimated segmentation masks, provided by conventional detection networks, like Mask-RCNN [12].Each detection is processed by our feature extraction backbone that computes the basic representations for pose, appearance and location on a single-frame basis.  
+
 3.1.单帧处理我们的系统的输入是一组人的检测和他们估计的分割掩模，由传统的检测网络提供，如Mask-RCNN[12]。每个检测都由我们的特征提取主干处理，该骨干在单帧基础上计算姿态、外观和位置的基本表示。
 
- For this feature extraction we use a modification of the HMAR model [32]. HMAR returns a feature representation for the 3D pose p, for appearance a, while it can recover an estimate for the 3D location l for the person. 对于这个特征提取，我们使用了对HMAR模型[32]的修改。HMAR返回一个对3D姿态的特征表示p，外观a，而它可以恢复对该人的3D位置l的估计。
+ For this feature extraction we use a modification of the HMAR model [32]. HMAR returns a feature representation for the 3D pose p, for appearance a, while it can recover an estimate for the 3D location l for the person.   
+ 对于这个特征提取，我们使用了对HMAR模型[32]的修改。HMAR返回一个对3D姿态的特征表示p，外观a，而它可以恢复对该人的3D位置l的估计。
 
 The standard HMAR model takes as input the pixels in the bounding box corresponding to a detected person. This means that in a crowded, multi-person scenario, the input will contain pixels corresponding to more than one person in the bounding box, potentially confusing the network. To deal with this problem, we modify HMAR to take as additional input, the pixel level mask of the person of interest (this is readily available as part of the output of Mask R-CNN) and re-train HMAR. Obviously, we cannot expect this step to be perfect, since there can be inaccuracies in the bounding box detections or mask segmentations. However, we observed that the model gives more robust results  in the case of close person-person interactions, which are common in natural videos.
 
