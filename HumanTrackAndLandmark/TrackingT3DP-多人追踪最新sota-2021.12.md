@@ -163,40 +163,90 @@ $\hat{p_t}$ . We train this temporal pose aggregation function $Φ_P$ to smooth 
 Given the bounding boxes and their single-frame 3D representations, our tracking algorithm associates identities
 across frames in an online manner. At every frame, we make future predictions for each tracklet and we measure the similarity with the detected single-frame representation.   
 给定边界框及其单帧三维表示，我们的跟踪算法以在线方式关联跨帧的身份。在每一帧中，我们对每条轨迹进行未来的预测，并测量与检测到的单帧表示的相似性。   
- More specifically, let us assume that we have a tracklet Ti, which has been tracked for a sequence of frames and has information for appearance, pose and location.  3.3.更具体地说，让我们假设我们有一个轨迹Ti，它已经被跟踪了一系列帧，并有关于外观、姿势和位置的信息。
+
+ More specifically, let us assume that we have a tracklet Ti, which has been tracked for a sequence of frames and has information for appearance, pose and location.  
+ 更具体地说，让我们假设我们有一个轨迹T^i，它已经跟踪了一系列帧，并有关于外观、姿势和位置的信息。
+
  The tracklet predicts its appearance  A, locationb l and pose p for the next frame, and we need to measure a similarity score between these predictions of the track Ti and a detection Dj to make an association.  
 
-轨迹预测下一帧的外观ba、位置bl和姿态bp，我们需要测量这些预测的轨迹Ti和检测Dj之间的相似性得分，以建立关联。
+轨迹预测下一帧的外观$\hat{a}$、位置$\hat{l}$和姿态$\hat{p}$，我们需要测量这些预测的轨迹$T_i$和检测$D_j$之间的相似性得分，以建立关联。
 
 Our tracklet representation has three different attributes (appearance, location and pose), so, directly combining their similarities/distances would not be ideal, since, each attribute has different characteristics. Instead, we investigate the conditional distributions of inliers and outliers of the attributes. Figure 5 presents the corresponding probability distributions for the PoseTrack dataset [3]. The characteristics of these distributions motivate our design decisions for our further modeling.    
 
-我们的轨迹表示有三个不同的属性（外观、位置和姿势），因此，直接结合它们的相似性/距离并不理想，因为每个属性都有不同的特征。相反，我们研究属性的内点和离群点的条件分布。图5显示了PoseTrack数据集的相应概率分布[3]。这些分布的特征促使我们为进一步建模设计决策。
+我们的轨迹表示有三个不同的属性（外观、位置和姿势），因此，直接组合它们的相似性/距离并不理想，因为每个属性都有不同的特性。相反，我们研究属性的内点和离群点的条件分布。图5显示了PoseTrack数据集的相应概率分布[3]。这些分布的特征促使我们为进一步建模设计决策。
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/6f472e1b.png)   
+Figure 5. Conditional distributions of the attribute distances: We plot the data for the distances between the tracklet prediction and the single frame detection using the ground truth data from PoseTrack [3]. The curves show how the correct matches (inliers) and the incorrect matches (outliers) are distributed. Note that, for 2D location and nearness we plot the distances normalized by the prediction interval.    
+图5 属性距离的条件分布：我们使用PoseTrack[3]的地面真值数据绘制轨迹预测和单帧检测之间的距离数据。这些曲线显示了正确匹配（内点）和错误匹配（异常值）的分布情况。注意，对于2D位置和接近度，我们绘制了由预测间隔标准化的距离。
 
-Assume that tracklet Ti has an appearance representation b Ait . On the detection side, the detection Dj has a  single-frame appearance representation Ajt . Both of these representations are in the pixel space, therefore we first encode them into an embedding space using the HMAR appearance-encoder network. This gives us an appearance embedding b ait and ajt for the prediction of the tracklet Ti and detection Dj , respectively. We are interested in estimating the posterior probability of the event where the detection Dj belongs to the track Ti , given some distance measure of the appearance feature (∆a). Assuming that the appearance distance is ∆a = ||bait − ajt ||22 , then the posterior probability is proportional to the conditional probability of the appearance distances, given correct assignments based on Bayes rule. We model this conditional probability as a Cauchy distribution, based on the observations from the inlier distribution of appearance distances (see also Fig 5):  
+Assume that tracklet $T_i$ has an appearance representation b $\hat{A^i_t}$ . On the detection side, the detection $D_j$ has a  single-frame appearance representation $A^j_t$ . Both of these representations are in the pixel space, therefore we first encode them into an embedding space using the HMAR appearance-encoder network. This gives us an appearance embedding $\hat{a}^i_t$ and $a^j_t$ for the prediction of the tracklet $T_i$ and detection $D_j$ , respectively. We are interested in estimating the posterior probability of the event where the detection $D_j$ belongs to the track $T_i$ , given some distance measure of the appearance feature $(∆a)$. Assuming that the appearance distance is $∆a = ||\hat{a}^i_t − a^j_t ||^2_2$ , then the posterior probability is proportional to the conditional probability of the appearance distances, given correct assignments based on Bayes rule. We model this conditional probability as a Cauchy distribution, based on the observations from the inlier distribution of appearance distances (see also Fig 5):
 
-假设tracklet Ti具有外观表示Ait。在检测侧，检测Dj具有单帧外观表示Ajt。这两种表示都在像素空间中，因此我们首先使用HMAR外观编码器网络将它们编码到嵌入空间中。这给了我们一个分别用于预测轨迹Ti和检测Dj的嵌入ait和ajt的外观。我们感兴趣的是估计检测Dj属于轨迹Ti的事件的后验概率，给定外观特征的一些距离度量(∆a） 。假设外观距离为∆a=||ait− ajt ||^ 2_2，则后验概率与出现距离的条件概率成正比，根据贝叶斯规则给出正确的赋值。我们将该条件概率建模为Cauchy分布，基于从外观距离的inlier分布中观察到的结果（另请参见图5）：![](.TrackingT3DP-多人追踪最新sota-2021.12_images/33ad9526.png)  
+假设tracklet $T_i$有一个外观表示$\hat{A}^i_T$。在检测端，检测$D_j$具有单帧外观表示$a^j_t$。这两种表示都在像素空间中，因此我们首先使用HMAR外观编码器网络将它们编码到嵌入空间中。这为我们提供了一个外观嵌入$\hat{a}^i_t$和$a^j_t$，分别用于tracklet$t_i$和detection$D_j$的预测。我们感兴趣的是估计事件的后验概率，其中检测$D_j$属于轨迹$T_i$，给定外观特征的一些距离度量$(∆a)$。假设外观距离为$∆a=||\hat{a}^i_t− a^j_t||^2_2$，则后验概率与出现距离的条件概率成正比，根据贝叶斯规则给出正确的赋值。我们将该条件概率建模为Cauchy分布，基于从外观距离的inlier分布中观察到的结果（另请参见图5）：
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/33ad9526.png)  
 The distribution has one scaling hyper-parameter βa. 该分布有一个可缩放的超参数βa。  
  
-Similarly, for pose, we use Cauchy distribution to model the conditional probability of inlier distances. We measure pose distance ∆p = ||bpit−pjt ||22 between the predicted pose representation pit from the track Ti and the pose representation pjt of detection Dj . The posterior probability that the detection belongs to the track, given the pose distance is:    
-同样，对于姿态，我们使用Cauchy分布来模拟内点距离的条件概率。我们测量姿势距离∆p=| | bpit−pjt | | 22在轨迹Ti的预测姿势表示凹坑和检测Dj的姿势表示凹坑之间。给定姿势距离，检测属于轨迹的后验概率为：![](.TrackingT3DP-多人追踪最新sota-2021.12_images/f08e7831.png)   
-Here, ∆p = ||bpit − pjt|| and βp is the scaling factor 在这里，∆p=||bbit−pjt||22和βp是缩放因子
+Similarly, for pose, we use Cauchy distribution to model the conditional probability of inlier distances. We measure pose distance $∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ between the predicted pose representation pit from the track $T_i$ and the pose representation $p^j_t$ of detection $D_j$ . The posterior probability that the detection belongs to the track, given the pose distance is:    
+同样，对于姿态，我们使用Cauchy分布来模拟内点距离的条件概率。我们测量姿势距离$∆p = ||\hat{p}^i_t−p^j_t ||^2_2$在轨迹$T_i$的预测姿势表示凹坑和检测$D_j$的姿势表示凹坑之间。给定姿势距离，检测属于轨迹的后验概率为：![](.TrackingT3DP-多人追踪最新sota-2021.12_images/f08e7831.png)     
+Here, $∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ and βp is the scaling factor   
+在这里，$∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ 和βp是缩放因子
 
+For location, let us assume the track Ti has predicted a location $\hat{l}^i_t = (\hat{x}^i_t, \hat{y}^i_t, \hat{ n}^i_t)^T$ with a set of prediction intervals {δx, δy, δn}, and the detection $D_j$ is at a 3D location $l^j_t = (x^j_t , y^ j_t , n^j_t )^T$ . We treat the 3D coordinates x, y and the nearness term n coordinates independently, and compute the posterior probabilities of the detection belongs to the tracklet given the location distance. We model the conditional probability distribution as an exponential distribution, based on the findings from the empirical data. The Fig 5 shows the distribution of 2D distance and nearness distance, scaled by the confidence interval, of inliers approximately follow the exponential distribution.    
 
-Now that we have computed the conditional probabilities of the detection belonging to a track conditioned on the individual cues of appearance, location and pose, we can compute the overall conditional probability of the detection Dj belonging to the track Ti , given all the cues together (assumed to be independent):
-现在，我们已经计算了属于以外观、位置和姿势的单个线索为条件的轨迹的检测的条件概率，我们可以计算属于轨迹Ti的检测Dj的总体条件概率，假设所有线索在一起（假设独立）：
+对于位置，让我们假设轨道Ti已经用一组预测间隔{δx，δy，δn}预测了一个位置$\hat{l}^i_t=（\hat{x}^i_t, \hat{y}^i_t,\hat{n}^i_t)$，并且检测$D_j$位于一个三维位置$l^j_t=(x^j_t, y^j_t,n^j_t)$。我们独立地处理三维坐标x、y和近距离项n坐标，并在给定位置距离的情况下计算检测属于轨迹的后验概率。根据经验数据的发现，我们将条件概率分布建模为指数分布。图5显示了由置信区间缩放的二维距离和近距离的分布，入口近似服从指数分布。
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/cbdd40b7.png)   
+
+Here, βxy is a scaling parameter for the exponential distribution, ∆xy is the 2D pixel distance between the predicted track and the detection and $δxy =  \sqrt{δ^2_x + δ_y^2}$ is the prediction interval for the 2D location prediction. We use a similar form of exponential distribution for the posterior probability for nearness PN :    
+
+这里，βxy是指数分布的标度参数，∆xy是预测轨迹和检测之间的2D像素距离，$δxy=\sqrt{δ^2_x+δ_y^2}$是2D位置预测的预测间隔。我们使用一种类似的指数分布形式来计算近距离PN的后验概率：
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/6ceeac6d.png) 
+
+Here, βn is the scaling parameter for the exponential distribution, δn is the confidence interval for the nearness prediction, and ∆n is the L1 distance between the nearness of the tracklet prediction and the detection.
+这里，βn是指数分布的标度参数，δn是近程预测的置信区间，以及∆n是轨迹预测和检测之间的L1距离。
+
+Now that we have computed the conditional probabilities of the detection belonging to a track conditioned on the individual cues of appearance, location and pose, we can compute the overall conditional probability of the detection Dj belonging to the track Ti , given all the cues together (assumed to be independent):  
+现在，我们已经计算了以外观、位置和姿势的单个线索为条件的检测属于轨迹的条件概率，我们可以计算属于轨迹Ti的检测Dj的总体条件概率，假设所有线索在一起（假设独立）：
  ![](.TrackingT3DP-多人追踪最新sota-2021.12_images/643c0804.png)
+ 
+ This allow us to estimate how probable an association is based on various attribute distances. Finally, we map the similarity measures (probability values up to a scale), to cost values, for solving association. The cost function between the detection representations and a predicted representations of the tracklet is defined as:  
  这使我们能够基于各种属性距离来估计一个关联的可能性。最后，我们将相似度度量（概率值到一个尺度）映射到成本值，以解决关联。检测表示和轨迹的预测表示之间的成本函数定义为：
- ![](.TrackingT3DP-多人追踪最新sota-2021.12_images/0be7fbd1.png)  
- where the second equality is up to an additive constant. Once the cost between all the tracks and the detection is computed, we simply pass it to the Hungarian algorithm for solving the association.
+ ![](.TrackingT3DP-多人追踪最新sota-2021.12_images/0be7fbd1.png)    
+ where the second equality is up to an additive constant. Once the cost between all the tracks and the detection is computed, we simply pass it to the Hungarian algorithm for solving the association.  
  其中第二个等式是一个加法常数。一旦计算了所有轨迹和检测之间的成本，我们就简单地将其传递给匈牙利算法来解决关联。
  
- Estimating the parameters of the cost function: The cost function ΦC has 4 parameters (βa, βp, βxy and βn). Additionally, the Hungarian algorithm has one parameter βth to decide whether the track is not a match to the detection. Therefore, overall we have five parameters for the whole association part of our tracking system
+### Estimating the parameters of the cost function:
+  The cost function $Φ_C$ has 4 parameters (βa, βp, βxy and βn). Additionally, the Hungarian algorithm has one parameter $β_th$ to decide whether the track is not a match to the detection. Therefore, overall we have five parameters for the whole association part of our tracking system  
 估计成本函数的参数：成本函数ΦC有4个参数(βa、βp、βxy和βn)。此外，匈牙利算法有一个参数βth来决定轨道是否与检测不匹配。因此，总的来说，我们的跟踪系统的整个关联部分有五个参数.
 
  Now, we treat this as an empirical risk minimization problem and optimize the β values based on a loss function. We initialize βa, βp, βxy and βn with the values from the estimated density functions and use frame level association error as a loss function for the optimization. We use the Nelder–Mead [30] algorithm for this optimization. Finally, the optimized β values are used for the cost function across all the datasets, and a simple tracking algorithm is used to associate detections with tracklet predictions. The sketch of the tracking algorithm is shown in Algorithm 1.
 
 现在，我们将其视为一个经验风险最小化问题，并基于损失函数对β值进行操作计时。我们用估计的密度函数的值初始化βa、βp、βxy和βn，并使用帧级关联误差作为损失函数进行优化。我们使用Nelder-Mead[30]算法来进行优化。最后，将优化后的β值用于所有数据集的成本函数，并使用一个简单的跟踪算法将检测与轨迹预测联系起来。跟踪算法的示意图见算法1。
 
-Our framework can easily be extended to also handle shot changes, which are common in edited media, like movies, TV shows, but also sports. Since shot changes can be detected relatively reliably, we use an external shot detector [13] to identify frames that indicate shot changes. Informed by the detection of this boundary, during tracking, we update the distance metric accordingly. More specifically, since appearance and 3D pose are invariant to the viewpoint, we keep these factors in the distance computation, while we drop the location distance from the distance metric, because of the change in the camera location. Then, the association is computed based on this updated metric. 
-We use the AVA dataset [10] to demonstrate this utility of our tracking system and present results in Section 4.
-我们的框架可以很容易地扩展到处理镜头变化，这在编辑媒体中很常见，如电影、电视节目，但体育也很常见。由于镜头变化可以相对可靠地检测到，我们使用外部镜头检测器[13]来识别指示镜头变化的帧。通过检测到这个边界，在跟踪过程中，我们相应地更新距离度量。更具体地说，由于外观和三维姿态对视点是不变的，我们保留这些因素在距离计算，而我们删除位置距离从距离度量，因为相机位置的变化。然后，根据这个更新的度量来计算关联。我们使用AVA数据集[10]来演示我们的跟踪系统的实用性，并在第4节中展示结果。
+## 3.4. Extension to shot changes
+Our framework can easily be extended to also handle shot changes, which are common in edited media, like movies, TV shows, but also sports. Since shot changes can be detected relatively reliably, we use an external shot detector [13] to identify frames that indicate shot changes. Informed by the detection of this boundary, during tracking, we update the distance metric accordingly. More specifically, since appearance and 3D pose are invariant to the viewpoint, we keep these factors in the distance computation, while we drop the location distance from the distance metric, because of the change in the camera location. Then, the association is computed based on this updated metric. We use the AVA dataset [10] to demonstrate this utility of our tracking system and present results in Section 4.
+我们的框架可以很容易地扩展到处理镜头变化，这在编辑媒体中很常见，如电影、电视节目，但体育也很常见。由于镜头变化可以相对可靠地检测到，**我们使用额外的镜头检测器[13]来识别指示镜头变化的帧**。通过检测到这个边界，在跟踪过程中，我们相应地更新距离度量。更具体地说，**由于外观和三维姿态对镜头是不变的，我们在距离计算时保留这些因素，而我们从距离度量删除位置距离，因为相机位置的变化。** 然后，根据这个更新的度量来计算关联。我们使用AVA数据集[10]来演示我们的跟踪系统的实用性，并在第4节中展示结果。
+
+4. Experiments
+In this section, we present the experimental evaluation of our approach. We report results on three datasets: PoseTrack [3], MuPoTS [28] and AVA [10], which capture a diverse set of sequences, including sports, casual interactions and movies. Our method operates on detections and masks coming from an off-the-shelf Mask-RCNN network [12], and returns the identity label for each one of them. Therefore, the metrics we use to report results also focus on identity tracking at the level of the bounding box. More specifically, we report results using Identity switches (IDs), Multi-Object Tracking Accuracy (MOTA) [16], ID F1 score (IDF1) [33] and HOTA [26]. In all cases, we adopt the protocols of Rajasegaran et al. [32] for evaluation.   
+
+在本节中，我们将对我们的方法进行实验评估。我们报告了三个数据集的结果：PoseTrack[3]、MuPoTS[28]和AVA[10]，它们捕获了一组不同的序列，**包括运动、休闲互动和电影**。我们的检测和掩操作来自现成mask-RCNN网络[12]，并返回其中每一个的标识标签。因此，我们用于报告结果的指标也侧重于边界框级别的身份跟踪。更具体地说，我们报告了使用身份开关（IDs）、多目标跟踪精度（MOTA）[16]、IDF1分数（IDF1）[33]和HOTA[26]的结果。在所有情况下，我们都采用Rajasegaran等人[32]的方法进行评估。
+
+First, we ablate the main components of our approach. Specifically, we investigate the effect of each one of the tracking cues we employ, i.e., appearance, 3D location and 3D pose, and how they affect the overall tracking pipeline. For this comparison, we report results on the Posetrack dataset [3]. The full results are presented in Table 1. As we can see, removing each one of the main cues leads to degradation in the performance of the system, where 3D location seems to have the largest effect on the performance, followed by appearance and 3D pose. Moreover, this ablation also highlights the importance of having the nearness term in the cost function, a feature that is not available to purely 2D tracking methods.  
+
+首先，我们消除了我们方法的主要组成部分。具体来说，**我们研究了我们使用的每一个跟踪组件的效果，即外观、3D位置和3D姿势，以及它们如何影响整个跟踪管道。**为了进行比较，我们报告了Posetrack数据集[3]的结果。全部结果如表1所示。正如我们所看到的，删除每个主要线索都会导致系统性能下降，**其中3D位置对性能的影响最大，**其次是外观和3D姿势。此外，这种消融术还强调了成本函数中具有近似项的重要性，这是纯二维跟踪方法所不具备的特性。  
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/b3e4ea27.png)   
+Table 1. Ablation of the main components of PHALP on PoseTrack [3]. Removing each tracking cue (3D appearance, 3D pose or 3D location) leads to degradation in the performance.  
+表1。在姿势、轨迹上消融阴茎的主要成分[3]。删除每个跟踪线索（3D外观、3D姿势或3D位置）会导致性能下降。
+
+Next, we evaluate our approach in comparison with the state-of-the-art methods. The results are presented in Table 2. We report results on PoseTrack [3], MuPoTS [28] and AVA [10]. Our method outperforms the previous baselines, as well as the state-of-the-art approach of Rajasegaran [32]. The gains are significant across all metrics. Our method also outperforms the other approaches in the HOTA metric. Finally, we also show qualitative results of our method on multiple datasets in Fig 6. These results show that our method performs reliably even in very hard occlusion cases, while it is able to recover the correct identity over multiple successive occlusions. Fig 6 also shows the robustness of our method in complex motion sequences, shot changes and long trajectories.
+
+接下来，我们将与最先进的方法进行比较，评估我们的方法。结果见表2。我们报告了PoseTrack[3]、MuPoTS[28]和AVA[10]的结果。我们的方法优于以前的基线，以及Rajasegaran的最先进方法[32]。所有指标的收益都是显著的。我们的方法在HOTA度量方面也优于其他方法。最后，我们还在图6中展示了我们的方法在多个数据集上的定性结果。这些结果表明，我们的方法即使在非常硬的遮挡情况下也能可靠地执行，同时能够在多个连续遮挡情况下恢复正确的身份。图6还显示了我们的方法在复杂运动序列、镜头变化和长轨迹中的鲁棒性。
+
+# 5. Discussion
+We presented PHALP, an approach for monocular people tracking, by predicting appearance, location and pose in 3D. Our method relies on a powerful backbone for 3D human mesh recovery, modeling on the tracklet level for collecting information across the tracklet’s detections, and eventually predicting the future states of the tracklet. One of the main benefits of PHALP is that the association aspect requires tuning of only five parameters, which makes it very friendly for training on multi-object tracking datasets, where annotating the identity of every person in a video can be expensive. We should note that our approach can be naturally extended to make use of more attributes, e.g., a face embedding, which could be useful for cases with closeups, like movies. The main assumptions for PHALP are that we have access to a good object detector for the initial bounding box/mask detection, and a strong HMAR network for single-frame lifting of people to 3D. If the performance of these components is not satisfactory, it can also affect PHALP. Regarding societal impact, tracking systems have often been used for human surveillance. We do not condone such use. Instead, we believe that a tracking system will be valuable for studying social-human interactions.  
+
+我们提出了PHALP，一种单目人体跟踪方法，通过预测3D中的外观、位置和姿势。我们的方法依赖于一个强大的三维人体网格恢复主干，在tracklet级别上建模以收集tracklet检测的信息，并最终预测tracklet的未来状态。PHALP的一个主要优点是关联方面只需要调整五个参数，这使得它对于多对象跟踪数据集的培训非常友好，在多对象跟踪数据集中，在视频中注释每个人的身份可能非常昂贵。我们应该注意到，我们的方法可以自然地扩展到使用更多属性，例如人脸嵌入，这对于特写镜头（如电影）可能很有用。PHALP的主要假设是，我们可以使用良好的对象检测器进行初始边界框/遮罩检测，并使用强大的HMAR网络进行单帧提升，将人提升到3D。如果这些部件的性能不令人满意，也会影响PHALP。关于社会影响，跟踪系统经常被用于人类监视。我们不容忍这种使用。相反，我们相信跟踪系统对于研究社会人际互动是有价值的。
+
+# Acknowledgements:  
+This work was supported by ONR MURI (N00014-14-1-0671), the DARPA Machine Common Sense program, as well as BAIR and BDD sponsors.
+这项工作得到了ONR MURI（N00014-14-1-0671）、DARPA机器常识项目以及BAIR和BDD赞助商的支持。
