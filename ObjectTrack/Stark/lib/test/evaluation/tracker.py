@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 
-def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids = None, display_name: str = None,
+def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids=None, display_name: str = None,
                 result_only=False):
     """Generate list of trackers.
     args:
@@ -58,7 +58,9 @@ class Tracker:
         if os.path.isfile(tracker_module_abspath):
             # 这里是用来确定使用那种tracker 这里包含了两级分类
             tracker_module = importlib.import_module('lib.test.tracker.{}'.format(self.name))
-            # 第二级分类的
+            # 第二级分类的 比如这个
+            from Stark.lib.test.tracker.stark_st import get_tracker_class
+            # type: get_tracker_class
             self.tracker_class = tracker_module.get_tracker_class()
         else:
             self.tracker_class = None
@@ -92,6 +94,9 @@ class Tracker:
         return output
 
     def _track_sequence(self, tracker, seq, init_info):
+        '''
+        tracker:
+        '''
         # Define outputs
         # Each field in output is a list containing tracker prediction for each frame.
 
@@ -126,6 +131,7 @@ class Tracker:
         # type:stark_st.STARK_ST.initialize()
         # 等
         out = tracker.initialize(image, init_info)
+        print("初始化一个序列完成")
         if out is None:
             out = {}
 
@@ -232,16 +238,18 @@ class Tracker:
             out = tracker.track(frame)
             state = [int(s) for s in out['target_bbox']]
             output_boxes.append(state)
+            if out['conf_score'] > 0.3:
+                cv.rectangle(frame_disp, (state[0], state[1]), (state[2] + state[0], state[3] + state[1]),
+                             (0, 255, 0), 5)
 
-            cv.rectangle(frame_disp, (state[0], state[1]), (state[2] + state[0], state[3] + state[1]),
-                         (0, 255, 0), 5)
-
-            font_color = (0, 0, 0)
-            cv.putText(frame_disp, 'Tracking!', (20, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1,
+            font_color = (0, 0, 255)
+            cv.putText(frame_disp, str(out['conf_score']), (50, 80), cv.FONT_HERSHEY_PLAIN, 2,
                        font_color, 1)
-            cv.putText(frame_disp, 'Press r to reset', (20, 55), cv.FONT_HERSHEY_COMPLEX_SMALL, 1,
+            # cv.putText(frame_disp, 'Tracking!', (20, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 3,
+            #            font_color, 1)
+            cv.putText(frame_disp, 'Press r to reset', (50, 155), cv.FONT_HERSHEY_PLAIN, 2,
                        font_color, 1)
-            cv.putText(frame_disp, 'Press q to quit', (20, 80), cv.FONT_HERSHEY_COMPLEX_SMALL, 1,
+            cv.putText(frame_disp, 'Press q to quit', (50, 220), cv.FONT_HERSHEY_PLAIN, 2,
                        font_color, 1)
 
             # Display the resulting frame
@@ -253,7 +261,8 @@ class Tracker:
                 ret, frame = cap.read()
                 frame_disp = frame.copy()
 
-                cv.putText(frame_disp, 'Select target ROI and press ENTER', (20, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1.5,
+                cv.putText(frame_disp, 'Select target ROI and press ENTER', (20, 30), cv.FONT_HERSHEY_COMPLEX_SMALL,
+                           1.5,
                            (0, 0, 0), 1)
 
                 cv.imshow(display_name, frame_disp)
@@ -276,7 +285,6 @@ class Tracker:
             bbox_file = '{}.txt'.format(base_results_path)
             np.savetxt(bbox_file, tracked_bb, delimiter='\t', fmt='%d')
 
-
     def get_parameters(self):
         """Get parameters."""
         param_module = importlib.import_module('lib.test.parameter.{}'.format(self.name))
@@ -291,6 +299,3 @@ class Tracker:
             return decode_img(image_file[0], image_file[1])
         else:
             raise ValueError("type of image_file should be str or list")
-
-
-

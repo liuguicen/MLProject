@@ -32,6 +32,32 @@ transformer在cv领域大显神威，作者把它用到目标跟踪领域。并�
 ![](.论文阅读笔记_images/938dde05.png)  
 该网络架构如图所示。 2.它主要由三个组件组成：一个卷积主干、一个编码解码器transformer和一个边界盒预测头。
 
+# github提问，关于目标查询的 
+Hi!
+You said that "In the encoder-decoder attention module, the target query can attend to all positions on the template and the search region features, thus learning robust representations for the final bounding box prediction." in your paper. How to understand that? It's really abstract for me.
+Thanks for your reply!
+
+嗨！您说，“在编解码注意模块中，目标查询可以注意到模板上的所有位置和搜索区域特征，从而学习最终包围盒预测的健壮表示。”在你的报纸上。如何理解？这对我来说太抽象了。谢谢你的回复！
+
+@MasterBin-IIAU
+
+Collaborator 合作者
+MasterBin-IIAU commented 评论18 days ago
+@ANdong-star Hi, this process is quite similar to that in the DETR decoder. In DETR, 100 object queries interact with the image features output by the encoder. In STARK, one target query interacts with the joint template-search features to extract the target information. Finally the box prediction head integrate the output of the encoder and the decoder to predict the final box results.
+
+@ andong-star 嗨，这个过程与 DETR 解码器中的过程非常相似。在 DETR 中，100个对象查询与编码器输出的图像特征交互。在 STARK 算法中，一个目标查询与联合模板搜索特征交互，以提取目标信息。最后，盒预测头将编码器和解码器的输出结合起来，预测最终的盒预测结果。
+
+@ANdong-star
+
+Author 作者
+ANdong-star 安东星 commented 评论16 days ago
+@ANdong-star Hi, this process is quite similar to that in the DETR decoder. In DETR, 100 object queries interact with the image features output by the encoder. In STARK, one target query interacts with the joint template-search features to extract the target information. Finally the box prediction head integrate the output of the encoder and the decoder to predict the final box results.
+
+@ andong-star 嗨，这个过程与 DETR 解码器中的过程非常相似。在 DETR 中，100个对象查询与编码器输出的图像特征交互。在 STARK 算法中，一个目标查询与联合模板搜索特征交互，以提取目标信息。最后，盒预测头将编码器和解码器的输出结合起来，预测最终的盒预测结果。
+
+got it! thanks!
+
+
 
 
 优化点：

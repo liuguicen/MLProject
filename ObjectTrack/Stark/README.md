@@ -142,6 +142,10 @@ python tracking/profile_model_lightning_X_trt.py
 ## Model Zoo
 The trained models, the training logs, and the raw tracking results are provided in the [model zoo](MODEL_ZOO.md)
 
+# 视频测试
+https://github.com/researchmm/Stark/issues/22
+
+
 ## Acknowledgments
 * Thanks for the great [PyTracking](https://github.com/visionml/pytracking) Library, which helps us to quickly implement our ideas.
 * We use the implementation of the DETR from the official repo [https://github.com/facebookresearch/detr](https://github.com/facebookresearch/detr).  

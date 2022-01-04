@@ -55,6 +55,7 @@ class STARK_LightningXtrt(BaseTracker):
         self.frame_id = 0
 
     def track(self, image, info: dict = None):
+        print("开始跟踪一帧")
         H, W, _ = image.shape
         self.frame_id += 1
         x_patch_arr, resize_factor, x_amask_arr = sample_target(image, self.state, self.params.search_factor,

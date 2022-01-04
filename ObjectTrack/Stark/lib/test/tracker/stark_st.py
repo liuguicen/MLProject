@@ -80,7 +80,7 @@ class STARK_ST(BaseTracker):
             feat_dict_list = self.z_dict_list + [x_dict]
             seq_dict = merge_template_search(feat_dict_list)
             # run the transformer
-            out_dict, _, _ = self.network.forward_transformer(seq_dict=seq_dict, run_box_head=True, run_cls_head=True)
+            out_dict, outputs_coord, _ = self.network.forward_transformer(seq_dict=seq_dict, run_box_head=True, run_cls_head=True)
         # get the final result
         pred_boxes = out_dict['pred_boxes'].view(-1, 4)
         # Baseline: Take the mean of all pred boxes as the final result
