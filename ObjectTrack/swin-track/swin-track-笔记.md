@@ -2,4 +2,6 @@
 多头只注意力MSA和前馈网络FFN的结合：
 MSA进行自注意力计算，FFN对MSA生成的特征token进行细化。
 
+我们还提供了一个更轻版本的SwinTrack，它提供了97FPS的SOTA性能。
+
 
