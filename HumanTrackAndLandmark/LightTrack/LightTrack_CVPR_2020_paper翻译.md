@@ -72,7 +72,7 @@ For identity association, we propose to consider two complementary pieces of inf
 ![](.LightTrack_CVPR_2020_paper翻译_images/f5b6d13d.png)  
 
 The above criterion is based on the assumption that the tracked target from the previous frame and the actual location of the target in the current frame have significant overlap, which is true in most cases. However, such assumption is not always reliable, especially when the camera shifts swiftly. In such cases, we need to match the new observation to the tracked candidates. In Re-ID problems, this is usually accomplished by a visual feature classifier.
-上述标准基于以下假设：来自前一帧的跟踪目标与当前帧中目标的实际位置有明显重叠，这在大多数情况下都是正确的。然而，这样的假设并不总是可靠的，特别是当摄像机快速移动时。在这种情况下，我们需要将新的观察结果与跟踪的候选者相匹配。在Re-ID问题中，这通常由视觉特征分类器完成。
+上述标准基于以下假设：**来自前一帧的跟踪目标与当前帧中目标的实际位置有明显重叠，这在大多数情况下都是正确的。** 然而，这样的假设并不总是可靠的，特别是当摄像机快速移动时。在这种情况下，我们需要将新的观察结果与跟踪的候选者相匹配。在Re-ID问题中，这通常由视觉特征分类器完成。
 
 However, visually similar candidates with different identities may confuse such classifiers. Extracting visual features can also be computationally expensive in an online tracking system. Therefore, we design a Graph Convolution Network (GCN) to leverage the graphical representation of the human joints. We observe that in two adjacent frames, the location of a person may drift away due to sudden camera shift, but the human pose will stay almost the same as people usually cannot act that fast, as illustrated in Fig. 2. Consequently, the graph representation of human skeletons can be a strong cue for candidate matching, which we refer to as pose matching in the following text.
 
