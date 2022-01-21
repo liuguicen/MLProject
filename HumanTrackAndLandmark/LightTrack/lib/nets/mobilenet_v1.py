@@ -109,8 +109,8 @@ from collections import namedtuple
 import functools
 
 import tensorflow as tf
-
-slim = tf.contrib.slim
+#import tensorflow.contrib.slim as slim
+import tf_slim as slim
 
 '''
  https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet_v1.md
@@ -315,7 +315,7 @@ def mobilenet_v1(inputs,
                  min_depth=8,
                  depth_multiplier=1.0,
                  conv_defs=None,
-                 prediction_fn=tf.contrib.layers.softmax,
+                 prediction_fn=tf.keras.layers.Softmax,
                  spatial_squeeze=True,
                  reuse=None,
                  scope='MobilenetV1',
