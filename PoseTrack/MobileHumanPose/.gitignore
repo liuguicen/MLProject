@@ -1,0 +1,24 @@
+# virtualenv setting
+venv_3DMPPE
+
+# output result
+output
+
+# demo output
+demo/*.pth.tar
+
+# byte-compiled
+/__pycache_/
+*/__pycache/*
+*/*/__pycache/
+*/*/*/__pycache/
+*.py[cod]
+*.pyc
+
+# nohup process
+*.out
+
+# idea
+.DS_Store
+.idea
+

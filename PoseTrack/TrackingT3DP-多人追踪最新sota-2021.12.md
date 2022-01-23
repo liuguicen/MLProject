@@ -1,0 +1,256 @@
+这篇文章也是属于多目标跟踪的类型，主框架是类似的。
+
+检测，提取人体掩模等，再利用xxx网络提取和生成3D特征，再结合这些特征和一些其它信息，生成位置，姿势，外观，结合多帧，得到它们的序列，然后用预测网络，预测后面n帧的位置，姿势，外貌，最后在当前帧检测获取出上面的3种数据，与预测数据关联对比，判断是否是同一个人，over。
+
+似乎参数和计算主要在提取特征，生成3D数据，预测这几个面，后面的轨迹关联不需要了。
+
+Tracking People by Predicting 3D Appearance, Location & Pose
+# Abstract
+In this paper, we present an approach for tracking people in monocular videos, by predicting their future 3D representations. To achieve this, we first lift people to 3D from a single frame in a robust way. This lifting includes information about the 3D pose of the person, his or her location in the 3D space, and the 3D appearance. As we track a person, we collect 3D observations over time in a tracklet representation. Given the 3D nature of our observations, we build temporal models for each one of the previous attributes. We use these models to predict the future state of the tracklet, including 3D location, 3D appearance, and 3D pose. For a future frame, we compute the similarity between the predicted state of a tracklet and the single frame observations in a probabilistic manner. Association is solved with simple Hungarian matching, and the matches are used to update the respective tracklets. We evaluate our approach on various benchmarks and report state-of-the-art results.
+
+在本文中，我们提出了一种方法来跟踪单目视频中的人，通过预测他们未来的三维表示。为了实现这一点，我们首先以一种鲁棒的方式从单一帧中将人们提升到3D。这个提升包括关于这个人的3D姿势、他或她在3D空间中的位置以及3D外观等信息。当我们跟踪一个人时，我们收集随时间变化的3D观察结果为轨迹的形式。鉴于我们观察的3D性质，我们为之前的每个属性建立了时间模型。我们使用这些模型来预测轨迹的未来状态，包括三维位置、三维外观和三维姿态。对于未来的一帧，我们以概率的方式计算一个轨迹的预测状态和单帧观测值之间的相似性。关联用简单的匈牙利匹配解决，匹配用于更新各自的轨迹。我们根据多种基准来评估我们的方法，并报告最先进的结果。
+
+# 1. Introduction
+When we watch a video, we can segment out individual people, cars, or other objects and track them over time.The corresponding task in computer vision has been studied for several decades now, with a fundamental choice being whether to do the tracking in 2D in the image plane, or of 3D objects in the world. The former seems simpler because it obviates the need for inferring 3D, but if we do take the step of back-projecting from the image to the world, other aspects such as dealing with occlusion become easier. In the 3D world the tracked object doesn’t disappear, and even young infants are aware of its persistence behind the occluder.  
+
+当我们人看一段视频时，我们可以分割出个人、汽车或其他物体，并随着时间的推移跟踪它们。计算机视觉中相应的相应任务已经研究了几十年，一个基本的选择是在图像平面上进行二维跟踪，还是对真实世界上的三维物体进行跟踪。前者看起来更简单，因为它排除了推断3D的需要，但如果我们确实采取从图像反向投影到世界的步骤，其他方面，如处理遮挡变得更容易。在3D世界中，被跟踪的物体不会消失，甚至婴儿也意识到它在遮挡物后面的持久性。
+
+A recent paper, Rajasegaran et al. [32] argues convincingly on the 3D side of this debate for people tracking, and presents experimental  evidence that indeed performance is better with 3D representations. In this paper, we will take this as granted, and proceed to develop a system in the 3D setting of the problem. While our approach broadly applies to any object category where parameterized 3D models are available and can be inferred from images, we will limit ourselves in this paper to studying people, the most important case in practice.
+
+**Rajasegaran等人[32]在最近的一篇论文中，对人们跟踪这一争论的3D方面进行了令人信服的论证，并提供了实验证据，证明3D下跟踪性能确实更好。在本文中，我们将把这视为理所当然，**并着手在这个问题上基于3D开发一个系统。虽然我们的方法广泛适用于任何可以使用参数化三维模型并可以从图像推断的对象类别，但在本文中，我们将仅限于研究人，这是实践中最重要的案例。
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/315cbe44.png)   
+Figure 1. Tracking people by predicting and matching in 3D.
+The top row shows our tracking results at three different frames. The results are visualized by a colored head-mask for unique identities. The second and third rows show renderings of the 3D states of the two people in their associated tracklets. The bottom row shows the bottom-up detections in each image frame which, after being lifted to 3D, will be matched with the 3D predictions of each tracklet in the corresponding frame. Note how in the middle frame of second row, the 3D representation of the person persists even though he is occluded in the image. More videos at project site.
+
+图1 通过3D中的预测和匹配来跟踪人。最上面一行显示了我们在三个不同帧下的跟踪结果。结果是通过一个彩色的头面罩可视化来表示唯一身份。第二行和第三行显示两个人在关联的轨迹中的3D状态的渲染。最下面一行显示了每一个图像帧中自下而上的检测结果，在被提升到3D后，将与相应帧中每个轨迹的三维预测相匹配。请注意，在第二行的中间一帧中，即使这个人在图像中被遮挡，他的3D表示仍然存在。更多视频请访问项目网站。
+
+
+Once we have accepted the philosophy that we are tracking 3D objects in a 3D world, but from 2D images as raw data, it is natural to adopt the vocabulary from control theory and estimation theory going back to the 1960s. We are interested in the “state” of objects in 3D, but all we have access to are “observations” which are RGB pixels in 2D.
+
+一旦我们接受了在3D世界中跟踪3D对象的理念，但将2D图像作为原始数据，我们自然会采用20世纪60年代控制理论和估计理论的词汇。我们对3D世界中对象的“状态”感兴趣，但我们所能获得的只是2D世界中的“观察”，即RGB像素。
+
+In an online setting, we observe a person across multiple time frames, and keep recursively updating our estimate of the person’s state — his or her appearance, location in the world, and pose (configuration of joint angles). Since we have a dynamic model (a “tracklet”), we can also predict states at future times. When the next image frame comes in, we detect the people in it, lift them to 3D, and in that setting solve the association problem between these bottomup detections and the top-down predictions of the different tracklets for this frame.
+
+在在线环境中，**我们在多个时间帧范围内观察一个人，并不断递归地更新我们对该人状态的估计——他或她的外貌、在世界上的位置和姿势（关节角度的配置）**。由于我们有一个动态模型（“tracklet”），我们还可以预测未来的状态。当下一个图像帧出现时，我们检测其中的人，将他们提升到3D，并在该设置中解决这些自底向上检测与该帧不同轨迹的自顶向下预测之间的关联问题。 
+
+Once the observations have been associated with the tracklets, the state of each person is reestimated and the process continues. Fig. 1 shows this process at work on a real video. Note that during a period of occlusion of a tracklet, while no new observations are coming in, the state of the person keeps evolving following his or her dynamics. It is not the case that “Out of sight, out of mind”!  
+
+一旦观察结果与轨迹关联，将重新估计每个人的状态，并继续此过程。图1示出了在真实视频上工作的该过程。请注意，在轨迹闭塞的一段时间内，虽然没有新的观察结果出现，但人的状态会随着其动力学而不断变化。不是“眼不见心理就没了”！
+
+In an abstract form, the procedure sketched in the previous paragraph is basically the same as that followed in multiple computer vision papers from the 1980s and 1990s. The difference is that in 2021 we can actually make it work thanks to the advances brought about by deep learning and big data, that enable consistent and reliable lifting of people to 3D. For this initial lifting, we rely on the HMAR model [32]. This is applied on every detected bounding box of the input video and provides us with their initial, single frame, observations for 3D pose, appearance as well as location of the person in the 3D space.
+
+在一个抽象的形式中，上一段中概述的过程基本上与20世纪80年代和90年代的多篇计算机视觉论文中所遵循的过程相同。**不同的是，在2021，我们可以使它的工作得益于深度学习和大数据带来的进步，使人们能够一致和可靠地将人提升到3D。** 对于初始提升，我们依赖HMAR模型[32]。这将应用于输入视频中检测到的每个边界框，并为我们提供其初始的、单帧的、3D姿势观察、外观以及3D空间中人员的位置。  
+ 
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/798b6a9d.png)  
+Figure 2. PHALP: Predicting Human Appearance, Location and Pose for Tracking: We perform  tracking of humans in 3D from monocular video. For every input bounding box, we estimate a 3D representation based on the 3D appearance, 3D pose and 3D location of the person. During  tracking, these are integrated to form corresponding tracklet-based representations. We perform  tracking by predicting the future representation of each person and using it to solve for association given the detected bounding boxes of a future frame.
+图2 PHALP：预测跟踪的人类外观、位置和姿势：我们通过单目视频在3D中对人类进行跟踪。**对于每个输入边界框，我们根据人物的3D外观、3D姿势和3D位置估计3D表示。**在跟踪过程中，这些被集成起来，形成相应的基于轨迹的表示。我们通过预测每个人的未来表示来执行跟踪，并使用它来解决给定未来帧的检测边界框的关联。
+
+As we link individual detections into tracklets, these representations are aggregated across each tracklet, allowing us to form temporal models, i.e., functions for the aggregation and prediction of each representation separately (see left side of Fig. 2). More specifically, for appearance, we use the canonical UV map of the SMPL model to aggregate appearance, and employ its most recent version as a prediction of a person’s appearance. For pose, we aggregate  information using a modification of the HMMR model [15], where through its “movie strip” representation, we can produce 3D pose predictions. Finally, for 3D location, we use linear regression to predict the future location of the person.  
+
+当我们将单个检测链接到tracklet中时，这些表示在每个tracklet中聚合，使我们能够形成时间模型，即，分别用于聚合和预测每个表示的函数（参见图2的左侧）。更具体地说，对于外观，我们使用SMPL模型的规范UV映射来聚合外观，并使用其最新版本来预测一个人的外观。对于姿势，我们使用修改的HMMR模型[15]的来聚合信息，通过其“电影带”表示，我们可以生成3D姿势预测。最后，对于三维定位，我们使用线性回归预测人的未来位置。
+
+This modeling enables us to develop our tracking system, PHALP (Predicting Human Appearance, Location and Pose for tracking), which aggregates information over time, uses it to predict future states, and then associates the predictions with the detections. First, we predict the 3D location, 3D pose and 3D appearance for each tracklet for a short period of time (right side of Fig. 2). For a future frame, these predictions need to be associated with the detected people of the frame. To measure similarity, we adopt a probabilistic interpretation and compute the posterior probabilities of every detection belonging to each one of the tracklets, based on the three basic attributes.   
+
+这种建模使我们能够开发我们的跟踪系统PHALP（预测跟踪的人类外观、位置和姿势），该系统随着时间的推移聚集信息，使用信息预测未来状态，然后将预测与检测相关联。首先，我们预测短时间内每个轨迹的3D位置、3D姿势和3D外观（图2右侧）。对于未来的帧，这些预测需要与帧中检测到的人相关联。**为了度量相似性，我们采用概率解释**，并基于三个基本属性计算属于每个轨迹的每个检测的后验概率。   
+
+With the appropriate similarity  metric, association is then easily resolved by means of the Hungarian algorithm. The newly linked detections can now update the temporal model of the corresponding tracklets for 3D pose, 3D appearance and 3D location in an online manner and we continue the procedure by rolling-out further prediction steps. The final output is an identity label for each detected bounding box in the video. Notably, this approach can also be applied on videos with shot changes, e.g., movies [10], with minor modifications. Effectively, we only modify our similarity to include only appearance and 3D pose information for these transitions, since they (unlike location) are not affected by the shot boundary.
+
+通过适当的相似性度量，关联可以通过匈牙利算法轻松解决。新链接的检测现在可以在线更新3D姿势、3D外观和3D位置的相应轨迹的时间模型，我们通过推出进一步的预测步骤继续该过程。最终输出是视频中每个检测到的边界框的标识标签。**值得注意的是，这种方法也可以应用于镜头发生变化的视频，例如电影[10]，只需稍加修改。实际上，我们只修改我们的相似性，以便只包含这些过渡的外观和三维姿势信息，因为它们（不同于位置）不受镜头边界的影响.**
+
+# 2. Related work
+## Tracking. 
+Object tracking is studied in various settings such as single object tracking, multi-object tracking for humans, and multi-object tracking for vehicles etc. The tracking literature is vast and we refer readers to [6, 7, 42] for a comprehensive summary. In general tracking can be designed for any generic category, however, in this section we discuss the methods that focus on tracking humans. These approaches mostly work in a tracking by detection setting, where 2D location, key-point features [9,34,38] and 2D appearance [4, 29, 40, 41] is used to associate detections over time. Quality of the detection plays a key role in trackingby-detection setting and many works jointly learn or finetune their own detection models [4, 29]. 
+ 目标跟踪在各种环境下进行研究，如单目标跟踪、人类多目标跟踪和车辆多目标跟踪等。跟踪文献非常丰富，我们请读者参考[6,7,42]以获得全面的总结。一般来说，跟踪可以针对任何通用类别进行设计，但是，在本节中，我们将讨论跟踪人类的方法。这些方法大多适用于检测跟踪设置，其中2D位置、关键点特征[9,34,38]和2D外观[4,29,40,41]用于随时间关联检测。**检测质量在通过检测进行跟踪的方案中起着关键作用，许多作品共同学习或微调自己的检测模型[4,29]。**
+ 
+ In this work, we are interested in the effectiveness of 3D representations for tracking and thus assume that detection bounding boxes are provided, which we associate through our representations. On the other hand, tracking by regression predicts future locations using the knowledge of the past detections. While this alleviate the requirement for good quality detections, most of the works regress in the image plane. The projection from 3D world to the image plane makes it hard to make this prediction, therefore these methods need to learn non-linear motion models [2, 4, 45]. Compared to these methods, PHALP predicts short-term location in 3D coordinates, by simple linear regression. Additionally, we also predict appearance and pose features for better association.   
+
+在这项工作中，我们感兴趣的是3D表示对跟踪有效性，因此假设检测边界框已经提供好了，我们通过表示将其关联起来。另一方面，回归跟踪利用过去探测的知识预测未来的位置。虽然这减轻了对高质量检测的要求，但大多数作品都在图像平面上回归。**从3D世界到图像平面的投影使得很难进行这种预测，因此这些方法需要学习非线性运动模型[2,4,45]。与这些方法相比，PHALP通过简单的线性回归在三维坐标系中预测短期位置。** 此外，我们还预测外观和姿势特征，以便更好地关联。
+
+Finally, there are methods that incorporate 3D information in tracking, however these approaches assume multiple input cameras [24, 44] or 3D point cloud observation from lidar data [37]. In this paper we focus on the setting where the input is a monocular video. Some recent works tracks occluded people based on the object permanence [17, 35]. These methods learn complex functions to predict the locations of occluded people. However, by placing humans in 3D space and predicting their location, pose and appearance, object permanence is already built into our system.
+最后，有一些方法在跟踪中包含3D信息，但这些方法假设多个输入摄像机[24,44]或从激光雷达数据进行3D点云观测[37]。在本文中，我们主要关注输入为单目视频的设置。**最近的一些作品基于对象的永久性来追踪被遮挡的人[17,35]。这些方法学习复杂的函数来预测被遮挡人员的位置。**然而，通过将人类放置在3D空间中并预测他们的位置、姿势和外观，我们的系统中已经建立了对象持久性。
+
+# 3. Method
+Tracking humans using 3D representations has significant advantages, including that appearance is independent of pose variations and the ability to have amodal completion for humans during partial occlusion. Our tracking algorithm accumulates these 3D representations over time, to achieve better association with the detections. PHALP has three main stages: 1) lifting humans into 3D representations in each frame, 2) aggregating single frame representations over time and predicting future representations, 3) associating tracks with detections using predicted representations in a probabilistic framework. We explain each stage in the next sections.
+
+使用3D表示跟踪人类具有显著的优势，包括外观独立于姿势变化，并且能够在部分遮挡期间为人类完成非模态？我们的跟踪算法随着时间的推移累积这些3D表示，以实现更好的检测关联。PHALP有三个主要阶段：1）在每一帧中将人类提升为3D表示，2）随着时间的推移聚合单帧表示并预测未来表示，3）在概率框架中使用预测表示将轨迹与检测关联。我们将在下一节中解释每个阶段。
+
+
+## 3.1. Single-frame processing 单帧处理
+The input to our system is a set of person detections along with their estimated segmentation masks, provided by conventional detection networks, like Mask-RCNN [12].Each detection is processed by our feature extraction backbone that computes the basic representations for pose, appearance and location on a single-frame basis. For this feature extraction we use a modification of the HMAR model [32]. HMAR returns a feature representation for the 3D pose p, for appearance a, while it can recover an estimate for the 3D location l for the person. 
+
+我们的系统的**输入是一组人的检测和他们估计的分割掩模，由传统的检测网络提供，如Mask-RCNN[12]。**每个检测都由我们的特征提取主干处理，该骨干在单帧基础上计算姿态、外观和位置的基本表示。 对于这个**特征提取，我们使用了修改的HMAR模型[32]**。**HMAR返回一个了3D特征p和外观a的特征表示，同时它可以恢复对该人的3D位置l的估计。**
+
+The standard HMAR model takes as input the pixels in the bounding box corresponding to a detected person. This means that in a crowded, multi-person scenario, the input will contain pixels corresponding to more than one person in the bounding box, potentially confusing the network. To deal with this problem, we modify HMAR to take as additional input, the pixel level mask of the person of interest (this is readily available as part of the output of Mask R-CNN) and re-train HMAR. Obviously, we cannot expect this step to be perfect, since there can be inaccuracies in the bounding box detections or mask segmentations. However, we observed that the model gives more robust results  in the case of close person-person interactions, which are common in natural videos.
+
+标准的HMAR模型将与被检测到的人对应的边界框中的像素作为输入。这意味着，在一个拥挤的、多人参与的场景中，输入将包含在边界框中对应于多个人的像素，这可能会混淆网络。为了解决这个问题，我们修改了HMAR，**将感兴趣者的像素级掩码(这很容易作为MaskR-CNN输出的一部分)作为额外的输入**，并重新训练HMAR。显然，我们不能期望这一步是完美的，因为在边界盒检测或掩码分割中可能存在不准确的地方。然而，我们观察到，该模型在人与人紧密接触的情况下给出了更稳健的结果，这在自然视频中很常见。
+
+## 3.2. 3D tracklet prediction  
+The 3D estimates for each detection provide a rich and expressive representation for each bounding box. However, they are only the result of single-frame processing. During tracking, as we expand each tracklet, we have access to more information that is representative of the state of the tracklet along the whole trajectory. To properly leverage this information, our tracking algorithm builds a tracklet representation during every step of its online processing, which allows us to also predict the future states for each tracklet. In this section we describe how we build this tracklet representation, and more importantly, how we use it to predict the future state of each tracklet.
+ 
+每个检测的3D估计为每个边界框提供了丰富而富有表现力的表示。然而，它们只是单帧处理的结果。在跟踪过程中，当我们扩展每个tracklet时，我们在整个轨迹上的可以访问代表轨迹的状态更多信息。为了正确地利用这些信息，我们的跟踪算法在在线处理的每个步骤中都会构建一个tracklet表示，这也允许我们预测每个tracklet的未来状态。在本节中，我们将介绍如何构建这个tracklet表示，更重要的是，我们如何使用它来预测每个tracklet的未来状态。
+
+### Appearance: 
+The appearance pathway is used to integrate appearance information for each person over multiple frames.  
+外观路径用于在多个帧上整合每个人的外观信息。   
+The single frame appearance representation for the person i at time step t, $A^i_t$, is taken from the HMAR model by combining the UV image of that person $T^i_t ∈ R^{3×256×256}$ and the corresponding visibility map  $V^i_t ∈ R^{1×256×256}$ at time step t .  
+    $A^i_t = [T^i_t, V^i_t] ∈ R^{4×256×256}$  
+Note that the visibility mask $V^i_t ∈ [0, 1]$ indicates whether  a pixel in the UV image is visible or not, based on the estimated mask from Mask-RCNN.   
+外观路径用于在多个帧上整合每个人的外观信息。**时间步t的人的单帧外观表示$A^i_t$通过结合HMAR模型的姿态$T^i_t∈R^{3×256×256}$和相应的可见图$V^i_t ∈ R^{1×256×256}$ 得到**    
+$A^i_t = [T^i_t, V^i_t] ∈ R^{4×256×256}$   
+注意，可见掩码Vit∈[0,1]根据HMAR-RCNN中的估计掩码指示UV图像中的一个像素是否可见来确定。
+
+Now, if we assume that we have established the identity of this person in neighboring frames, we can integrate the partial appearance information coming from the independent frames to an overall tracklet appearance for the person. Using the set of single frame appearance representations $A^i = {A^i_t, A^i_{t−1}, A^i_{t−2}  , ...},$ after every new detection we create a singe per-tracklet appearance representation:
+b  Ait = ΦA( b
+现在，如果我们假设我们已经在相邻的帧中建立了这个人的身份，我们就可以将来自独立帧的部分外观信息整合到这个人的整体轨迹外观中。使用单帧外观表示集Ai={Ait，Ait−1，Ait−2，…}，在每一次新的检测后，我们创建一个单轨迹外观表示：
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/a965da03.png)
+
+Here, $Φ_A$ is the appearance aggregation function, which takes a weighted sum of the previous tracklet appearance representation and the new detection appearance representation.   
+这里，$Φ_A$是外观聚合函数，它取之前的轨迹外观表示和新的检测外观表示的加权和。
+ Note that, at the start of the tracklet we simply assign the initial single-frame representation to the tracklet representation ( bAi0 = Ai0 ). 
+注意，在轨迹的开始时，我们简单地将初始单帧表示分配给轨迹表示$(A^i_0=A^i_0)$  
+With this definition of $Φ_A$, we can aggregate appearance information over time, while allowing the representation to change slowly to account for slight appearance changes of the person during a video.   
+
+有了$Φ_A$的这个定义，我们可以随着时间的推移聚合外观信息，同时允许表示缓慢变化，以解释在视频中这个人的轻微外观变化。
+
+Moreover, the UV image provides appearance of each point on the body surface independently of body pose and shape which enables the simple summation operation on the pixel space, without any learnable components. Figure 3 shows how the UV image of the person is aggregated over time and used for association of new detections.  
+
+此外，**UV图像提供了每个点的在身体表面的外观，这个外观独立于身体姿势和形状，这使的像素空间上的简单的求和操作（我：即可获取3D外观信息），没有任何需要学习的组件。**图3显示了这个人的UV image是如何随着时间的推移而聚集的，并用于关联新的检测。这里是一样的时间累积外观变化，专门用分割网络提取外观信息。
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/2abd8c68.png)
+Figure 3. Prediction of appearance: We show how the single frame appearance Ai is aggregated over time for the prediction of the tracklet appearance b Ai . At the start, we only see the front side of the person indicated in the frame, however as he moves his visibility changes, and we only see his back side. With the single frame appearance, we can see that the visibility changes corresponding to the visibility of the person in the frame. However, in the tracklet, the appearance is accumulated over time, and even if the front side is not visible in the last frame, we can see that the tracklet has predicted these regions using the past frames.  
+图3 外观预测：我们展示了单帧外观$A^i$是如何随着时间的推移而聚集的，以预测轨迹外观$A^i$。一开始，我们只看到帧中显示的人的正面，但是当他移动他的能见度变化，我们只看到他的背面。对于单帧外观，我们可以看到3D可见性与帧中的人的可见性相对变化。然而，在轨迹中，外观是随着时间的推移而积累的，即使正面在最后一帧中不可见，我们也可以看到轨迹使用过去的帧预测了这些区域。
+
+For appearance prediction, we make the realistic assumption that human appearance will not change rapidly over time. Then, the appearance of the tracklet b Ait can function as a reasonable prediction for the future appearance of the person. Therefore, we use b Ait as the prediction for appearance and use it to measure similarity against a detection in the future frames.   
+ 对于外观预测，我们做出了一个现实的假设，即人类的外观不会随着时间的推移而迅速变化。然后，轨迹的外观$A^i_t$的可以作为对该人未来外观的合理预测。因此，我们使用$A^i_t$作为外观预测，并使用它来衡量未来帧中检测的相似性。  
+
+### Location:
+Lifting humans from pixels into the 3D space allows us to place them in the global 3D location. Let us assume that a person i at time t has an estimated 3D location $l^i_t$.  Although, we can get an estimate for the location of the person in the global camera frame, this tends to be noisy, particularly along the z-axis.  
+将人类从像素提升到3D空间，使我们能够将它们放置在全球3D位置。让我们假设一个人 i 在 t 的时间有一个估计的3D位置点亮。  虽然，我们可以估计出一个人在全局相机帧中的位置，但这往往是嘈杂的，特别是沿着z轴。   
+
+ To avoid any instabilities when it comes to predicting future location, instead of performing our prediction on the Euclidean $(X, Y, Z)^T$ space, we express our locations in an equivalent $l^i_t = (x, y, n)^T$ space where (x, y) is the location of the root of the person in the pixel space and n is nearness, defined as log inverse depth n = log(1/z).  
+     
+为了避免预测未来位置时的不稳定性，我们不是在欧几里得$(X, Y, Z)^T$ 空间上执行预测，而是**在等效的 $l^i_t = (x, y, n)^T$ 空间中表示位置，其中(xy)是人在像素空间中的根的位置，n是接近，定义为对数逆深度n=log(1/z)。**   
+
+Nearness is a natural parameterization of depth in multiple vision settings, e.g., [21], because of the 1/z scaling of perspective projection. In our case it corresponds to the scale of the human figures that we estimate directly from images.  
+接近度是在多个视觉设置中对深度的自然参数化，例如，[21]，因为透视投影的1/z缩放。在我们的例子中，它对应于我们直接从图像中估计出的人体人物的比例.
+
+
+We independently linearly regress the location predictions for x, y and n. This is somewhat like the Constant Velocity Assumption (CVA) used in past tracking literature, but there is a subtlety here because constant velocity in 3D need not give rise to constant velocity in 2D (a person would appear to speed up as she approaches the camera). But local linearization is always a reasonable approximation to make, which is what we do.    
+**我们独立地线性回归了x，y和n的位置预测。**这有点像在过去的跟踪文献中使用的恒定速度假设(CVA)，但这里有一个微妙之处，因为3D中的恒速不会产生2D中的恒定速度（一个人在接近镜头时似乎会加速）。但是局部线性化总是一个合理的近似，这就是我们所做的。    
+Let us assume that a tracklet has a set of past locations
+$L^i = {l^i_t, l^i_{t−1}, l^i_{t−2} , ...}$. Then, the prediction of the loca-tion for time step t + 1 is given by:  
+让我们假设一个小轨迹有一组过去的位置，$L^i = {l^i_t, l^i_{t−1}, l^i_{t−2} , ...}$。然后，时间步t+1的轨迹预测为：  
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/da8a2553.png)
+Here, $Φ_L$ is the location aggregation function and we use a simple linear regression for prediction in our tracking algorithm. ybit+1 and b nit+1 are also predicted in a similar fashion. ΦL takes the last w observations to fit a line by least squares and regress the future location for x, y and n independently. From the standard theory of linear regression, the prediction interval for x at a time step t0 is given by the equation below:  
+这里，$Φ_L$ 是位置聚合函数，我们在跟踪算法中使用一个**简单的线性回归进行预测**。$y^i_{t+1}和n^i_{t+1}$也以类似的方式被预测。$Φ_L$ 取最后的w观测值，用最小二乘法拟合一条直线，并独立回归x、y和n的未来位置。根据线性回归的标准理论，x在时间步$t^'$时的预测区间如下式所示：
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/9402a86c.png)
+Here, t(1−α/2) is the Student’s t distribution with confi-
+dence α and degree of freedom w − 2. MSE is the mean
+squared error on the predicted locations and t¯is the mean of
+the time stamps for the previous observations. In a similar
+manner, we can compute prediction intervals ∆y, ∆n for y
+and n respectively.
+这里，t(1−α/2)是具有α和自由度w−2的 t分布。MSE是预测位置上的均方误差，$t^¯$是之前观测值的时间戳的平均值。同样，我们可以分别计算y和n的预测区间∆y和∆n。
+
+### Pose: 
+For the pose pathway, we need to integrate pose information across the tracklet and be able to predict future poses for the near future. To do this, we borrow ideas from the HMMR architecture [15]. Effectively, we learn a function $Φ_P$ that takes as input a series of pose embeddings of a person $P^i = {p^i_t, p^i_{t−1}, p^i_{t−2} , ...}$ and computes a temporal pose embedding 
+$\hat{p_t}$ . We train this temporal pose aggregation function $Φ_P$ to smooth the pose $\hat{p^i_t}$ at frame t, and regress the future pose representations ${p^i_t+1，b^i_t+2，…，b^i_c}$ (typically for up to c = 12 frames in the future). We use a transformer [36] to compute$Φ_P$ . This choice allows for some additional flexibility, since sometimes we are not able to detect an identity in some frames (e.g., due to occlusions), which can be handled gracefully by the transformer, by masking out the attention for the representation of the corresponding frame.
+
+对于姿势路径，我们需要整合整个轨迹的姿势信息，并能够预测近期的未来姿势。为此，我们借鉴了HMMR体系结构的思想[15]。有效地，我们学习了一个函数$Φ_P$，该函数以一个人的一系列姿势嵌入作为输入$P^i = {p^i_t, p^i_{t−1}, p^i_{t−2} , ...}$ 并计算一个时间姿势嵌入$\hat{p}_t$。我们训练这个时间姿势聚合函数$Φ_P$来平滑第t帧的姿势$\hat{p}^i_t$，并回归未来的姿势表示${p^i_t+1，b^i_t+2，…，b^i_c}$（通常在未来最多c=12帧）。**我们使用transformer[36]来计算$Φ_P$**。这种选择允许一些额外的灵活性，因为有时我们无法在某些帧中检测到身份（例如，由于遮挡），这可以由变换器的在相应帧对注意的掩模而优雅地处理。
+
+## 3.3. Tracking with predicted 3D representations
+总结：这里就是如何将已有的轨迹当前帧检测到的某个人进行关联，从而实现对人的最终。首先对3个属性进行预测，然后将预测的属性和当前帧检测到的各个属性进行关联。关联的方法，先定义预测属性和检测属性之间的距离，比如2阶范数$∆a = ||\hat{a}^i_t−a^j_t ||^2_2$。然后就是检测属性属于轨迹的概率与这个距离满足一个什么样的关系式，这个关系式是作者通过实验数据观察出来的。比如![](.TrackingT3DP-多人追踪最新sota-2021.12_images/d565356d.png)  这个式子意思就是当距离=∆a时,检测Dj属于Ai的概率服从后面那个式子的分布，这个式子大概也可以看出呈现一个反比关系，就是两个关联度与距离成反比，这也符合直觉。
+
+
+Given the bounding boxes and their single-frame 3D representations, our tracking algorithm associates identities
+across frames in an online manner. At every frame, we make future predictions for each tracklet and we measure the similarity with the detected single-frame representation.   
+给定边界框及其单帧三维表示，我们的跟踪算法以在线方式关联跨帧的身份。在每一帧中，我们对每条轨迹进行未来的预测，并测量与检测到的单帧表示的相似性。   
+
+ More specifically, let us assume that we have a tracklet $T_i$, which has been tracked for a sequence of frames and has information for appearance, pose and location.  
+ 更具体地说，让我们假设我们有一个轨迹$T^i$，它已经跟踪了一系列帧，并有关于外观、姿势和位置的信息。
+
+ The tracklet predicts its appearance  A, locationb l and pose p for the next frame, and we need to measure a similarity score between these predictions of the track Ti and a detection Dj to make an association.  
+
+轨迹预测下一帧的外观$\hat{a}$、位置$\hat{l}$和姿态$\hat{p}$，我们需要测量这些预测的轨迹$T_i$和检测$D_j$之间的相似性得分，以建立关联。
+
+Our tracklet representation has three different attributes (appearance, location and pose), so, directly combining their similarities/distances would not be ideal, since, each attribute has different characteristics. Instead, we investigate the conditional distributions of inliers and outliers of the attributes. Figure 5 presents the corresponding probability distributions for the PoseTrack dataset [3]. The characteristics of these distributions motivate our design decisions for our further modeling.    
+
+我们的轨迹表示有三个不同的属性（外观、位置和姿势），因此，直接组合它们的相似性/距离并不理想，因为每个属性都有不同的特性。相反，我们研究属性的内点和离群点的条件分布。图5显示了PoseTrack数据集的相应概率分布[3]。这些分布的特征为我们为进一步建模的设计决策提供启发。
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/6f472e1b.png)   
+Figure 5. Conditional distributions of the attribute distances: We plot the data for the distances between the tracklet prediction and the single frame detection using the ground truth data from PoseTrack [3]. The curves show how the correct matches (inliers) and the incorrect matches (outliers) are distributed. Note that, for 2D location and nearness we plot the distances normalized by the prediction interval.    
+图5 属性距离的条件分布：我们使用PoseTrack[3]的地面真值数据绘制轨迹预测和单帧检测之间的距离数据。这些曲线显示了正确匹配（内点）和错误匹配（异常值）的分布情况。注意，对于2D位置和接近度，我们绘制了由预测间隔标准化的距离。
+
+Assume that tracklet $T_i$ has an appearance representation b $\hat{A^i_t}$ . On the detection side, the detection $D_j$ has a  single-frame appearance representation $A^j_t$ . Both of these representations are in the pixel space, therefore we first encode them into an embedding space using the HMAR appearance-encoder network. This gives us an appearance embedding $\hat{a}^i_t$ and $a^j_t$ for the prediction of the tracklet $T_i$ and detection $D_j$ , respectively. We are interested in estimating the posterior probability of the event where the detection $D_j$ belongs to the track $T_i$ , given some distance measure of the appearance feature $(∆a)$. Assuming that the appearance distance is $∆a = ||\hat{a}^i_t − a^j_t ||^2_2$ , then the posterior probability is proportional to the conditional probability of the appearance distances, given correct assignments based on Bayes rule. We model this conditional probability as a Cauchy distribution, based on the observations from the inlier distribution of appearance distances (see also Fig 5):
+
+假设tracklet $T_i$有一个外观表示$\hat{A}^i_T$。在检测端，检测$D_j$具有单帧外观表示$a^j_t$。这些表示都在像素空间中，因此我们首先使用HMAR外观编码器网络将它们编码到嵌入空间中。这为我们提供了一个外观嵌入$\hat{a}^i_t$和$a^j_t$，分别用于tracklet$t_i$的预测和检测$D_j$。我们感兴趣的是估计检测$D_j$属于轨迹$T_i$事件的后验概率，给定外观特征的一些距离度量$(∆a)$。假设外貌距离为$∆a=||\hat{a}^i_t− a^j_t||^2_2$，**则后验概率与外貌距离的条件概率成正比，**根据贝叶斯规则给出正确的赋值。我们将该条件概率建模为柯西分布，基于从外观距离的inlier分布中观察到的结果（另请参见图5）：
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/33ad9526.png)  
+The distribution has one scaling hyper-parameter βa. 该分布有一个可缩放的超参数βa。  
+ 
+Similarly, for pose, we use Cauchy distribution to model the conditional probability of inlier distances. We measure pose distance $∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ between the predicted pose representation $p^i_t$ from the track $T_i$ and the pose representation $p^j_t$ of detection $D_j$ . The posterior probability that the detection belongs to the track, given the pose distance is:    
+同样，对于姿态，我们使用柯西分布来模拟内点距离的条件概率。我们在轨迹$T_i$的预测姿势表示$p^i_t$和检测$D_j$的姿势表示$p^j_t$之间测量姿势距离$∆p = ||\hat{p}^i_t−p^j_t ||^2_2$。给定姿势距离，检测属于轨迹的后验概率为：![](.TrackingT3DP-多人追踪最新sota-2021.12_images/f08e7831.png)     
+Here, $∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ and βp is the scaling factor   
+在这里，$∆p = ||\hat{p}^i_t−p^j_t ||^2_2$ 和βp是缩放因子
+
+For location, let us assume the track Ti has predicted a location $\hat{l}^i_t = (\hat{x}^i_t, \hat{y}^i_t, \hat{ n}^i_t)^T$ with a set of prediction intervals {δx, δy, δn}, and the detection $D_j$ is at a 3D location $l^j_t = (x^j_t , y^ j_t , n^j_t )^T$ . We treat the 3D coordinates x, y and the nearness term n coordinates independently, and compute the posterior probabilities of the detection belongs to the tracklet given the location distance. We model the conditional probability distribution as an exponential distribution, based on the findings from the empirical data. The Fig 5 shows the distribution of 2D distance and nearness distance, scaled by the confidence interval, of inliers approximately follow the exponential distribution.    
+
+对于位置，让我们假设轨道$T_i$已经用一组预测间隔{δx，δy，δn}预测了一个位置$\hat{l}^i_t=（\hat{x}^i_t, \hat{y}^i_t,\hat{n}^i_t)$，并且检测$D_j$位于一个三维位置$l^j_t=(x^j_t, y^j_t,n^j_t)$。我们独立地处理三维坐标x、y和近距离项n坐标，并在给定位置距离的情况下计算检测属于轨迹的后验概率。根据经验数据的发现，我们将条件概率分布建模为指数分布。图5显示了由置信区间缩放的二维距离和近距离的分布，入口近似服从指数分布。
+
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/cbdd40b7.png)   
+
+Here, βxy is a scaling parameter for the exponential distribution, ∆xy is the 2D pixel distance between the predicted track and the detection and $δxy =  \sqrt{δ^2_x + δ_y^2}$ is the prediction interval for the 2D location prediction. We use a similar form of exponential distribution for the posterior probability for nearness PN :    
+
+这里，βxy是指数分布的标度参数，∆xy是预测轨迹和检测之间的2D像素距离，$δxy=\sqrt{δ^2_x+δ_y^2}$是2D位置预测的预测间隔。我们使用一种类似的指数分布形式来计算近距离PN的后验概率：
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/6ceeac6d.png) 
+
+Here, βn is the scaling parameter for the exponential distribution, δn is the confidence interval for the nearness prediction, and ∆n is the L1 distance between the nearness of the tracklet prediction and the detection.
+这里，βn是指数分布的标度参数，δn是近程预测的置信区间，以及∆n是轨迹预测和检测之间的L1距离。
+
+Now that we have computed the conditional probabilities of the detection belonging to a track conditioned on the individual cues of appearance, location and pose, we can compute the overall conditional probability of the detection Dj belonging to the track Ti , given all the cues together (assumed to be independent):  
+现在，我们已经计算了以外观、位置和姿势的单个线索为条件的检测属于轨迹的条件概率，我们可以计算属于轨迹Ti的检测Dj的总体条件概率，假设所有线索在一起（假设独立）：
+ ![](.TrackingT3DP-多人追踪最新sota-2021.12_images/643c0804.png)
+ 
+ This allow us to estimate how probable an association is based on various attribute distances. Finally, we map the similarity measures (probability values up to a scale), to cost values, for solving association. The cost function between the detection representations and a predicted representations of the tracklet is defined as:  
+ 这使我们能够基于各种属性距离来估计一个关联的可能性。最后，我们将相似度度量（概率值到一个尺度）映射到成本值，以解决关联。检测表示和轨迹的预测表示之间的成本函数定义为：
+ ![](.TrackingT3DP-多人追踪最新sota-2021.12_images/0be7fbd1.png)    
+ where the second equality is up to an additive constant. Once the cost between all the tracks and the detection is computed, we simply pass it to the Hungarian algorithm for solving the association.  
+ 其中第二个等式是一个加法常数。一旦计算了所有轨迹和检测之间的成本，我们就简单地将其传递给匈牙利算法来解决关联。
+ 
+### Estimating the parameters of the cost function:
+  The cost function $Φ_C$ has 4 parameters (βa, βp, βxy and βn). Additionally, the Hungarian algorithm has one parameter $β_th$ to decide whether the track is not a match to the detection. Therefore, overall we have five parameters for the whole association part of our tracking system  
+估计成本函数的参数：成本函数$Φ_C$有4个参数(βa、βp、βxy和βn)。此外，匈牙利算法有一个参数βth来决定轨道是否与检测不匹配。因此，总的来说，我们的跟踪系统的整个关联部分有五个参数.
+
+ Now, we treat this as an empirical risk minimization problem and optimize the β values based on a loss function. We initialize βa, βp, βxy and βn with the values from the estimated density functions and use frame level association error as a loss function for the optimization. We use the Nelder–Mead [30] algorithm for this optimization. Finally, the optimized β values are used for the cost function across all the datasets, and a simple tracking algorithm is used to associate detections with tracklet predictions. The sketch of the tracking algorithm is shown in Algorithm 1.
+
+现在，我们将其视为一个经验风险最小化问题，并基于损失函数对β值进行操作计时。我们用估计的密度函数的值初始化βa、βp、βxy和βn，并使用帧级关联误差作为损失函数进行优化。我们使用Nelder-Mead[30]算法来进行优化。最后，将优化后的β值用于所有数据集的成本函数，并使用一个简单的跟踪算法将检测与轨迹预测联系起来。跟踪算法的示意图见算法1。
+
+## 3.4. Extension to shot changes
+Our framework can easily be extended to also handle shot changes, which are common in edited media, like movies, TV shows, but also sports. Since shot changes can be detected relatively reliably, we use an external shot detector [13] to identify frames that indicate shot changes. Informed by the detection of this boundary, during tracking, we update the distance metric accordingly. More specifically, since appearance and 3D pose are invariant to the viewpoint, we keep these factors in the distance computation, while we drop the location distance from the distance metric, because of the change in the camera location. Then, the association is computed based on this updated metric. We use the AVA dataset [10] to demonstrate this utility of our tracking system and present results in Section 4.
+我们的框架可以很容易地扩展到处理镜头变化，这在编辑媒体中很常见，如电影、电视节目，但体育也很常见。由于镜头变化可以相对可靠地检测到，**我们使用额外的镜头检测器[13]来识别指示镜头变化的帧**。通过检测到这个边界，在跟踪过程中，我们相应地更新距离度量。更具体地说，**由于外观和三维姿态对镜头是不变的，我们在距离计算时保留这些因素，而我们从距离度量删除位置距离，因为相机位置的变化。** 然后，根据这个更新的度量来计算关联。我们使用AVA数据集[10]来演示我们的跟踪系统的实用性，并在第4节中展示结果。
+
+4. Experiments
+In this section, we present the experimental evaluation of our approach. We report results on three datasets: PoseTrack [3], MuPoTS [28] and AVA [10], which capture a diverse set of sequences, including sports, casual interactions and movies. Our method operates on detections and masks coming from an off-the-shelf Mask-RCNN network [12], and returns the identity label for each one of them. Therefore, the metrics we use to report results also focus on identity tracking at the level of the bounding box. More specifically, we report results using Identity switches (IDs), Multi-Object Tracking Accuracy (MOTA) [16], ID F1 score (IDF1) [33] and HOTA [26]. In all cases, we adopt the protocols of Rajasegaran et al. [32] for evaluation.   
+
+在本节中，我们将对我们的方法进行实验评估。我们报告了三个数据集的结果：PoseTrack[3]、MuPoTS[28]和AVA[10]，它们捕获了一组不同的序列，**包括运动、休闲互动和电影**。我们的检测和掩操作来自现成mask-RCNN网络[12]，并返回其中每一个的标识标签。因此，我们用于报告结果的指标也侧重于边界框级别的身份跟踪。更具体地说，我们报告了使用身份开关（IDs）、多目标跟踪精度（MOTA）[16]、IDF1分数（IDF1）[33]和HOTA[26]的结果。在所有情况下，我们都采用Rajasegaran等人[32]的方法进行评估。
+
+First, we ablate the main components of our approach. Specifically, we investigate the effect of each one of the tracking cues we employ, i.e., appearance, 3D location and 3D pose, and how they affect the overall tracking pipeline. For this comparison, we report results on the Posetrack dataset [3]. The full results are presented in Table 1. As we can see, removing each one of the main cues leads to degradation in the performance of the system, where 3D location seems to have the largest effect on the performance, followed by appearance and 3D pose. Moreover, this ablation also highlights the importance of having the nearness term in the cost function, a feature that is not available to purely 2D tracking methods.  
+
+首先，我们消除了我们方法的主要组成部分。具体来说，**我们研究了我们使用的每一个跟踪组件的效果，即外观、3D位置和3D姿势，以及它们如何影响整个跟踪管道。**为了进行比较，我们报告了Posetrack数据集[3]的结果。全部结果如表1所示。正如我们所看到的，删除每个主要线索都会导致系统性能下降，**其中3D位置对性能的影响最大，**其次是外观和3D姿势。此外，这种消融术还强调了成本函数中具有近似项的重要性，这是纯二维跟踪方法所不具备的特性。  
+![](.TrackingT3DP-多人追踪最新sota-2021.12_images/b3e4ea27.png)   
+Table 1. Ablation of the main components of PHALP on PoseTrack [3]. Removing each tracking cue (3D appearance, 3D pose or 3D location) leads to degradation in the performance.  
+表1。在姿势、轨迹上消融阴茎的主要成分[3]。删除每个跟踪线索（3D外观、3D姿势或3D位置）会导致性能下降。
+
+Next, we evaluate our approach in comparison with the state-of-the-art methods. The results are presented in Table 2. We report results on PoseTrack [3], MuPoTS [28] and AVA [10]. Our method outperforms the previous baselines, as well as the state-of-the-art approach of Rajasegaran [32]. The gains are significant across all metrics. Our method also outperforms the other approaches in the HOTA metric. Finally, we also show qualitative results of our method on multiple datasets in Fig 6. These results show that our method performs reliably even in very hard occlusion cases, while it is able to recover the correct identity over multiple successive occlusions. Fig 6 also shows the robustness of our method in complex motion sequences, shot changes and long trajectories.
+
+接下来，我们将与最先进的方法进行比较，评估我们的方法。结果见表2。我们报告了PoseTrack[3]、MuPoTS[28]和AVA[10]的结果。我们的方法优于以前的基线，以及Rajasegaran的最先进方法[32]。所有指标的收益都是显著的。我们的方法在HOTA度量方面也优于其他方法。最后，我们还在图6中展示了我们的方法在多个数据集上的定性结果。这些结果表明，我们的方法即使在非常硬的遮挡情况下也能可靠地执行，同时能够在多个连续遮挡情况下恢复正确的身份。图6还显示了我们的方法在复杂运动序列、镜头变化和长轨迹中的鲁棒性。
+
+# 5. Discussion
+We presented PHALP, an approach for monocular people tracking, by predicting appearance, location and pose in 3D. Our method relies on a powerful backbone for 3D human mesh recovery, modeling on the tracklet level for collecting information across the tracklet’s detections, and eventually predicting the future states of the tracklet. One of the main benefits of PHALP is that the association aspect requires tuning of only five parameters, which makes it very friendly for training on multi-object tracking datasets, where annotating the identity of every person in a video can be expensive. We should note that our approach can be naturally extended to make use of more attributes, e.g., a face embedding, which could be useful for cases with closeups, like movies. The main assumptions for PHALP are that we have access to a good object detector for the initial bounding box/mask detection, and a strong HMAR network for single-frame lifting of people to 3D. If the performance of these components is not satisfactory, it can also affect PHALP. Regarding societal impact, tracking systems have often been used for human surveillance. We do not condone such use. Instead, we believe that a tracking system will be valuable for studying social-human interactions.  
+
+我们提出了PHALP，一种单目人体跟踪方法，通过预测3D中的外观、位置和姿势。我们的方法依赖于一个强大的三维人体网格恢复主干，在tracklet级别上建模以收集tracklet检测的信息，并最终预测tracklet的未来状态。PHALP的一个主要优点是关联方面只需要调整五个参数，这使得它对于多对象跟踪数据集的培训非常友好，在多对象跟踪数据集中，在视频中注释每个人的身份可能非常昂贵。我们应该注意到，我们的方法可以自然地扩展到使用更多属性，例如人脸嵌入，这对于特写镜头（如电影）可能很有用。PHALP的主要假设是，我们可以使用良好的对象检测器进行初始边界框/遮罩检测，并使用强大的HMAR网络进行单帧提升，将人提升到3D。如果这些部件的性能不令人满意，也会影响PHALP。关于社会影响，跟踪系统经常被用于人类监视。我们不容忍这种使用。相反，我们相信跟踪系统对于研究社会人际互动是有价值的。
+
+# Acknowledgements:  
+This work was supported by ONR MURI (N00014-14-1-0671), the DARPA Machine Common Sense program, as well as BAIR and BDD sponsors.
+这项工作得到了ONR MURI（N00014-14-1-0671）、DARPA机器常识项目以及BAIR和BDD赞助商的支持。
