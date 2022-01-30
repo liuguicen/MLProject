@@ -1,0 +1,1110 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 113 files
+Detected 4 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: LightTrack/graph/torchlight/build/lib/torchlight/io.py
+--------------------------------------------------------------------------------
+LightTrack/graph/torchlight/build/lib/torchlight/io.py:106:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: LightTrack/graph/torchlight/torchlight/io.py
+--------------------------------------------------------------------------------
+LightTrack/graph/torchlight/torchlight/io.py:106:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: LightTrack/lib/tfflat/saver.py
+--------------------------------------------------------------------------------
+LightTrack/lib/tfflat/saver.py:33:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: LightTrack/utils/utils_heatmap.py
+--------------------------------------------------------------------------------
+LightTrack/utils/utils_heatmap.py:55:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+================================================================================
+Detailed log follows:
+
+================================================================================
+================================================================================
+Input tree: 'LightTrack/'
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/demo_camera_mobile.py'
+ outputting to 'LightTrackV2/demo_camera_mobile.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/demo_video_mobile.py'
+ outputting to 'LightTrackV2/demo_video_mobile.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/jsonformat_std_to_posetrack18.py'
+ outputting to 'LightTrackV2/jsonformat_std_to_posetrack18.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/network_CPN101.py'
+ outputting to 'LightTrackV2/network_CPN101.py'
+--------------------------------------------------------------------------------
+
+24:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+33:17: INFO: Added keywords to args of function 'tf.shape'
+34:23: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+54:27: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+60:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+68:17: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+102:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+104:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+105:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+106:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+107:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+110:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+113:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+128:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+134:39: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+135:31: INFO: Added keywords to args of function 'tf.reduce_mean'
+144:26: INFO: Added keywords to args of function 'tf.reduce_mean'
+144:82: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/network_mobile_deconv.py'
+ outputting to 'LightTrackV2/network_mobile_deconv.py'
+--------------------------------------------------------------------------------
+
+27:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+28:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:35: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:59: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:84: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:108: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+39:29: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+39:29: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+40:27: INFO: Changing tf.contrib.layers.variance_scaling_initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+41:29: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+87:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+89:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+90:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+91:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+92:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+95:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+99:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+114:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+118:29: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+119:19: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/network_MSRA152.py'
+ outputting to 'LightTrackV2/network_MSRA152.py'
+--------------------------------------------------------------------------------
+
+30:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+31:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+36:35: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+36:59: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+36:84: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+36:108: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+42:29: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+42:29: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+43:27: INFO: Changing tf.contrib.layers.variance_scaling_initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+44:29: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+90:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+92:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+93:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+94:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+95:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+98:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+102:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+117:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+121:29: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+122:19: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/process_posetrack18_with_lighttrack_CPN101.py'
+ outputting to 'LightTrackV2/process_posetrack18_with_lighttrack_CPN101.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/process_posetrack18_with_lighttrack_MSRA152.py'
+ outputting to 'LightTrackV2/process_posetrack18_with_lighttrack_MSRA152.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/detector/detector_utils.py'
+ outputting to 'LightTrackV2/detector/detector_utils.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/detector/detector_yolov3.py'
+ outputting to 'LightTrackV2/detector/detector_yolov3.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/detector/models.py'
+ outputting to 'LightTrackV2/detector/models.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/detector/parse_config.py'
+ outputting to 'LightTrackV2/detector/parse_config.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/main.py'
+ outputting to 'LightTrackV2/graph/main.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/visualize_pose_matching.py'
+ outputting to 'LightTrackV2/graph/visualize_pose_matching.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/visualize_pose_matching_diff_persons.py'
+ outputting to 'LightTrackV2/graph/visualize_pose_matching_diff_persons.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/contrastive.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/contrastive.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/feeder.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/feeder.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/feeder_random_negative.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/feeder_random_negative.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/feeder_triplet.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/feeder_triplet.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/gcn_block.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/gcn_block.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/gcn_model.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/gcn_model.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/graph.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/graph.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/io.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/io.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/keypoints_to_graph.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/keypoints_to_graph.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/keypoints_to_graph_hard_neg.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/keypoints_to_graph_hard_neg.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/keypoints_to_graph_hard_pos.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/keypoints_to_graph_hard_pos.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/keypoints_to_graph_negative.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/keypoints_to_graph_negative.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/keypoints_to_graph_triplet.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/keypoints_to_graph_triplet.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/naive_model.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/naive_model.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/processor_base.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/processor_base.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/processor_siamese_gcn.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/processor_siamese_gcn.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/gcn_utils/tools.py'
+ outputting to 'LightTrackV2/graph/gcn_utils/tools.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/setup.py'
+ outputting to 'LightTrackV2/graph/torchlight/setup.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/build/lib/torchlight/gpu.py'
+ outputting to 'LightTrackV2/graph/torchlight/build/lib/torchlight/gpu.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/build/lib/torchlight/io.py'
+ outputting to 'LightTrackV2/graph/torchlight/build/lib/torchlight/io.py'
+--------------------------------------------------------------------------------
+
+106:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/build/lib/torchlight/__init__.py'
+ outputting to 'LightTrackV2/graph/torchlight/build/lib/torchlight/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/torchlight/gpu.py'
+ outputting to 'LightTrackV2/graph/torchlight/torchlight/gpu.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/torchlight/io.py'
+ outputting to 'LightTrackV2/graph/torchlight/torchlight/io.py'
+--------------------------------------------------------------------------------
+
+106:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/torchlight/torchlight/__init__.py'
+ outputting to 'LightTrackV2/graph/torchlight/torchlight/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_graph.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_graph.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_keypoints_to_graph.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_keypoints_to_graph.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_keypoints_to_graph_hard_neg.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_keypoints_to_graph_hard_neg.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_keypoints_to_graph_hard_pos.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_keypoints_to_graph_hard_pos.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_keypoints_to_graph_negative.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_keypoints_to_graph_negative.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/test_keypoints_to_graph_triplet.py'
+ outputting to 'LightTrackV2/graph/unit_test/test_keypoints_to_graph_triplet.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/graph/unit_test/__init__.py'
+ outputting to 'LightTrackV2/graph/unit_test/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/AllJoints_COCO.py'
+ outputting to 'LightTrackV2/HPE/AllJoints_COCO.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/AllJoints_PoseTrack.py'
+ outputting to 'LightTrackV2/HPE/AllJoints_PoseTrack.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/cal_posetrack_means.py'
+ outputting to 'LightTrackV2/HPE/cal_posetrack_means.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/config.py'
+ outputting to 'LightTrackV2/HPE/config.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/config_train.py'
+ outputting to 'LightTrackV2/HPE/config_train.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/dataset.py'
+ outputting to 'LightTrackV2/HPE/dataset.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/merge_PoseTrack_jsons.py'
+ outputting to 'LightTrackV2/HPE/merge_PoseTrack_jsons.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/train_PoseTrack_COCO_17_CPN_res101.py'
+ outputting to 'LightTrackV2/HPE/train_PoseTrack_COCO_17_CPN_res101.py'
+--------------------------------------------------------------------------------
+
+24:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+33:17: INFO: Added keywords to args of function 'tf.shape'
+34:23: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+54:27: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+60:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+68:17: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+116:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+117:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+118:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+119:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+120:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+121:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+126:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+141:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+147:39: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+148:31: INFO: Added keywords to args of function 'tf.reduce_mean'
+156:26: INFO: Added keywords to args of function 'tf.reduce_mean'
+156:82: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/train_PoseTrack_COCO_17_mobile_deconv.py'
+ outputting to 'LightTrackV2/HPE/train_PoseTrack_COCO_17_mobile_deconv.py'
+--------------------------------------------------------------------------------
+
+27:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+28:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:35: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:59: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:84: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+33:108: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+72:29: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+72:29: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+73:27: INFO: Changing tf.contrib.layers.variance_scaling_initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+74:29: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+101:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+103:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+104:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+105:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+106:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+107:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+111:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+126:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+130:29: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+131:19: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/HPE/train_PoseTrack_COCO_17_MSRA152.py'
+ outputting to 'LightTrackV2/HPE/train_PoseTrack_COCO_17_MSRA152.py'
+--------------------------------------------------------------------------------
+
+25:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+34:17: INFO: Added keywords to args of function 'tf.shape'
+35:23: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+55:27: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+61:18: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+69:17: INFO: Changed tf.image.resize_bilinear call to tf.image.resize(..., method=tf.image.ResizeMethod.BILINEAR).
+89:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+90:24: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+95:35: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+95:59: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+95:84: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+95:108: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+134:29: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+134:29: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+135:27: INFO: Changing tf.contrib.layers.variance_scaling_initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+136:29: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+163:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+168:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+169:22: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+170:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+171:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+172:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+177:20: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+192:33: INFO: Added keywords to args of function 'tf.reduce_sum'
+196:29: INFO: Changed tf.to_float call to tf.cast(..., dtype=tf.float32).
+197:19: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/setup.py'
+ outputting to 'LightTrackV2/lib/setup.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/__init__.py'
+ outputting to 'LightTrackV2/lib/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/lib_kernel/lib_nms/nms_opr.py'
+ outputting to 'LightTrackV2/lib/lib_kernel/lib_nms/nms_opr.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/lib_kernel/lib_nms/setup.py'
+ outputting to 'LightTrackV2/lib/lib_kernel/lib_nms/setup.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/lib_kernel/lib_nms/__init__.py'
+ outputting to 'LightTrackV2/lib/lib_kernel/lib_nms/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/lib_kernel/lib_nms/nms/__init__.py'
+ outputting to 'LightTrackV2/lib/lib_kernel/lib_nms/nms/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nets/basemodel.py'
+ outputting to 'LightTrackV2/lib/nets/basemodel.py'
+--------------------------------------------------------------------------------
+
+57:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+60:18: INFO: Added keywords to args of function 'tf.pad'
+100:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+103:18: INFO: Added keywords to args of function 'tf.pad'
+145:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+148:18: INFO: Added keywords to args of function 'tf.pad'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nets/mobilenet_v1.py'
+ outputting to 'LightTrackV2/lib/nets/mobilenet_v1.py'
+--------------------------------------------------------------------------------
+
+168:18: INFO: Added keywords to args of function 'tf.pad'
+239:7: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+239:63: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+365:7: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+372:11: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+375:16: INFO: Added keywords to args of function 'tf.reduce_mean'
+375:16: INFO: Renamed keyword argument for tf.reduce_mean from keep_dims to keepdims
+471:16: INFO: Multiplying scale arg of tf.contrib.layers.l2_regularizer by half to what tf.keras.regularizers.l2 expects.
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nets/resnet_utils.py'
+ outputting to 'LightTrackV2/lib/nets/resnet_utils.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nets/resnet_v1.py'
+ outputting to 'LightTrackV2/lib/nets/resnet_v1.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nets/__init__.py'
+ outputting to 'LightTrackV2/lib/nets/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nms/py_cpu_nms.py'
+ outputting to 'LightTrackV2/lib/nms/py_cpu_nms.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/nms/__init__.py'
+ outputting to 'LightTrackV2/lib/nms/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/base.py'
+ outputting to 'LightTrackV2/lib/tfflat/base.py'
+--------------------------------------------------------------------------------
+
+42:27: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+42:45: INFO: Renamed 'tf.GraphKeys' to 'tf.compat.v1.GraphKeys'
+68:16: INFO: Renamed 'tf.add_to_collection' to 'tf.compat.v1.add_to_collection'
+75:12: INFO: Renamed 'tf.add_to_collection' to 'tf.compat.v1.add_to_collection'
+199:30: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+200:29: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+200:29: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+202:30: INFO: Multiplying scale arg of tf.contrib.layers.l2_regularizer by half to what tf.keras.regularizers.l2 expects.
+
+208:25: INFO: `name` passed to `name_scope`. Because you may be re-entering an existing scope, it is not safe to convert automatically,  the v2 name_scope does not support re-entering scopes by name.
+
+208:25: INFO: Renamed 'tf.name_scope' to 'tf.compat.v1.name_scope'
+386:25: INFO: `name` passed to `name_scope`. Because you may be re-entering an existing scope, it is not safe to convert automatically,  the v2 name_scope does not support re-entering scopes by name.
+
+386:25: INFO: Renamed 'tf.name_scope' to 'tf.compat.v1.name_scope'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/config.py'
+ outputting to 'LightTrackV2/lib/tfflat/config.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/data_provider.py'
+ outputting to 'LightTrackV2/lib/tfflat/data_provider.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/dpflow.py'
+ outputting to 'LightTrackV2/lib/tfflat/dpflow.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/logger.py'
+ outputting to 'LightTrackV2/lib/tfflat/logger.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/mp_utils.py'
+ outputting to 'LightTrackV2/lib/tfflat/mp_utils.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/net_utils.py'
+ outputting to 'LightTrackV2/lib/tfflat/net_utils.py'
+--------------------------------------------------------------------------------
+
+32:15: INFO: Added keywords to args of function 'tf.reduce_mean'
+71:15: INFO: Added keywords to args of function 'tf.reduce_sum'
+95:20: INFO: Renamed 'tf.train.GradientDescentOptimizer' to 'tf.compat.v1.train.GradientDescentOptimizer'
+97:20: INFO: Renamed 'tf.train.MomentumOptimizer' to 'tf.compat.v1.train.MomentumOptimizer'
+99:20: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+107:15: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+108:21: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+109:17: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+111:25: INFO: Added keywords to args of function 'tf.reduce_mean'
+111:40: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+113:25: INFO: Added keywords to args of function 'tf.reduce_sum'
+113:39: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+115:35: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/saver.py'
+ outputting to 'LightTrackV2/lib/tfflat/saver.py'
+--------------------------------------------------------------------------------
+
+26:21: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+33:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+38:16: INFO: Renamed 'tf.global_variables' to 'tf.compat.v1.global_variables'
+56:19: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/serialize.py'
+ outputting to 'LightTrackV2/lib/tfflat/serialize.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/timer.py'
+ outputting to 'LightTrackV2/lib/tfflat/timer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/utils.py'
+ outputting to 'LightTrackV2/lib/tfflat/utils.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/tfflat/__init__.py'
+ outputting to 'LightTrackV2/lib/tfflat/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/blob.py'
+ outputting to 'LightTrackV2/lib/utils/blob.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/boxes_grid.py'
+ outputting to 'LightTrackV2/lib/utils/boxes_grid.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/mask.py'
+ outputting to 'LightTrackV2/lib/utils/mask.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/nms.py'
+ outputting to 'LightTrackV2/lib/utils/nms.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/timer.py'
+ outputting to 'LightTrackV2/lib/utils/timer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/visualize.py'
+ outputting to 'LightTrackV2/lib/utils/visualize.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/lib/utils/__init__.py'
+ outputting to 'LightTrackV2/lib/utils/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_all.py'
+ outputting to 'LightTrackV2/unit_test/test_all.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_detection_visualizer.py'
+ outputting to 'LightTrackV2/unit_test/test_detection_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_keypoint_visualizer.py'
+ outputting to 'LightTrackV2/unit_test/test_keypoint_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_poly_visualizer.py'
+ outputting to 'LightTrackV2/unit_test/test_poly_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_temp.py'
+ outputting to 'LightTrackV2/unit_test/test_temp.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_convert_heatmap.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_convert_heatmap.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_io_file.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_io_file.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_io_folder.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_io_folder.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_json.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_json.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_natural_sort.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_natural_sort.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_utils_nms.py'
+ outputting to 'LightTrackV2/unit_test/test_utils_nms.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/unit_test/test_visualizer.py'
+ outputting to 'LightTrackV2/unit_test/test_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/standard_classes.py'
+ outputting to 'LightTrackV2/utils/standard_classes.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_convert_heatmap.py'
+ outputting to 'LightTrackV2/utils/utils_convert_heatmap.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_heatmap.py'
+ outputting to 'LightTrackV2/utils/utils_heatmap.py'
+--------------------------------------------------------------------------------
+
+55:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_io_file.py'
+ outputting to 'LightTrackV2/utils/utils_io_file.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_io_folder.py'
+ outputting to 'LightTrackV2/utils/utils_io_folder.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_json.py'
+ outputting to 'LightTrackV2/utils/utils_json.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_natural_sort.py'
+ outputting to 'LightTrackV2/utils/utils_natural_sort.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_nms.py'
+ outputting to 'LightTrackV2/utils/utils_nms.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/utils/utils_pose.py'
+ outputting to 'LightTrackV2/utils/utils_pose.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/visualizer/detection_visualizer.py'
+ outputting to 'LightTrackV2/visualizer/detection_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/visualizer/keypoint_visualizer.py'
+ outputting to 'LightTrackV2/visualizer/keypoint_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/visualizer/poly_visualizer.py'
+ outputting to 'LightTrackV2/visualizer/poly_visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'LightTrack/visualizer/visualizer.py'
+ outputting to 'LightTrackV2/visualizer/visualizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+

@@ -1,7 +1,8 @@
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+#import tensorflow.contrib.slim as slim
+import tf_slim as slim
 from . import resnet_v1, resnet_utils
-from tensorflow.contrib.slim import arg_scope
+from tf_slim import arg_scope
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.contrib.layers.python.layers import regularizers, \

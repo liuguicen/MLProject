@@ -4,7 +4,6 @@
     August 1st, 2018
 '''
 import tensorflow as tf
-#import tensorflow.contrib.slim as slim
 import tf_slim as slim
 import sys, os
 import argparse

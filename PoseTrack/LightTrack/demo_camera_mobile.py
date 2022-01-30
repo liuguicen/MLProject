@@ -26,8 +26,9 @@ from HPE.config import cfg
 from tfflat.base import Tester
 from tfflat.utils import mem_info
 from tfflat.logger import colorlogger
-from nms.gpu_nms import gpu_nms
-from nms.cpu_nms import cpu_nms
+import ctypes
+from lib.lib_kernel.lib_nms.nms.gpu_nms import gpu_nms
+from lib.lib_kernel.lib_nms.nms.cpu_nms import cpu_nms
 
 # import GCN utils
 from graph import visualize_pose_matching
@@ -562,7 +563,7 @@ def apply_nms(cls_dets, nms_method, nms_thresh):
         if nms_method == 'nms':
             keep = gpu_nms(cls_dets, nms_thresh)
         elif nms_method == 'soft':
-            keep = cpu_soft_nms(np.ascontiguousarray(cls_dets, dtype=np.float32), method=2)
+            keep = cpu_nms.cpu_soft_nms(np.ascontiguousarray(cls_dets, dtype=np.float32), method=2)
         else:
             assert False
     cls_dets = cls_dets[keep]

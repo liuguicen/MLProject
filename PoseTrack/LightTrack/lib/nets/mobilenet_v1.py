@@ -109,7 +109,6 @@ from collections import namedtuple
 import functools
 
 import tensorflow as tf
-#import tensorflow.contrib.slim as slim
 import tf_slim as slim
 
 '''
@@ -437,7 +436,7 @@ def mobilenet_v1_arg_scope(
     regularize_depthwise=False,
     batch_norm_decay=0.9997,
     batch_norm_epsilon=0.001,
-    batch_norm_updates_collections=tf.GraphKeys.UPDATE_OPS,
+    batch_norm_updates_collections=tf.compat.v1.GraphKeys.UPDATE_OPS,
     normalizer_fn=slim.batch_norm):
   """Defines the default MobilenetV1 arg scope.
 
@@ -468,7 +467,7 @@ def mobilenet_v1_arg_scope(
     batch_norm_params['is_training'] = is_training
 
   # Set weight_decay for weights in Conv and DepthSepConv layers.
-  weights_init = tf.truncated_normal_initializer(stddev=stddev)
+  weights_init = tf.compat.v1.truncated_normal_initializer(stddev=stddev)
   regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
   if regularize_depthwise:
     depthwise_regularizer = regularizer

@@ -1,5 +1,4 @@
 import tensorflow as tf
-#import tensorflow.contrib.slim as slim
 import tf_slim as slim
 import numpy as np
 from collections import OrderedDict as dict
@@ -119,9 +118,9 @@ class Base(object):
         self.logger = colorlogger(cfg.output_dir, log_name=log_name)
 
         # initialize tensorflow
-        tfconfig = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
+        tfconfig = tf.compat.v1.ConfigProto(allow_soft_placement=True, log_device_placement=False)
         tfconfig.gpu_options.allow_growth = True
-        self.sess = tf.Session(config=tfconfig)
+        self.sess = tf.compat.v1.Session(config=tfconfig)
 
         # build_graph
         self.build_graph()
@@ -136,7 +135,7 @@ class Base(object):
     def build_graph(self):
         # all variables should be in the same graph and stored in cpu.
         with tf.device('/device:CPU:0'):
-            tf.set_random_seed(2333)
+            tf.compat.v1.set_random_seed(2333)
             self.graph_ops = self._make_graph()
             if not isinstance(self.graph_ops, list) and not isinstance(self.graph_ops, tuple):
                 self.graph_ops = [self.graph_ops]
@@ -199,11 +198,11 @@ class Trainer(Base):
 
         weights_initializer = slim.xavier_initializer()
         biases_initializer = tf.constant_initializer(0.)
-        biases_regularizer = tf.no_regularizer
+        biases_regularizer = tf.compat.v1.no_regularizer
         weights_regularizer = tf.contrib.layers.l2_regularizer(self.cfg.weight_decay)
 
         tower_grads = []
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tf.compat.v1.variable_scope(tf.compat.v1.get_variable_scope()):
             for i in range(self.cfg.nr_gpus):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('tower_%d' % i) as name_scope:
@@ -224,18 +223,18 @@ class Trainer(Base):
                                     loss = self.net.get_loss()
                                 self._input_list.append( self.net.get_inputs() )
 
-                        tf.get_variable_scope().reuse_variables()
+                        tf.compat.v1.get_variable_scope().reuse_variables()
 
                         if i == 0:
                             if self.cfg.nr_gpus > 1 and self.cfg.bn_train is True:
                                 self.logger.warning("BN is calculated only on single GPU.")
-                            extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, name_scope)
+                            extra_update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS, name_scope)
                             with tf.control_dependencies(extra_update_ops):
                                 grads = self._optimizer.compute_gradients(loss)
                         else:
                             grads = self._optimizer.compute_gradients(loss)
                         final_grads = []
-                        with tf.variable_scope('Gradient_Mult') as scope:
+                        with tf.compat.v1.variable_scope('Gradient_Mult') as scope:
                             for grad, var in grads:
                                 scale = 1.
                                 if self.cfg.double_bias and '/biases:' in var.name:
@@ -252,7 +251,7 @@ class Trainer(Base):
 
         if False:
             variable_averages = tf.train.ExponentialMovingAverage(0.9999)
-            variables_to_average = (tf.trainable_variables() + tf.moving_average_variables())
+            variables_to_average = (tf.compat.v1.trainable_variables() + tf.compat.v1.moving_average_variables())
             variables_averages_op = variable_averages.apply(variables_to_average)
 
             apply_gradient_op = self._optimizer.apply_gradients(grads)
@@ -274,10 +273,10 @@ class Trainer(Base):
 
         self.logger.info('Initialize saver ...')
         # saver
-        train_saver = Saver(self.sess, tf.global_variables(), self.cfg.model_dump_dir)
+        train_saver = Saver(self.sess, tf.compat.v1.global_variables(), self.cfg.model_dump_dir)
 
         self.logger.info('Initialize all variables ...')
-        self.sess.run(tf.variables_initializer(tf.global_variables(), name='init'))
+        self.sess.run(tf.compat.v1.variables_initializer(tf.compat.v1.global_variables(), name='init'))
 
         # initialize weights
         self.load_weights('last_epoch' if self.cfg.continue_train else self.cfg.init_model)
@@ -297,7 +296,7 @@ class Trainer(Base):
             cur_lr = self.cfg.get_lr(itrs[-1])
             if not approx_equal(cur_lr, self.lr_eval):
                 print(self.lr_eval, cur_lr)
-                self.sess.run(tf.assign(self.lr, cur_lr))
+                self.sess.run(tf.compat.v1.assign(self.lr, cur_lr))
 
             # input data
             self.read_timer.tic()
@@ -381,7 +380,7 @@ class Tester(Base):
     def _make_graph(self):
         self.logger.info("Generating testing graph on {} GPUs ...".format(self.cfg.nr_gpus))
 
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tf.compat.v1.variable_scope(tf.compat.v1.get_variable_scope()):
             for i in range(self.cfg.nr_gpus):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('tower_%d' % i) as name_scope:
@@ -390,7 +389,7 @@ class Tester(Base):
                             self._input_list.append(self.net.get_inputs())
                             self._output_list.append(self.net.get_outputs())
 
-                        tf.get_variable_scope().reuse_variables()
+                        tf.compat.v1.get_variable_scope().reuse_variables()
 
         self._outputs = aggregate_batch(self._output_list)
 

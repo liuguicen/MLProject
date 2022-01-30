@@ -4,7 +4,8 @@
     March 15th, 2019
 '''
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+#import tensorflow.contrib.slim as slim
+import tf_slim as slim
 import sys, os
 import argparse
 import numpy as np
