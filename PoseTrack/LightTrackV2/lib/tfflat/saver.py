@@ -1,12 +1,12 @@
 import tensorflow as tf
-from tensorflow.python import pywrap_tensorflow
+
 
 import os
 import os.path as osp
 
 def get_variables_in_checkpoint_file(file_name):
     try:
-        reader = pywrap_tensorflow.NewCheckpointReader(file_name)
+        reader = tf.compat.v1.train.NewCheckpointReader(file_name)
         var_to_shape_map = reader.get_variable_to_shape_map()
         return var_to_shape_map
     except Exception as e:  # pylint: disable=broad-except

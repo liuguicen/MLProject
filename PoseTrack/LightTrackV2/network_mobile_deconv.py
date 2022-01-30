@@ -16,6 +16,7 @@ from tfflat.utils import mem_info
 
 from nets.mobilenet_v1 import mobilenet_v1_base, mobilenet_v1_arg_scope
 
+tf.compat.v1.disable_eager_execution()
 # The network of simple baselines for human pose estimation and tracking
 class Network(ModelDesc):
 

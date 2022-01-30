@@ -1,4 +1,4 @@
-# command line: /D/MLProject/PoseTrack/LightTrack/demo_video_mobile.py
+# command line: /D/MLProject/PoseTrack/LightTrackV2/demo_video_mobile.py
 
 config: graph/config/inference.yaml
 device:
