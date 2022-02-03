@@ -90,7 +90,10 @@ def light_track(pose_estimator,
     img_id = -1
     next_id = 0
     bbox_dets_list_list = []
+    '''可以看成轨迹的目标框的列表'''
+
     keypoints_list_list = []
+    '''可以看成轨迹的关键点的列表'''
 
     flag_mandatory_keyframe = False
 
@@ -116,6 +119,8 @@ def light_track(pose_estimator,
             # perform detection at keyframes
             st_time_detection = time.time()
             human_candidates = inference_yolov3(img_path)
+            '''人体框'''
+
             end_time_detection = time.time()
             total_time_DET += (end_time_detection - st_time_detection)
 
@@ -123,6 +128,7 @@ def light_track(pose_estimator,
             print("Keyframe: {} detections".format(num_dets))
 
             # if nothing detected at keyframe, regard next frame as keyframe because there is nothing to track
+            # 沒有检测到人体框，使用下一帧作为关键帧
             if num_dets <= 0:
                 # add empty result
                 bbox_det_dict = {"img_id":img_id,
@@ -163,6 +169,7 @@ def light_track(pose_estimator,
                 bbox_det = x1y1x2y2_to_xywh(bbox_in_xywh)
 
                 # Keyframe: use provided bbox
+                # 无效的人体框，跳过
                 if bbox_invalid(bbox_det):
                     track_id = None # this id means null
                     keypoints = []
@@ -199,6 +206,7 @@ def light_track(pose_estimator,
                     track_id = next_id
                     next_id += 1
                 else:
+                    # 利用空间关联进行跟踪，简单的说就是和前一帧的所有人体框计算交并比，超过阈值的就认定为同一个轨迹
                     track_id, match_index = get_track_id_SpatialConsistency(bbox_det, bbox_list_prev_frame)
 
                     if track_id != -1:  # if candidate from prev frame matched, prevent it from matching another
@@ -267,6 +275,7 @@ def light_track(pose_estimator,
                 track_id = keypoints_list[det_id]["track_id"]
 
                 # next frame bbox
+                # 根据关键点获取下一帧的搜索区域
                 bbox_det_next = get_bbox_from_keypoints(keypoints)
                 if bbox_det_next[2] == 0 or bbox_det_next[3] == 0:
                     bbox_det_next = [0, 0, 2, 2]
