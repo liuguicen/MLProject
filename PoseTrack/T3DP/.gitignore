@@ -7,7 +7,7 @@ apex/
 hmr_data/
 posetrack_data/
 data/
-_DATA/
+data/
 hmr/
 _TEMP/
 _BACKUP/
@@ -156,3 +156,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 weight/
+data/

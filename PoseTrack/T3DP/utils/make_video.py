@@ -45,7 +45,7 @@ def refine_visuals(a2):
         t_time  = []
         t_frame = []
         for frame_ in track_data[tid].keys():
-            t_time.append(track_data[tid][frame_][1])        
+            t_time.append(track_data[tid][frame_][1])
             t_frame.append(frame_)
 
         if(len(t_time)<10): continue
@@ -59,7 +59,7 @@ def refine_visuals(a2):
 
                 scale_start  = track_data[tid][f_][4]
                 scale_end    = track_data[tid][fx][4]
-                
+
                 loca_start   = track_data[tid][f_][8]
                 loca_end     = track_data[tid][fx][8]
                 i = 0
@@ -105,54 +105,54 @@ def refine_visuals(a2):
                 refined_visuals_dic[frame_][10].append(refined_track_data[tid][frame_][9])
 
             else:
-                refined_visuals_dic[frame_] = [[tid], 
-                                               [refined_track_data[tid][frame_][0]], 
-                                               refined_track_data[tid][frame_][1], 
-                                               [refined_track_data[tid][frame_][2]], 
-                                               [refined_track_data[tid][frame_][3]], 
-                                               [refined_track_data[tid][frame_][4]], 
-                                               [refined_track_data[tid][frame_][5]], 
-                                               [refined_track_data[tid][frame_][6]], 
+                refined_visuals_dic[frame_] = [[tid],
+                                               [refined_track_data[tid][frame_][0]],
+                                               refined_track_data[tid][frame_][1],
+                                               [refined_track_data[tid][frame_][2]],
+                                               [refined_track_data[tid][frame_][3]],
+                                               [refined_track_data[tid][frame_][4]],
+                                               [refined_track_data[tid][frame_][5]],
+                                               [refined_track_data[tid][frame_][6]],
                                                [refined_track_data[tid][frame_][7]],
                                                [refined_track_data[tid][frame_][8]],
                                                [refined_track_data[tid][frame_][9]]
                                               ]
-                
+
     return refined_visuals_dic, refined_eval_dic
 
 
 
 
 def make_video(HMAR_model, save, render, opt, video_name, final_visuals_dic):
-    
+
     t_ = 0
     old_image_size = 10
     start = 0
     for frame_ in final_visuals_dic.keys():
-        
+
         cv_image = cv2.imread(opt.dataset_path + "/" + video_name + "/" + frame_)
-            
+
         img_height, img_width, _  = cv_image.shape
         frame_data = final_visuals_dic[frame_]
         visual_ids = np.array(frame_data[8])
-        
+
 
         try:     pose_data   = torch.stack(frame_data[3])
         except:  pose_data   = frame_data[3]
-        
+
         try:     center_data = np.array(frame_data[4])
         except : center_data = frame_data[4]
-            
+
         try:     color_data  = np.array(frame_data[6])
         except : color_data  = frame_data[6]
-            
+
         try:     scale_data  = np.array(frame_data[5])
         except : scale_data  = frame_data[5]
-            
-            
+
+
         # try:     loca_data   = torch.stack(frame_data[9])
         # except : loca_data   = frame_data[9]
-            
+
         new_image_size            = max(img_height, img_width)
         if(new_image_size!=old_image_size): HMAR_model.reset_nmr(new_image_size); old_image_size = new_image_size
         delta_w                   = new_image_size - img_width
@@ -162,7 +162,7 @@ def make_video(HMAR_model, save, render, opt, video_name, final_visuals_dic):
         resized_image             = cv2.copyMakeBorder(cv_image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
         resized_image_bbox        = copy.deepcopy(resized_image)
 
-        if(start==0): 
+        if(start==0):
             start = 1
             fourcc         = cv2.VideoWriter_fourcc(*'mp4v')
             video_file     = cv2.VideoWriter("out/" + opt.storage_folder + "/" + video_name + ".mp4", fourcc, 15, frameSize=(2*img_width//opt.downsample, img_height//opt.downsample))
@@ -172,20 +172,22 @@ def make_video(HMAR_model, save, render, opt, video_name, final_visuals_dic):
         ### visiualize the tracks using 3D rendering or with bboxes
         if(render):
             with torch.no_grad():
-                if(visual_ids.shape[0]==0): 
+                if(visual_ids.shape[0]==0):
                     rendered_image = resized_image_bbox.astype(float)
                     rendered_image = rendered_image/255.0
                 else:
-                        
+
                     loc_x = np.array(frame_data[10])>0.5
                     if(np.sum(loc_x)>0):
                         rendered_image, _, _, _   = HMAR_model.render_3d(pose_data[loc_x].cuda(), center_data[loc_x] + [left, top], np.max(scale_data[loc_x], axis=1), max(img_height, img_width), color_data[loc_x], image=resized_image_bbox/255.0)
                     else:
                         rendered_image = resized_image_bbox.astype(float)
                         rendered_image = rendered_image/255.0
-                    
+
         else:
             for track_id in visual_ids:
+                if track_id[0] >= len(frame_data[7]):
+                    continue
                 bbox_ = frame_data[7][track_id[0]]
                 cv2.rectangle(resized_image_bbox, (int(bbox_[0])+left, int(bbox_[1])+top), (int(bbox_[2])+left, int(bbox_[3])+top), [int(i) for i in RGB_tuples[track_id[1]]], 4)
                 cv2.putText(resized_image_bbox, str(track_id), (int(bbox_[2]-60),int(bbox_[1]+60)), cv2.FONT_HERSHEY_TRIPLEX, 2, (0,0,255))
@@ -194,13 +196,13 @@ def make_video(HMAR_model, save, render, opt, video_name, final_visuals_dic):
         resized_image = torch.from_numpy(np.array(resized_image)/255.).cuda()
         resized_image = resized_image.unsqueeze(0)
         resized_image = resized_image.permute(0, 3, 1, 2)
-        resized_image = resized_image[:, [2,1,0], :, :] 
+        resized_image = resized_image[:, [2,1,0], :, :]
 
         if(render):
             rendered_image = torch.from_numpy(np.array(rendered_image)).cuda()
             rendered_image = rendered_image.unsqueeze(0)
             rendered_image = rendered_image.permute(0, 3, 1, 2)
-            rendered_image = rendered_image[:, [2,1,0], :, :] 
+            rendered_image = rendered_image[:, [2,1,0], :, :]
 
             grid_img = make_grid(torch.cat([resized_image[:, :, top:top+img_height, left:left+img_width], rendered_image[:, :, top:top+img_height, left:left+img_width], ], 0), nrow=10)
 
@@ -209,17 +211,17 @@ def make_video(HMAR_model, save, render, opt, video_name, final_visuals_dic):
             resized_image_bbox = torch.from_numpy(np.array(resized_image_bbox)/255.).cuda()
             resized_image_bbox = resized_image_bbox.unsqueeze(0)
             resized_image_bbox = resized_image_bbox.permute(0, 3, 1, 2)
-            resized_image_bbox = resized_image_bbox[:, [2,1,0], :, :] 
+            resized_image_bbox = resized_image_bbox[:, [2,1,0], :, :]
 
             grid_img = make_grid(torch.cat([resized_image[:, :, top:top+img_height, left:left+img_width], resized_image_bbox[:, :, top:top+img_height, left:left+img_width], ], 0), nrow=10)
 
 
-        grid_img = grid_img[[2,1,0], :, :] 
+        grid_img = grid_img[[2,1,0], :, :]
         ndarr    = grid_img.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
         cv_ndarr = cv2.resize( ndarr , (2*img_width//opt.downsample, img_height//opt.downsample) )
         video_file.write(cv_ndarr)
-        
+
         t_ += 1
-    
+
     try: video_file.release()
     except: print("no videos")

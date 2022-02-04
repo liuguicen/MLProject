@@ -29,18 +29,18 @@ git clone https://github.com/mmatl/pyopengl.git
 pip install ./pyopengl
 ```
 
-Additionally, install [Detectron2](https://github.com/facebookresearch/detectron2) from the official repository, if you need to run demo code on a local machine. We provide detections inside the _DATA folder, so for running the tracker on posetrack or mupots, you do not need to install Detectron2.
+Additionally, install [Detectron2](https://github.com/facebookresearch/detectron2) from the official repository, if you need to run demo code on a local machine. We provide detections inside the data folder, so for running the tracker on posetrack or mupots, you do not need to install Detectron2.
 
 ## Download Data
 
 We provide preprocessed files for PoseTrack and MuPoTs datasets (AVA files will be released soon!). Please download this folder and extract inside the main repository.
 
-- [_DATA/](https://drive.google.com/file/d/1qfqkAjBWLZkZSywQz-KV_kVmeWqdm_QN/view?usp=sharing)
-- [_DATA/detections](https://drive.google.com/file/d/127MZFG8tPzRK1Y4Jscawzzsnl7KC83vy/view?usp=sharing)
-- [_DATA/Posetrack_2018](https://posetrack.net)
-- [_DATA/MuPoTs](http://vcai.mpi-inf.mpg.de/projects/SingleShotMultiPerson/)
+- [data/](https://drive.google.com/file/d/1qfqkAjBWLZkZSywQz-KV_kVmeWqdm_QN/view?usp=sharing)
+- [data/detections](https://drive.google.com/file/d/127MZFG8tPzRK1Y4Jscawzzsnl7KC83vy/view?usp=sharing)
+- [data/Posetrack_2018](https://posetrack.net)
+- [data/MuPoTs](http://vcai.mpi-inf.mpg.de/projects/SingleShotMultiPerson/)
 
-Besides these files, you also need to download the [neutral *SMPL* model](http://smplify.is.tue.mpg.de). Please go to the website for the corresponding project and register to get access to the downloads section. Create a folder `_DATA/models/smpl/` and place the model there. Otherwise, you can also run:
+Besides these files, you also need to download the [neutral *SMPL* model](http://smplify.is.tue.mpg.de). Please go to the website for the corresponding project and register to get access to the downloads section. Create a folder `data/models/smpl/` and place the model there. Otherwise, you can also run:
 
 `python3 utils/convert_smpl.py`
     
@@ -58,15 +58,15 @@ To train the transformer model with posetrack data run,
 `--feature APK `\
 `--train`
 
-WANDB will create unique names for each run, and save the model names accordingly. Use this name for evaluation. We have also provided pretrained weights inside the _DATA folder.
+WANDB will create unique names for each run, and save the model names accordingly. Use this name for evaluation. We have also provided pretrained weights inside the data folder.
 
 ## Testing
 
-Once the posetrack dataset is downloaded at "_DATA/Posetrack_2018/", run the following command to run our tracker on all validation videos. 
+Once the posetrack dataset is downloaded at "data/Posetrack_2018/", run the following command to run our tracker on all validation videos. 
 
 `python test_t3dp.py` \
 `--dataset          "posetrack"` \
-`--dataset_path     "_DATA/Posetrack_2018/images/val/"` \
+`--dataset_path     "data/Posetrack_2018/images/val/"` \
 `--storage_folder   "Videos_Final"` \
 `--render           True` \
 `--save             True`

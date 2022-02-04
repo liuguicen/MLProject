@@ -29,11 +29,11 @@ if __name__ == '__main__':
 
     # We are downloading the SMPL model here for convenience. Please accept the license
     # agreement on the SMPL website: https://smpl.is.tue.mpg.
-    os.system('mkdir -p _DATA/models')
-    os.system('mkdir -p _DATA/models/smpl')
+    os.system('mkdir -p data/models')
+    os.system('mkdir -p data/models/smpl')
     # os.system('wget https://github.com/classner/up/raw/master/models/3D/basicModel_neutral_lbs_10_207_0_v1.0.0.pickle')
     os.system('wget https://github.com/classner/up/raw/master/models/3D/basicModel_neutral_lbs_10_207_0_v1.0.0.pkl')
 
     convert('basicModel_neutral_lbs_10_207_0_v1.0.0.pkl')
     os.system('rm basicModel_neutral_lbs_10_207_0_v1.0.0.pkl')
-    os.system('mv basicModel_neutral_lbs_10_207_0_v1.0.0_p3.pkl _DATA/models/smpl/SMPL_NEUTRAL.pkl')
+    # os.system('mv basicModel_neutral_lbs_10_207_0_v1.0.0_p3.pkl data/models/smpl/SMPL_NEUTRAL.pkl')

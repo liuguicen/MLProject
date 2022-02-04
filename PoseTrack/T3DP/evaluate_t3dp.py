@@ -34,9 +34,9 @@ RGB_tuples[b]   = 1
     
     
 def evaluate_trackers(results_dir, method="phalp", dataset="posetrack", make_video=0):   
-    if(dataset=="posetrack"): data_gt = joblib.load('_DATA/posetrack_gt.pickle')     ; base_dir = "_DATA/Posetrack_2018/"
-    if(dataset=="mupots"):    data_gt = joblib.load('_DATA/mupots_gt.pickle')        ; base_dir = "_DATA/MuPoTs/"
-    if(dataset=="ava"):       data_gt = joblib.load('_DATA/ava_gt.pickle')           ; base_dir = "_DATA/AVA/"
+    if(dataset=="posetrack"): data_gt = joblib.load('data/posetrack_gt.pickle')     ; base_dir = "data/Posetrack_2018/"
+    if(dataset=="mupots"):    data_gt = joblib.load('data/mupots_gt.pickle')        ; base_dir = "data/MuPoTs/"
+    if(dataset=="ava"):       data_gt = joblib.load('data/ava_gt.pickle')           ; base_dir = "data/AVA/"
         
     data_all              = {}
     total_annoated_frames = 0

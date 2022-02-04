@@ -25,7 +25,7 @@ from .smplx import create
 from .utils import perspective_projection
 
 from yacs.config import CfgNode as CN
-from .renderer import Renderer
+# from .renderer import Renderer
 from .utils import *
 
 class HMAR(nn.Module):
@@ -73,7 +73,7 @@ class HMAR(nn.Module):
                                   create_jaw_pose=False,
                                   create_transl=False)
         
-        self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=256, faces=self.faces_cpu)
+        # self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=256, faces=self.faces_cpu)
         
         self.smpl_head      = SMPLHead(cfg)
         self.smpl_head.pool = 'pooled'
@@ -157,13 +157,14 @@ class HMAR(nn.Module):
             flow_vert = flow_vert.view(flow_vert.size(0), -1, self.F, self.T, self.T).permute(0, 2, 3, 4, 1).contiguous()
 
             # sample texture from the flow of all vertices
-            texture_from_flow = sample_textures(flow_vert, image)            
-            texture           = texture_from_flow.unsqueeze(4).expand(-1, -1, -1, -1, 6, -1) # B,F,T,T,T,3
+            # texture_from_flow = sample_textures(flow_vert, image)
+            # texture           = texture_from_flow.unsqueeze(4).expand(-1, -1, -1, -1, 6, -1) # B,F,T,T,T,3
         
-        if(image is not None):
+        # if(image is not None):
+        #     pass
             rgb_from_pred = self.neural_renderer.visualize_all(verts.cpu().numpy(), pred_cam_t.cpu().numpy(), color, image)
-        else:
-            rgb_from_pred = 0
+        # else:
+        rgb_from_pred = 0
 
         
         
@@ -185,10 +186,12 @@ class HMAR(nn.Module):
     
     
     def reset_nmr_sigle(self, image_size):
-        self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=image_size, faces=self.faces_cpu)
+        pass
+        # self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=image_size, faces=self.faces_cpu)
     
     def reset_nmr(self, image_size):
-        self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=image_size, faces=self.faces_cpu)
+        pass
+        # self.neural_renderer = Renderer(focal_length=self.cfg.EXTRA.FOCAL_LENGTH, img_res=image_size, faces=self.faces_cpu)
 
         
     def get_smpl_pose(self, pose_embeddings):

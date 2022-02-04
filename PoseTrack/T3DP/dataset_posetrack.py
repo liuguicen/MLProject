@@ -105,9 +105,9 @@ class PoseTrack(Dataset):
         self.max_ids          = max_ids
         self.data             = []
         self.dataset          = []
-        self.root_dir_2018    = "_DATA/Posetrack_2018/"
+        self.root_dir_2018    = "data/Posetrack_2018/"
         
-        self.tracking_data    = np.load("_DATA/posetrack_train.npz", allow_pickle=True)
+        self.tracking_data    = np.load("data/posetrack_train.npz", allow_pickle=True)
 
 
         for i_, track_ in enumerate(self.tracking_data['arr_0']):

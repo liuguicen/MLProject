@@ -20,8 +20,8 @@ from tqdm import tqdm
 from yacs.config import CfgNode as CN
 
 from models.hmar import HMAR
-from utils.utils_measure import AverageMeter
-from utils.make_video import refine_visuals, make_video
+from PoseTrack.T3DP.utils.utils_measure import AverageMeter
+from PoseTrack.T3DP.utils.make_video import refine_visuals, make_video
 
 from HMAR_tracker import HMAR_tracker
 
@@ -49,7 +49,7 @@ def test_tracker(opt, hmar_tracker):
 
     
     config          = os.path.join('utils/config.yaml')
-    checkpoint      = '_DATA/t3dp_hmar.pt'
+    checkpoint      = 'data/t3dp_hmar.pt'
 
     HMAR_model      = HMAR(config)
     checkpoint      = torch.load(checkpoint)
@@ -66,7 +66,7 @@ def test_tracker(opt, hmar_tracker):
     for num_video, video_name in tqdm(enumerate(opt.videos_seq)):
        
         if(opt.dataset=="demo"): track = joblib.load(opt.dataset_path + '/' + str(video_name) + '/hmar_' + video_name + '.pickle')
-        else:                    track = joblib.load('_DATA/detections/hmar_' + opt.dataset + "_" + str(video_name) + '.pickle')
+        else:                    track = joblib.load('data/detections/hmar_' + opt.dataset + "_" + str(video_name) + '.pickle')
 
         final_results        = []
         final_results_dic    = {}
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='T3DP Tracker')
     parser.add_argument('--dataset', type=str, default='posetrack')
-    parser.add_argument('--dataset_path', type=str, default="/_DATA/Posetrack_2018/")
+    parser.add_argument('--dataset_path', type=str, default="/data/Posetrack_2018/")
     parser.add_argument('--storage_folder', type=str, default="Videos_Final")
     parser.add_argument('--th_x', type=int, default=20000)
     parser.add_argument('--past_x', type=int, default=20)
@@ -195,18 +195,18 @@ if __name__ == '__main__':
     parser.add_argument('--save', type=str2bool, nargs='?', const=True, default=True)
     opt = parser.parse_args()
 
-    if(opt.dataset=="posetrack"): opt.videos_seq = np.load("_DATA/posetrack.npy")
-    if(opt.dataset=="mupots"):    opt.videos_seq = np.load("_DATA/mupots.npy")
+    if(opt.dataset=="posetrack"): opt.videos_seq = np.load("data/posetrack.npy")
+    if(opt.dataset=="mupots"):    opt.videos_seq = np.load("data/mupots.npy")
   
 
     hmar_tracker    = HMAR_tracker(mode="APK", betas=[1.0,1.0,1.0])
-    path_model      = os.path.join('_DATA/t3dp_transformer.pth')   #  APK, HMAR, posetrack
+    path_model      = os.path.join('data/t3dp_transformer.pth')   #  APK, HMAR, posetrack
 
     # hmar_tracker    = HMAR_tracker(mode="APK", betas=[1.0,1.0,1.0], use_embeddings=True)
-    # path_model      = os.path.join('_DATA/best_model_lemon-violet-142.pth')      #  APK, HMAR, mupots
+    # path_model      = os.path.join('data/best_model_lemon-violet-142.pth')      #  APK, HMAR, mupots
 
     # hmar_tracker    = HMAR_tracker(mode="APK", betas=[1.0,1.0,0.0], use_embeddings=True)
-    # path_model      = os.path.join('_DATA/best_model_radiant-disco-147.pth')     #  APK, HMAR, ava
+    # path_model      = os.path.join('data/best_model_radiant-disco-147.pth')     #  APK, HMAR, ava
 
 
     prev_best       = torch.load(path_model)

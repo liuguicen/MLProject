@@ -152,7 +152,7 @@ def train(opt, hmar_tracker, train_data_loader, optimizer, scheduler):
                     hmar_tracker.eval()
                     x = opt.dataset
                     opt.dataset        = "posetrack"
-                    opt.dataset_path   = "_DATA/Posetrack_2018/"
+                    opt.dataset_path   = "data/Posetrack_2018/"
                     opt.th_x           = 20000
                     opt.past_x         = 20
                     opt.max_age_x      = 20
@@ -163,7 +163,7 @@ def train(opt, hmar_tracker, train_data_loader, optimizer, scheduler):
                     opt.render         = False
                     opt.save           = False
                     opt.downsample     = 1
-                    opt.videos_seq     = np.load("_DATA/posetrack.npy")
+                    opt.videos_seq     = np.load("data/posetrack.npy")
     
                     test_tracker(opt, hmar_tracker)
                     opt.dataset        = x
