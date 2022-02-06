@@ -320,7 +320,7 @@ if __name__ == '__main__':
     # video.streams.get_by_itag(18).download(output_path = dataset_path + video_folder, filename="youtube.mp4")
     #
 
-    fe = FrameExtractor("/D/MLProject/PoseTrack/LightTrackV2/data/demo/video.mp4")
+    fe = FrameExtractor("/data/demo/v1ideo.mp4")
     print(fe.n_frames)
     print(fe.get_video_duration())
     fe.extract_frames(every_x_frame=2, img_name='', dest_path=dataset_path + video_folder, max_frames=1000)
