@@ -66,6 +66,7 @@ def file_to_video(filepath):
 
 
 def video_to_images(video_file_path, output_img_folder_path = None):
+    print('开始获取视频帧图像')
     video = file_to_video(video_file_path)
     if output_img_folder_path is None:
         parent_folder_path, _ = get_parent_folder_from_path(video_file_path)
@@ -74,6 +75,9 @@ def video_to_images(video_file_path, output_img_folder_path = None):
         print(video_name)
         video_name_no_ext = os.path.splitext(video_name)[0]
         output_img_folder_path = os.path.join(parent_folder_path, video_name_no_ext)
+    if os.path.exists(output_img_folder_path):
+        print("上次运行已经获取视频帧图像，本次跳过")
+        return True
     create_folder(output_img_folder_path)
 
     success, image = video.read()
