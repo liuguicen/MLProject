@@ -133,7 +133,7 @@ def validate_bbox(bbox):
 def keypoints_to_graph(keypoints, bbox):
     num_elements = len(keypoints)
     num_keypoints = num_elements/3
-    assert(num_keypoints == 15)
+    # assert(num_keypoints == 15)
 
     x0, y0, w, h = bbox
     flag_pass_check = True

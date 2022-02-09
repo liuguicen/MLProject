@@ -1,0 +1,27 @@
+2022-02-10 00:18:20,939 - benchmark_utils - INFO - Paddle Inference benchmark log will be saved to /D/MLProject/PoseTrack/LightTrackV2/keypoint_paddle/../../output/tinypose_128x96.log
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - 
+
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - ---------------------- Paddle info ----------------------
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - [KeyPoint] paddle_version: 2.2.1
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - [KeyPoint] paddle_commit: a5cf2e305b744e3ebd2f2210341f88d349d4ec5e
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - [KeyPoint] paddle_branch: HEAD
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - [KeyPoint] log_api_version: 1.0.3
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - ----------------------- Conf info -----------------------
+2022-02-10 00:18:20,940 - benchmark_utils - INFO - [KeyPoint] runtime_device: gpu
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] ir_optim: True
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] enable_memory_optim: True
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] enable_tensorrt: False
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] enable_mkldnn: False
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] cpu_math_library_num_threads: 1
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - ----------------------- Model info ----------------------
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] model_name: tinypose_128x96
+2022-02-10 00:18:20,941 - benchmark_utils - INFO - [KeyPoint] precision: paddle
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - ----------------------- Data info -----------------------
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] batch_size: 1
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] input_shape: dynamic_shape
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] data_num: 692
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - ----------------------- Perf info -----------------------
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] cpu_rss(MB): 0, cpu_vms: 0, cpu_shared_mb: 0, cpu_dirty_mb: 0, cpu_util: 0%
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] gpu_rss(MB): 0, gpu_util: 0.0%, gpu_mem_util: 0%
+2022-02-10 00:18:20,942 - benchmark_utils - INFO - [KeyPoint] total time spent(s): 17.676
+2022-02-10 00:18:20,943 - benchmark_utils - INFO - [KeyPoint] preprocess_time(ms): 1.2, inference_time(ms): 21.2, postprocess_time(ms): 3.1

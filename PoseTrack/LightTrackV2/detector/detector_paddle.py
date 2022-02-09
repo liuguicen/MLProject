@@ -127,6 +127,9 @@ class PaddleHumanDetector:
         return images
 
     def infer(self, imgPath):
+        '''
+        返回框的形式是x，y,w,h
+        '''
 
         # get inference images
         images = self.get_test_images(None, imgPath)

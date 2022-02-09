@@ -19,27 +19,6 @@ import argparse
 def argsparser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--det_model_dir",
-        type=str,
-        default=None,
-        help=("Directory include:'model.pdiparams', 'model.pdmodel', "
-              "'infer_cfg.yml', created by tools/export_model.py."),
-        required=True)
-    parser.add_argument(
-        "--keypoint_model_dir",
-        type=str,
-        default=None,
-        help=("Directory include:'model.pdiparams', 'model.pdmodel', "
-              "'infer_cfg.yml', created by tools/export_model.py."),
-        required=True)
-    parser.add_argument(
-        "--image_file", type=str, default=None, help="Path of image file.")
-    parser.add_argument(
-        "--image_dir",
-        type=str,
-        default=None,
-        help="Dir of image file, `image_file` has a higher priority.")
-    parser.add_argument(
         "--keypoint_batch_size",
         type=int,
         default=1,
@@ -109,7 +88,7 @@ def argsparser():
         type=bool,
         default=False,
         help="If the model is produced by TRT offline quantitative "
-        "calibration, trt_calib_mode need to set True.")
+             "calibration, trt_calib_mode need to set True.")
     parser.add_argument(
         '--use_dark',
         type=bool,
@@ -126,4 +105,5 @@ def argsparser():
             "3) rects: list of rect [xmin, ymin, xmax, ymax]"
             "4) keypoints: 17(joint numbers)*[x, y, conf], total 51 data in list"
             "5) scores: mean of all joint conf"))
+
     return parser

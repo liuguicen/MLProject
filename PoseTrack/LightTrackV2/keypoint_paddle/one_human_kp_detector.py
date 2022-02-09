@@ -20,13 +20,12 @@ import numpy as np
 import paddle
 
 from det_keypoint_unite_utils import argsparser
-from keypoint_paddle.one_human_kp_detector import OneHumanKpDetector_Paddle
 from preprocess import decode_image
 from infer import Detector, DetectorPicoDet, PredictConfig, print_arguments, get_test_images
 from keypoint_infer import KeyPoint_Detector, PredictConfig_KeyPoint
 from visualize import draw_pose
 from benchmark_utils import PaddleInferBenchmark
-from utils import get_current_memory_mb
+from keypoint_paddle.utils import get_current_memory_mb
 from keypoint_postprocess import translate_to_ori_images
 
 KEYPOINT_SUPPORT_MODELS = {
@@ -125,8 +124,6 @@ def topdown_unite_predict(detector,
             image, results, topdown_keypoint_detector, keypoint_batch_size,
             FLAGS.det_threshold, FLAGS.keypoint_threshold, FLAGS.run_benchmark)
 
-        oneHumanKpDetector = OneHumanKpDetector_Paddle()
-        keypoint_res1 = oneHumanKpDetector.detectOnePeopleKp(image, results)
         if save_res:
             store_res.append([
                 i, keypoint_res['bbox'],
@@ -168,7 +165,7 @@ def topdown_unite_predict_video(detector,
     else:
         capture = cv2.VideoCapture(FLAGS.video_file)
         video_name = os.path.splitext(os.path.basename(FLAGS.video_file))[
-            0] + '.mp4'
+                         0] + '.mp4'
     # Get Video info : resolution, fps, frame count
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -179,7 +176,7 @@ def topdown_unite_predict_video(detector,
     if not os.path.exists(FLAGS.output_dir):
         os.makedirs(FLAGS.output_dir)
     out_path = os.path.join(FLAGS.output_dir, video_name)
-    fourcc = cv2.VideoWriter_fourcc(* 'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
     index = 0
     store_res = []
@@ -231,7 +228,7 @@ def main():
     detector_func = 'Detector'
     if pred_config.arch == 'PicoDet':
         detector_func = 'DetectorPicoDet'
-
+    # 人体目标检测器
     detector = eval(detector_func)(pred_config,
                                    FLAGS.det_model_dir,
                                    device=FLAGS.device,
@@ -245,8 +242,8 @@ def main():
 
     pred_config = PredictConfig_KeyPoint(FLAGS.keypoint_model_dir)
     assert KEYPOINT_SUPPORT_MODELS[
-        pred_config.
-        arch] == 'keypoint_topdown', 'Detection-Keypoint unite inference only supports topdown models.'
+               pred_config.
+                   arch] == 'keypoint_topdown', 'Detection-Keypoint unite inference only supports topdown models.'
     topdown_keypoint_detector = KeyPoint_Detector(
         pred_config,
         FLAGS.keypoint_model_dir,
@@ -291,10 +288,76 @@ def main():
                       FLAGS.keypoint_batch_size, 'KeyPoint')
 
 
+def parse_arg(parser):
+    FLAGS = parser.parse_args()
+    FLAGS.det_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-predestrain/picodet_s_320_pedestrian'
+    FLAGS.keypoint_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-tinypose/tinypose_128x96'
+    FLAGS.device = 'GPU'
+    return FLAGS
+
+
+class OneHumanKpDetector_Paddle:
+
+    def __init__(self):
+        self.loadModel()
+
+    def loadModel(self):
+        # paddle.enable_static()
+        parser = argsparser()
+        self.FLAGS = parse_arg(parser)
+        print_arguments(self.FLAGS)
+        self.FLAGS.device = self.FLAGS.device.upper()
+        assert self.FLAGS.device in ['CPU', 'GPU', 'XPU'
+                                     ], "device should be CPU, GPU or XPU"
+        pred_config = PredictConfig_KeyPoint(self.FLAGS.keypoint_model_dir)
+        assert KEYPOINT_SUPPORT_MODELS[
+                   pred_config.
+                       arch] == 'keypoint_topdown', 'Detection-Keypoint unite inference only supports topdown models.'
+
+        self.kp_detector = KeyPoint_Detector(
+            pred_config,
+            self.FLAGS.keypoint_model_dir,
+            device=self.FLAGS.device,
+            run_mode=self.FLAGS.run_mode,
+            batch_size=self.FLAGS.keypoint_batch_size,
+            trt_min_shape=self.FLAGS.trt_min_shape,
+            trt_max_shape=self.FLAGS.trt_max_shape,
+            trt_opt_shape=self.FLAGS.trt_opt_shape,
+            trt_calib_mode=self.FLAGS.trt_calib_mode,
+            cpu_threads=self.FLAGS.cpu_threads,
+            enable_mkldnn=self.FLAGS.enable_mkldnn,
+            use_dark=self.FLAGS.use_dark)
+
+    def detectOnePeopleKp(self, img, box_results):
+        '''
+        检测一个人体的关键点，
+        img 完整图片
+        box_results 人体框检测结果 结构 dict{'boxes': ndarray = 2维度ndarray = 是6维人体框数据的列表，种类，分数，box,'boxes_num':一维ndarray，人体框个数
+        '''
+        # predict from image
+        # img_list = get_test_images(self.FLAGS.image_dir, self.FLAGS.image_file)
+
+        keypoint_res = predict_with_given_det(
+            img, box_results, self.kp_detector, self.FLAGS.keypoint_batch_size,
+            self.FLAGS.det_threshold, self.FLAGS.keypoint_threshold, self.FLAGS.run_benchmark)
+
+        # mode = self.FLAGS.run_mode
+        # keypoint_model_dir = self.FLAGS.keypoint_model_dir
+        # keypoint_model_info = {
+        #     'model_name': keypoint_model_dir.strip('/').split('/')[-1],
+        #     'precision': mode.split('_')[-1]
+        # }
+        # bench_log(self.kp_detector, img, keypoint_model_info,
+        #           self.FLAGS.keypoint_batch_size, 'KeyPoint')
+        return keypoint_res
+
+
+# 整个关键点检测的流程是，创建人体检测器，创建关键点检测器，用人体检测器检测出所有的人体框，
+# 从整个图片中根据人体框分割出人体图片，人体框图片输入关键点检测器，得到关键点，关键点数据结构，x，y，score，一共17个关键点
 if __name__ == '__main__':
     paddle.enable_static()
     parser = argsparser()
-    FLAGS = parser.parse_args()
+    FLAGS = parse_arg(parser)
     print_arguments(FLAGS)
     FLAGS.device = FLAGS.device.upper()
     assert FLAGS.device in ['CPU', 'GPU', 'XPU'

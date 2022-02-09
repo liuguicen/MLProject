@@ -29,7 +29,7 @@ from keypoint_postprocess import HrHRNetPostProcess, HRNetPostProcess
 from visualize import draw_pose
 from paddle.inference import Config
 from paddle.inference import create_predictor
-from utils import argsparser, Timer, get_current_memory_mb
+from keypoint_paddle.utils import argsparser, Timer, get_current_memory_mb
 from benchmark_utils import PaddleInferBenchmark
 from infer import Detector, get_test_images, print_arguments
 

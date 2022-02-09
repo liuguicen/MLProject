@@ -7,9 +7,10 @@
 '''
 
 # import vision essentials
-
+import numpy as np
 import pyximport
 
+import one_human_kp_detector
 from HPE.config import cfg
 # pose estimation utils
 from HPE.dataset import Preprocessing
@@ -35,6 +36,7 @@ from visualizer import *
 from utils_io_file import *
 from utils_io_folder import *
 from detector.detector_paddle import PaddleHumanDetector
+from keypoint_paddle import preprocess
 
 flag_visualize = True
 flag_nms = False  # Default is False, unless you know what you are doing
@@ -68,9 +70,25 @@ def initialize_parameters():
     return
 
 
+def detectKp_paddle(img_path, bbox_det, score, kp_detector):
+    # 按照paalde内部方法的要求组装
+    box_for_paddle = bbox_det[:]
+    box_for_paddle.insert(0, score)
+    box_for_paddle.insert(0, 0)
+    box_result = {"boxes": np.array([box_for_paddle]), 'boxes_num': np.array([1])}
+    img, _ = preprocess.decode_image(img_path, {})
+    kp = kp_detector.detectOnePeopleKp(img, box_result)
+    res_kp = []
+    for kp_human in kp['keypoint'][0][0]:
+        res_kp.append(kp_human[0])
+        res_kp.append(kp_human[1])
+        res_kp.append(kp_human[2])
+    return res_kp
+
+
 def light_track(pose_estimator,
                 image_folder, output_json_path,
-                visualize_folder, output_video_path, phd):
+                visualize_folder, output_video_path, human_detector, kp_detector):
     global total_time_POSE, total_time_DET, total_time_ALL, total_num_FRAMES, total_num_PERSONS
     ''' 1. statistics: get total time for lighttrack processing'''
     st_time_total = time.time()
@@ -113,7 +131,7 @@ def light_track(pose_estimator,
             st_time_detection = time.time()
             # 这里需要的是相对原始图片的范围框
             # human_candidates1 = inference_yolov3(img_path)
-            human_candidates = phd.infer(img_path)[0]
+            human_candidates, box_with_score = human_detector.infer(img_path)
             '''人体框'''
 
             end_time_detection = time.time()
@@ -157,6 +175,7 @@ def light_track(pose_estimator,
             for det_id in range(num_dets):
                 # obtain bbox position and track id
                 bbox_det = human_candidates[det_id]
+                score = box_with_score[det_id][1]
 
                 # enlarge bbox by 20% with same center position
                 bbox_x1y1x2y2 = xywh_to_x1y1x2y2(bbox_det)
@@ -193,8 +212,10 @@ def light_track(pose_estimator,
 
                 # obtain keypoints for each bbox position in the keyframe
                 st_time_pose = time.time()
-                keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
+                # keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
+                keypoints = detectKp_paddle(img_path, bbox_det, score, kp_detector)
                 end_time_pose = time.time()
+                print('kp time = ', (end_time_pose - st_time_pose))
                 total_time_POSE += (end_time_pose - st_time_pose)
 
                 if img_id == 0:  # First frame, all ids are assigned automatically
@@ -284,9 +305,11 @@ def light_track(pose_estimator,
 
                 # next frame keypoints
                 st_time_pose = time.time()
-                keypoints_next = inference_keypoints(pose_estimator, bbox_det_dict_next)[0]["keypoints"]
+                # keypoints_next = inference_keypoints(pose_estimator, bbox_det_dict_next)[0]["keypoints"]
+                keypoints_next = detectKp_paddle(img_path, bbox_det, score, kp_detector)
 
                 end_time_pose = time.time()
+                print("paddle kp time = ", (end_time_pose - st_time_pose))
                 total_time_POSE += (end_time_pose - st_time_pose)
                 # print("time for pose estimation: ", (end_time_pose - st_time_pose))
 
@@ -555,6 +578,9 @@ def enlarge_bbox(bbox, scale):
 
 
 def inference_keypoints(pose_estimator, test_data):
+    '''
+    返回值是x,y,score
+    '''
     cls_dets = test_data["bbox"]
     # nms on the bboxes
     if flag_nms is True:
@@ -673,9 +699,9 @@ def get_keypoints_from_pose(pose_heatmaps, details, cls_skeleton, crops, start_i
         crops[test_image_id, :] = details[test_image_id - start_id, :]
         for w in range(cfg.nr_skeleton):
             cls_skeleton[test_image_id, w, 0] = cls_skeleton[test_image_id, w, 0] / cfg.data_shape[1] * (
-                        crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
+                    crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
             cls_skeleton[test_image_id, w, 1] = cls_skeleton[test_image_id, w, 1] / cfg.data_shape[0] * (
-                        crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
+                    crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
     return cls_skeleton
 
 
@@ -782,8 +808,12 @@ def bbox_invalid(bbox):
     return False
 
 
+from one_human_kp_detector import OneHumanKpDetector_Paddle
+import paddle
+
 if __name__ == '__main__':
     phd = PaddleHumanDetector()
+    kp_detector = OneHumanKpDetector_Paddle()
     phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
     global args
     parser = argparse.ArgumentParser()
@@ -817,7 +847,7 @@ if __name__ == '__main__':
 
         light_track(pose_estimator,
                     image_folder, output_json_path,
-                    visualize_folder, output_video_path, phd)
+                    visualize_folder, output_video_path, phd, kp_detector)
 
         print("Finished video {}".format(output_video_path))
 
