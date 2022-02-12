@@ -307,7 +307,7 @@ def light_track_camera(pose_estimator, video_capture):
                                            "track_id":track_id,
                                            "keypoints": []}
                     keypoints_list_next.append(keypoints_dict_next)
-                    print("Target lost. Process this frame again as keyframe. \n\n\n")
+                    print("Target lost. Process this frame again as keyframe. \n")
                     flag_mandatory_keyframe = True
 
                     ## Re-process this frame by treating it as a keyframe

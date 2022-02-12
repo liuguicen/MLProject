@@ -55,6 +55,10 @@ def bench_log(detector, img_list, model_info, batch_size=1, name=None):
 def predict_with_given_det(image, det_res, keypoint_detector,
                            keypoint_batch_size, det_threshold,
                            keypoint_threshold, run_benchmark):
+    '''
+    det_res 人体框的 x,y,w,h
+    '''
+    # 这里会扩大边界框范围,records 就是扩大后的边界框
     rec_images, records, det_rects = keypoint_detector.get_person_from_rect(
         image, det_res, det_threshold)
     keypoint_vector = []
@@ -332,7 +336,10 @@ class OneHumanKpDetector_Paddle:
         '''
         检测一个人体的关键点，
         img 完整图片
-        box_results 人体框检测结果 结构 dict{'boxes': ndarray = 2维度ndarray = 是6维人体框数据的列表，种类，分数，box,'boxes_num':一维ndarray，人体框个数
+        box_results 人体框检测结果
+        结构 dict{
+        'boxes': ndarray = 2维度ndarray = 是6维人体框数据的列表=种类，分数，box(x,y,w,h),
+        'boxes_num':一维ndarray，人体框个数
         '''
         # predict from image
         # img_list = get_test_images(self.FLAGS.image_dir, self.FLAGS.image_file)
@@ -358,6 +365,8 @@ if __name__ == '__main__':
     paddle.enable_static()
     parser = argsparser()
     FLAGS = parse_arg(parser)
+    FLAGS.image_dir = None
+    FLAGS.image_file = "/D/MLProject/PoseTrack/LightTrackV2/data/demo/video/frame00000.jpg"
     print_arguments(FLAGS)
     FLAGS.device = FLAGS.device.upper()
     assert FLAGS.device in ['CPU', 'GPU', 'XPU'

@@ -132,11 +132,11 @@ class PaddleHumanDetector:
         '''
 
         # get inference images
-        images = self.get_test_images(None, imgPath)
+        # images = self.get_test_images(None, imgPath)
 
         # inference
         return self.trainer.predict_for_human(
-            images,
+            [imgPath],
             draw_threshold=self.FLAGS.draw_threshold,
             output_dir=self.FLAGS.output_dir,
             save_txt=self.FLAGS.save_txt)

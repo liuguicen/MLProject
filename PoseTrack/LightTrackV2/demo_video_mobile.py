@@ -7,6 +7,7 @@
 '''
 
 # import vision essentials
+import cv2
 import numpy as np
 import pyximport
 
@@ -15,7 +16,7 @@ from HPE.config import cfg
 # pose estimation utils
 from HPE.dataset import Preprocessing
 # detector utils
-from detector.detector_yolov3 import *
+# from detector.detector_yolov3 import *
 # import Network
 from network_mobile_deconv import Network
 from tfflat.base import Tester
@@ -37,7 +38,8 @@ from utils_io_file import *
 from utils_io_folder import *
 from detector.detector_paddle import PaddleHumanDetector
 from keypoint_paddle import preprocess
-
+import logging
+logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
 flag_visualize = True
 flag_nms = False  # Default is False, unless you know what you are doing
 
@@ -72,6 +74,8 @@ def initialize_parameters():
 
 def detectKp_paddle(img_path, bbox_det, score, kp_detector):
     # 按照paalde内部方法的要求组装
+    bbox_det[2] += bbox_det[0]
+    bbox_det[3] += bbox_det[1]
     box_for_paddle = bbox_det[:]
     box_for_paddle.insert(0, score)
     box_for_paddle.insert(0, 0)
@@ -84,6 +88,43 @@ def detectKp_paddle(img_path, bbox_det, score, kp_detector):
         res_kp.append(kp_human[1])
         res_kp.append(kp_human[2])
     return res_kp
+
+
+def showKp(img_path, keypoints, kp1):
+    # 加载背景图片
+    bk_img = cv2.imread(img_path)
+    x = keypoints[0::3]
+    y = keypoints[1::3]
+    for i in range(len(x)):
+        # 在图片上添加文字信息
+        cv2.putText(bk_img, str(i), (int(x[i]), int(y[i])), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7, (255, 0, 0), 1, cv2.LINE_AA)
+    x = kp1[0::3]
+    y = kp1[1::3]
+    for i in range(len(x)):
+        # 在图片上添加文字信息
+        cv2.putText(bk_img, str(i), (int(x[i]), int(y[i])), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7, (0, 255, 0), 1, cv2.LINE_AA)
+    # 显示图片
+    cv2.imshow("add_text", bk_img)
+    cv2.waitKey()
+
+
+def showBBox(img_path, boxList):
+    # box形式为x y w h
+    # 加载背景图片
+    img = cv2.imread(img_path)
+    for box in boxList:
+        l, t = int(box[0]), int(box[1])
+        r, b = int(box[0] + box[2]), int(box[1] + box[3])
+        cv2.rectangle(img, (l, t), (r, b), (0, 255, 0), 2)
+
+    # 显示图片
+    cv2.imshow("bbox", img)
+    cv2.waitKey()
+
+
+import logging
 
 
 def light_track(pose_estimator,
@@ -115,7 +156,7 @@ def light_track(pose_estimator,
     while img_id < num_imgs - 1:
         img_id += 1
         img_path = img_paths[img_id]
-        print("Current tracking: [image_id:{}]".format(img_id))
+        logging.error("start Current tracking: [image_id:{}]".format(img_id))
 
         frame_cur = img_id
         if (frame_cur == frame_prev):
@@ -131,7 +172,11 @@ def light_track(pose_estimator,
             st_time_detection = time.time()
             # 这里需要的是相对原始图片的范围框
             # human_candidates1 = inference_yolov3(img_path)
+            logging.error('human start')
             human_candidates, box_with_score = human_detector.infer(img_path)
+            logging.error('human end')
+
+            # showBBox(img_path, human_candidates)
             '''人体框'''
 
             end_time_detection = time.time()
@@ -175,6 +220,7 @@ def light_track(pose_estimator,
             for det_id in range(num_dets):
                 # obtain bbox position and track id
                 bbox_det = human_candidates[det_id]
+                bbox_det_paddle = bbox_det.copy()
                 score = box_with_score[det_id][1]
 
                 # enlarge bbox by 20% with same center position
@@ -212,10 +258,12 @@ def light_track(pose_estimator,
 
                 # obtain keypoints for each bbox position in the keyframe
                 st_time_pose = time.time()
+                logging.error('kp detect start')
                 # keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
-                keypoints = detectKp_paddle(img_path, bbox_det, score, kp_detector)
+                keypoints = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+                # showKp(img_path, keypoints, keypoints1)
                 end_time_pose = time.time()
-                print('kp time = ', (end_time_pose - st_time_pose))
+                logging.error('kp detect end')
                 total_time_POSE += (end_time_pose - st_time_pose)
 
                 if img_id == 0:  # First frame, all ids are assigned automatically
@@ -223,7 +271,9 @@ def light_track(pose_estimator,
                     next_id += 1
                 else:
                     # 利用空间关联进行跟踪，简单的说就是和前一帧的所有人体框计算交并比，超过阈值的就认定为同一个轨迹
+                    logging.error('simple track start')
                     track_id, match_index = get_track_id_SpatialConsistency(bbox_det, bbox_list_prev_frame)
+                    logging.error('simple track end')
 
                     if track_id != -1:  # if candidate from prev frame matched, prevent it from matching another
                         del bbox_list_prev_frame[match_index]
@@ -253,8 +303,11 @@ def light_track(pose_estimator,
                 assert (det_id == keypoints_dict["det_id"])
 
                 if bbox_det_dict["track_id"] == -1:  # this id means matching not found yet
+
+                    logging.error('GCN start')
                     track_id, match_index = get_track_id_SGCN(bbox_det_dict["bbox"], bbox_list_prev_frame,
                                                               keypoints_dict["keypoints"], keypoints_list_prev_frame)
+                    logging.error('GCN end')
 
                     if track_id != -1:  # if candidate from prev frame matched, prevent it from matching another
                         del bbox_list_prev_frame[match_index]
@@ -306,7 +359,9 @@ def light_track(pose_estimator,
                 # next frame keypoints
                 st_time_pose = time.time()
                 # keypoints_next = inference_keypoints(pose_estimator, bbox_det_dict_next)[0]["keypoints"]
-                keypoints_next = detectKp_paddle(img_path, bbox_det, score, kp_detector)
+                logging.error('kp start')
+                keypoints_next = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+                logging.error('kp end')
 
                 end_time_pose = time.time()
                 print("paddle kp time = ", (end_time_pose - st_time_pose))
@@ -341,7 +396,7 @@ def light_track(pose_estimator,
                                            "imgpath": img_path,
                                            "keypoints": []}
                     keypoints_list_next.append(keypoints_dict_next)
-                    print("Target lost. Process this frame again as keyframe. \n\n\n")
+                    print("Target lost. Process this frame again as keyframe. \n")
                     flag_mandatory_keyframe = True
 
                     total_num_PERSONS -= 1
@@ -357,7 +412,7 @@ def light_track(pose_estimator,
                 bbox_dets_list_list.append(bbox_dets_list)
                 keypoints_list_list.append(keypoints_list)
                 frame_prev = frame_cur
-
+        logging.error('end\n\n')
     ''' 1. statistics: get total time for lighttrack processing'''
     end_time_total = time.time()
     total_time_ALL += (end_time_total - st_time_total)
@@ -814,7 +869,7 @@ import paddle
 if __name__ == '__main__':
     phd = PaddleHumanDetector()
     kp_detector = OneHumanKpDetector_Paddle()
-    phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
+    # phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path', default="data/demo/video.mp4")
