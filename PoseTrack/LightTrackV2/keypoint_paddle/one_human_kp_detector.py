@@ -18,6 +18,8 @@ import cv2
 import math
 import numpy as np
 import paddle
+import logging
+logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
 
 from det_keypoint_unite_utils import argsparser
 from preprocess import decode_image
@@ -119,14 +121,19 @@ def topdown_unite_predict(detector,
             detector.gpu_mem += gm
             detector.gpu_util += gu
         else:
+            logging.error('human start')
             results = detector.predict([image], FLAGS.det_threshold)
+            logging.error('human end')
+
 
         if results['boxes_num'] == 0:
             continue
 
+        logging.error('kp start')
         keypoint_res = predict_with_given_det(
             image, results, topdown_keypoint_detector, keypoint_batch_size,
             FLAGS.det_threshold, FLAGS.keypoint_threshold, FLAGS.run_benchmark)
+        logging.error('kp end')
 
         if save_res:
             store_res.append([

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 import os
 import json
 import cv2
@@ -116,17 +116,21 @@ def topdown_unite_predict(detector,
             detector.gpu_mem += gm
             detector.gpu_util += gu
         else:
+            logging.error('human start')
             results = detector.predict([image], FLAGS.det_threshold)
+            logging.error('human end')
 
         if results['boxes_num'] == 0:
             continue
 
+        logging.error('\nkp start')
         keypoint_res = predict_with_given_det(
             image, results, topdown_keypoint_detector, keypoint_batch_size,
             FLAGS.det_threshold, FLAGS.keypoint_threshold, FLAGS.run_benchmark)
+        logging.error('kp end')
 
-        oneHumanKpDetector = OneHumanKpDetector_Paddle()
-        keypoint_res1 = oneHumanKpDetector.detectOnePeopleKp(image, results)
+        # oneHumanKpDetector = OneHumanKpDetector_Paddle()
+        # keypoint_res1 = oneHumanKpDetector.detectOnePeopleKp(image, results)
         if save_res:
             store_res.append([
                 i, keypoint_res['bbox'],
