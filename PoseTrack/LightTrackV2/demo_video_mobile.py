@@ -173,7 +173,7 @@ def light_track(pose_estimator,
             # 这里需要的是相对原始图片的范围框
             # human_candidates1 = inference_yolov3(img_path)
             logging.error('human start')
-            human_candidates, box_with_score = human_detector.infer(img_path)
+            human_candidates, box_bundle = human_detector.infer(img_path)
             logging.error('human end')
 
             # showBBox(img_path, human_candidates)
@@ -221,7 +221,7 @@ def light_track(pose_estimator,
                 # obtain bbox position and track id
                 bbox_det = human_candidates[det_id]
                 bbox_det_paddle = bbox_det.copy()
-                score = box_with_score[det_id][1]
+                score = box_bundle[det_id][1]
 
                 # enlarge bbox by 20% with same center position
                 bbox_x1y1x2y2 = xywh_to_x1y1x2y2(bbox_det)
@@ -872,8 +872,10 @@ if __name__ == '__main__':
     # phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
     global args
     parser = argparse.ArgumentParser()
-    parser.add_argument('--video_path', '-v', type=str, dest='video_path', default="data/demo/video2.mp4")
-    parser.add_argument('--model', '-m', type=str, dest='test_model', default="weights/mobile-deconv/snapshot_296.ckpt")
+    parser.add_argument('--video_path', '-v', type=str, dest='video_path',
+                        default="data/demo/video_test.mp4")
+    parser.add_argument('--model', '-m', type=str, dest='test_model',
+                        default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()
     args.bbox_thresh = 0.4
 
@@ -883,25 +885,26 @@ if __name__ == '__main__':
     pose_estimator.load_weights(args.test_model)
 
     video_path = args.video_path
-    visualize_folder = "data/demo/visualize"
-    output_video_folder = "data/demo/videos"
+    visualize_folder = "data/demo/video_out_img"
+    input_img_folder = "data/demo/video_input_img"
+    output_video_folder = "data/demo/videos_out"
     output_json_folder = "data/demo/jsons"
 
     video_name = os.path.basename(video_path)
     video_name = os.path.splitext(video_name)[0]
-    image_folder = os.path.join("data/demo", video_name)
     visualize_folder = os.path.join(visualize_folder, video_name)
-    output_json_path = os.path.join(output_json_folder, video_name + ".json")
-    output_video_path = os.path.join(output_video_folder, video_name + "_out.mp4")
+    input_img_folder = os.path.join(input_img_folder, video_name)
+    output_json_path = os.path.join(output_json_folder, video_name+".json")
+    output_video_path = os.path.join(output_video_folder, video_name+"_out.mp4")
 
     if is_video(video_path):
-        video_to_images(video_path)
+        video_to_images(video_path, output_img_folder_path=input_img_folder)
         create_folder(visualize_folder)
         create_folder(output_video_folder)
         create_folder(output_json_folder)
 
         light_track(pose_estimator,
-                    image_folder, output_json_path,
+                    input_img_folder, output_json_path,
                     visualize_folder, output_video_path, phd, kp_detector)
 
         print("Finished video {}".format(output_video_path))
@@ -914,10 +917,9 @@ if __name__ == '__main__':
         print("total_num_FRAMES: {:d}".format(total_num_FRAMES))
         print("total_num_PERSONS: {:d}\n".format(total_num_PERSONS))
         print("Average FPS: {:.2f}fps".format(total_num_FRAMES / total_time_ALL))
-        print("Average FPS excluding Pose Estimation: {:.2f}fps".format(
-            total_num_FRAMES / (total_time_ALL - total_time_POSE)))
+        print("Average FPS excluding Pose Estimation: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_POSE)))
         print("Average FPS excluding Detection: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_DET)))
-        print("Average FPS for framework only: {:.2f}fps".format(
-            total_num_FRAMES / (total_time_ALL - total_time_DET - total_time_POSE)))
+        print("Average FPS for framework only: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_DET - total_time_POSE)))
     else:
         print("Video does not exist.")
+

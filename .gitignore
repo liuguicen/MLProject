@@ -30,3 +30,5 @@ PaddleSeg/
 *.pth
 */check_point
 __pycache__
+fast-reid
+T

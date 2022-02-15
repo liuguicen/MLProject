@@ -74,7 +74,7 @@ def video_to_images(video_file_path, output_img_folder_path = None):
         print(parent_folder_path)
         print(video_name)
         video_name_no_ext = os.path.splitext(video_name)[0]
-        output_img_folder_path = os.path.join(parent_folder_path, video_name_no_ext)
+        output_img_folder_path = os.path.join(parent_folder_path, video_name_no_ext + "_imgs")
     if os.path.exists(output_img_folder_path):
         print("上次运行已经获取视频帧图像，本次跳过")
         return True
