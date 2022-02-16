@@ -299,12 +299,7 @@ def main():
                       FLAGS.keypoint_batch_size, 'KeyPoint')
 
 
-def parse_arg(parser):
-    FLAGS = parser.parse_args()
-    FLAGS.det_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-predestrain/picodet_s_320_pedestrian'
-    FLAGS.keypoint_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-tinypose/tinypose_128x96'
-    FLAGS.device = 'GPU'
-    return FLAGS
+
 
 
 class OneHumanKpDetector_Paddle:
@@ -368,14 +363,25 @@ class OneHumanKpDetector_Paddle:
 
 # 整个关键点检测的流程是，创建人体检测器，创建关键点检测器，用人体检测器检测出所有的人体框，
 # 从整个图片中根据人体框分割出人体图片，人体框图片输入关键点检测器，得到关键点，关键点数据结构，x，y，score，一共17个关键点
+def parse_arg(parser):
+    FLAGS = parser.parse_args()
+    FLAGS.det_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-predestrain/picodet_s_320_pedestrian'
+    FLAGS.keypoint_model_dir = '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-tinypose/tinypose_256x192'
+    FLAGS.device = 'GPU'
+    return FLAGS
+
+
 if __name__ == '__main__':
     paddle.enable_static()
     parser = argsparser()
     FLAGS = parse_arg(parser)
+    FLAGS.det_threshold = 0.35
     FLAGS.image_dir = None
-    FLAGS.image_file = "/D/MLProject/PoseTrack/LightTrackV2/data/demo/video/frame00000.jpg"
+    # FLAGS.image_file = "/D/MLProject/PoseTrack/LightTrackV2/data/demo/video/frame00000.jpg"
+    FLAGS.image_file = '/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_out_img/video_test/frame00047.jpg'
     print_arguments(FLAGS)
     FLAGS.device = FLAGS.device.upper()
+    FLAGS.save_res = True
     assert FLAGS.device in ['CPU', 'GPU', 'XPU'
                             ], "device should be CPU, GPU or XPU"
 

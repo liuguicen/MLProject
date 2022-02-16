@@ -39,7 +39,9 @@ from utils_io_folder import *
 from detector.detector_paddle import PaddleHumanDetector
 from keypoint_paddle import preprocess
 import logging
-logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+
+logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s',
+                    datefmt='%H:%M:%S', level=logging.INFO)
 flag_visualize = True
 flag_nms = False  # Default is False, unless you know what you are doing
 
@@ -83,6 +85,8 @@ def detectKp_paddle(img_path, bbox_det, score, kp_detector):
     img, _ = preprocess.decode_image(img_path, {})
     kp = kp_detector.detectOnePeopleKp(img, box_result)
     res_kp = []
+    if len(kp['keypoint'][0]) == 0:
+        return None
     for kp_human in kp['keypoint'][0][0]:
         res_kp.append(kp_human[0])
         res_kp.append(kp_human[1])
@@ -161,6 +165,8 @@ def light_track(pose_estimator,
         frame_cur = img_id
         if (frame_cur == frame_prev):
             frame_prev -= 1
+        human_candidates, box_bundle = human_detector.infer(img_path)
+        showDetectRes(box_bundle, human_candidates, img_path, kp_detector)
 
         ''' KEYFRAME: loading results from other modules '''
         if is_keyframe(img_id, keyframe_interval) or flag_mandatory_keyframe:
@@ -261,6 +267,25 @@ def light_track(pose_estimator,
                 logging.error('kp detect start')
                 # keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
                 keypoints = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+                if keypoints == None:
+                    track_id = None  # this id means null
+                    keypoints = []
+                    bbox_det = [0, 0, 2, 2]
+                    # update current frame bbox
+                    bbox_det_dict = {"img_id": img_id,
+                                     "det_id": det_id,
+                                     "track_id": track_id,
+                                     "imgpath": img_path,
+                                     "bbox": bbox_det}
+                    bbox_dets_list.append(bbox_det_dict)
+                    # update current frame keypoints
+                    keypoints_dict = {"img_id": img_id,
+                                      "det_id": det_id,
+                                      "track_id": track_id,
+                                      "imgpath": img_path,
+                                      "keypoints": keypoints}
+                    keypoints_list.append(keypoints_dict)
+                    continue
                 # showKp(img_path, keypoints, keypoints1)
                 end_time_pose = time.time()
                 logging.error('kp detect end')
@@ -442,6 +467,24 @@ def light_track(pose_estimator,
         # make_video_from_images(img_paths, output_video_path, fps=avg_fps, size=None, is_color=True, format="XVID")
         make_video_from_images(img_paths, output_video_path, fps=25, size=None, is_color=True, format="XVID")
 
+from ml_base import visual_util
+def showDetectRes(box_bundle, human_candidates, img_path, kp_detector):
+    img = cv2.imread(img_path)
+    num_dets = len(human_candidates)
+    out_dir = '/D/MLProject/PoseTrack/LightTrackV2/data/demo/detect_out_img'
+    for det_id in range(num_dets):
+        # obtain bbox position and track id
+        box = human_candidates[det_id]
+        bbox_det_paddle = box.copy()
+        score = box_bundle[det_id][1]
+        visual_util.drawRectWh(img, box[0], box[1], box[2], box[3])
+        keypoints = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+        if keypoints is not None:
+            for i, kp in enumerate(keypoints):
+                if i % 3 == 0:
+                    visual_util.drawPoint(img, keypoints[i], keypoints[i + 1])
+    cv2.imwrite(os.path.join(out_dir, os.path.basename(img_path)), img)
+
 
 def get_track_id_SGCN(bbox_cur_frame, bbox_list_prev_frame, keypoints_cur_frame, keypoints_list_prev_frame):
     assert (len(bbox_list_prev_frame) == len(keypoints_list_prev_frame))
@@ -533,6 +576,8 @@ def get_iou_score(bbox_gt, bbox_det):
 
 
 def is_target_lost(keypoints, method="max_average"):
+    if keypoints == None:
+        return True
     num_keypoints = int(len(keypoints) / 3.0)
     if method == "average":
         # pure average
@@ -867,7 +912,8 @@ from one_human_kp_detector import OneHumanKpDetector_Paddle
 import paddle
 
 if __name__ == '__main__':
-    phd = PaddleHumanDetector()
+    human_detector = PaddleHumanDetector()
+
     kp_detector = OneHumanKpDetector_Paddle()
     # phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
     global args
@@ -894,8 +940,8 @@ if __name__ == '__main__':
     video_name = os.path.splitext(video_name)[0]
     visualize_folder = os.path.join(visualize_folder, video_name)
     input_img_folder = os.path.join(input_img_folder, video_name)
-    output_json_path = os.path.join(output_json_folder, video_name+".json")
-    output_video_path = os.path.join(output_video_folder, video_name+"_out.mp4")
+    output_json_path = os.path.join(output_json_folder, video_name + ".json")
+    output_video_path = os.path.join(output_video_folder, video_name + "_out.mp4")
 
     if is_video(video_path):
         video_to_images(video_path, output_img_folder_path=input_img_folder)
@@ -905,7 +951,7 @@ if __name__ == '__main__':
 
         light_track(pose_estimator,
                     input_img_folder, output_json_path,
-                    visualize_folder, output_video_path, phd, kp_detector)
+                    visualize_folder, output_video_path, human_detector, kp_detector)
 
         print("Finished video {}".format(output_video_path))
 
@@ -917,9 +963,10 @@ if __name__ == '__main__':
         print("total_num_FRAMES: {:d}".format(total_num_FRAMES))
         print("total_num_PERSONS: {:d}\n".format(total_num_PERSONS))
         print("Average FPS: {:.2f}fps".format(total_num_FRAMES / total_time_ALL))
-        print("Average FPS excluding Pose Estimation: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_POSE)))
+        print("Average FPS excluding Pose Estimation: {:.2f}fps".format(
+            total_num_FRAMES / (total_time_ALL - total_time_POSE)))
         print("Average FPS excluding Detection: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_DET)))
-        print("Average FPS for framework only: {:.2f}fps".format(total_num_FRAMES / (total_time_ALL - total_time_DET - total_time_POSE)))
+        print("Average FPS for framework only: {:.2f}fps".format(
+            total_num_FRAMES / (total_time_ALL - total_time_DET - total_time_POSE)))
     else:
         print("Video does not exist.")
-

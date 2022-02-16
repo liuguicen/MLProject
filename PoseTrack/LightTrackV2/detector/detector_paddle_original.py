@@ -136,6 +136,8 @@ def run(FLAGS, cfg):
 
 def main():
     FLAGS = parse_args()
+    FLAGS.infer_img='/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_input_img/video_test/frame00047.jpg'
+
     cfg = load_config(FLAGS.config)
     cfg['use_vdl'] = FLAGS.use_vdl
     cfg['vdl_log_dir'] = FLAGS.vdl_log_dir
@@ -162,9 +164,15 @@ def main():
     check_gpu(cfg.use_gpu)
     check_npu(cfg.use_npu)
     check_version()
-
+    FLAGS.draw_threshold = 0.35
     run(FLAGS, cfg)
 
-# -c /D/tools/PaddleDetection/configs/picodet/application/pedestrian_detection/picodet_s_320_pedestrian.yml -o use_gpu=true weights=https://bj.bcebos.com/v1/paddledet/models/keypoint/picodet_s_192_pedestrian.pdparams --infer_img=/D/tools/PaddleDetection/demo/000000014439.jpg
+# python tools/infer.py -c configs/yolov3/yolov3_mobilenet_v1_roadsign.yml --infer_img=demo/000000570688.jpg -o weights=https://paddledet.bj.bcebos.com/models/yolov3_mobilenet_v1_roadsign.pdparams
+# -c
+# /D/tools/PaddleDetection/configs/picodet/picodet_m_416_coco.yml
+# -o
+# use_gpu=true
+# weights=/D/tools/PaddleDetection/picodet_m_416_coco.pdparams
+# --infer_img=/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_input_img/video_test/frame00035.jpg
 if __name__ == '__main__':
     main()
