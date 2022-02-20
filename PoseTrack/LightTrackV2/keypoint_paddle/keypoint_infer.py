@@ -85,6 +85,9 @@ class KeyPoint_Detector(Detector):
         self.use_dark = use_dark
 
     def get_person_from_rect(self, image, results, det_threshold=0.5):
+        '''
+        @return 返回值第二个是扩大的边界框范围
+        '''
         # crop the person result from image
         self.det_times.preprocess_time_s.start()
         det_results = results['boxes']
@@ -122,7 +125,7 @@ class KeyPoint_Detector(Detector):
     def postprocess(self, np_boxes, np_masks, inputs, threshold=0.5):
         # postprocess output of predictor
         if KEYPOINT_SUPPORT_MODELS[
-                self.pred_config.arch] == 'keypoint_bottomup':
+            self.pred_config.arch] == 'keypoint_bottomup':
             results = {}
             h, w = inputs['im_shape'][0]
             preds = [np_boxes]
@@ -133,7 +136,7 @@ class KeyPoint_Detector(Detector):
             results['keypoint'] = keypoint_postprocess(*preds)
             return results
         elif KEYPOINT_SUPPORT_MODELS[
-                self.pred_config.arch] == 'keypoint_topdown':
+            self.pred_config.arch] == 'keypoint_topdown':
             results = {}
             imshape = inputs['im_shape'][:, ::-1]
             center = np.round(imshape / 2.)
@@ -247,7 +250,7 @@ class PredictConfig_KeyPoint():
             if support_model in yml_conf['arch']:
                 return True
         raise ValueError("Unsupported arch: {}, expect {}".format(yml_conf[
-            'arch'], KEYPOINT_SUPPORT_MODELS))
+                                                                      'arch'], KEYPOINT_SUPPORT_MODELS))
 
     def print_config(self):
         print('-----------  Model Configuration -----------')
@@ -300,7 +303,7 @@ def predict_video(detector, camera_id):
     if not os.path.exists(FLAGS.output_dir):
         os.makedirs(FLAGS.output_dir)
     out_path = os.path.join(FLAGS.output_dir, video_name + '.mp4')
-    fourcc = cv2.VideoWriter_fourcc(* 'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     writer = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
     index = 1
     while (1):

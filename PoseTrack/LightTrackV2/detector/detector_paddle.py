@@ -98,7 +98,7 @@ class PaddleHumanDetector:
 
     def infer(self, imgPath):
         '''
-        返回框的形式是x，y,w,h
+        @:return 0,score, x,y,w,h
         '''
 
         # get inference images
@@ -151,7 +151,10 @@ class PaddleHumanDetector:
         # load weights
         self.trainer.load_weights(cfg.weights)
 
+    def getHumanBox(self, box_bundle):
+        return box_bundle[2:]
     # --model_dir=/D/MLProject/PoseTrack/LightTrackV2/weights/pp-predestrain/picodet_s_320_pedestrian --model_dir_keypoint=/D/MLProject/PoseTrack/LightTrackV2/weights/pp-tinypose/tinypose_128x96  --image_file=/D/tools/PaddleDetection/demo/000000014439.jpg --device=GPU
+
 
 # -c /D/tools/PaddleDetection/configs/picodet/application/pedestrian_detection/picodet_s_320_pedestrian.yml -o use_gpu=true weights=https://bj.bcebos.com/v1/paddledet/models/keypoint/picodet_s_192_pedestrian.pdparams --infer_img=/D/tools/PaddleDetection/demo/000000014439.jpg
 if __name__ == "__main__":

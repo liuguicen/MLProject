@@ -61,6 +61,7 @@ def main():
 
 # 参数
 '''
+标准版，数据集
 stark_st baseline --dataset lasot --debug 1 --threads 0
 # lite版本
 stark_lightning_X_trt baseline_rephead_4_lite_search5 --threads 0 --num_gpus 1

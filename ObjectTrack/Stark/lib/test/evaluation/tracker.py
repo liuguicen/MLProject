@@ -59,7 +59,7 @@ class Tracker:
             # 这里是用来确定使用那种tracker 这里包含了两级分类
             tracker_module = importlib.import_module('lib.test.tracker.{}'.format(self.name))
             # 第二级分类的 比如这个
-            from Stark.lib.test.tracker.stark_st import get_tracker_class
+            from lib.test.tracker.stark_st import get_tracker_class
             # type: get_tracker_class
             self.tracker_class = tracker_module.get_tracker_class()
         else:
@@ -155,6 +155,7 @@ class Tracker:
             out = tracker.track(image, info)
             prev_output = OrderedDict(out)
             _store_outputs(out, {'time': time.time() - start_time})
+            print("track time = ", time.time() - start_time)
 
         for key in ['target_bbox', 'all_boxes', 'all_scores']:
             if key in output and len(output[key]) <= 1:

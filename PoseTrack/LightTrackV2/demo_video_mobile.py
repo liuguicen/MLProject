@@ -74,8 +74,11 @@ def initialize_parameters():
     return
 
 
-def detectKp_paddle(img_path, bbox_det, score, kp_detector):
-    # 按照paalde内部方法的要求组装
+def detectOnePeopleKp_paddle(img_path, bbox_det, score, kp_detector):
+    '''
+    按照paalde内部方法的要求组装
+    @return 返回值为x1,y1,score1,x2,y2,...
+    '''
     bbox_det[2] += bbox_det[0]
     bbox_det[3] += bbox_det[1]
     box_for_paddle = bbox_det[:]
@@ -83,7 +86,7 @@ def detectKp_paddle(img_path, bbox_det, score, kp_detector):
     box_for_paddle.insert(0, 0)
     box_result = {"boxes": np.array([box_for_paddle]), 'boxes_num': np.array([1])}
     img, _ = preprocess.decode_image(img_path, {})
-    kp = kp_detector.detectOnePeopleKp(img, box_result)
+    kp = kp_detector.detectPeopleKp(img, box_result)
     res_kp = []
     if len(kp['keypoint'][0]) == 0:
         return None
@@ -140,9 +143,7 @@ def light_track(pose_estimator,
 
     # process the frames sequentially
     keypoints_list = []
-    bbox_dets_list = []
     frame_prev = -1
-    frame_cur = 0
     img_id = -1
     next_id = 0
     bbox_dets_list_list = []
@@ -153,20 +154,19 @@ def light_track(pose_estimator,
 
     flag_mandatory_keyframe = False
 
-    img_paths = get_immediate_childfile_paths(image_folder)
-    num_imgs = len(img_paths)
+    img_path_list = get_immediate_childfile_paths(image_folder)
+    num_imgs = len(img_path_list)
     total_num_FRAMES = num_imgs
 
     while img_id < num_imgs - 1:
         img_id += 1
-        img_path = img_paths[img_id]
+        img_path = img_path_list[img_id]
         logging.error("start Current tracking: [image_id:{}]".format(img_id))
 
         frame_cur = img_id
         if (frame_cur == frame_prev):
             frame_prev -= 1
-        human_candidates, box_bundle = human_detector.infer(img_path)
-        showDetectRes(box_bundle, human_candidates, img_path, kp_detector)
+        test_showDetectResult(img_path, human_detector, kp_detector)
 
         ''' KEYFRAME: loading results from other modules '''
         if is_keyframe(img_id, keyframe_interval) or flag_mandatory_keyframe:
@@ -179,7 +179,8 @@ def light_track(pose_estimator,
             # 这里需要的是相对原始图片的范围框
             # human_candidates1 = inference_yolov3(img_path)
             logging.error('human start')
-            human_candidates, box_bundle = human_detector.infer(img_path)
+            box_bundle = human_detector.infer(img_path)
+            human_candidates = [human_detector.getHumanBox(bundle) for bundle in box_bundle]
             logging.error('human end')
 
             # showBBox(img_path, human_candidates)
@@ -266,7 +267,7 @@ def light_track(pose_estimator,
                 st_time_pose = time.time()
                 logging.error('kp detect start')
                 # keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
-                keypoints = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+                keypoints = detectOnePeopleKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
                 if keypoints == None:
                     track_id = None  # this id means null
                     keypoints = []
@@ -385,7 +386,7 @@ def light_track(pose_estimator,
                 st_time_pose = time.time()
                 # keypoints_next = inference_keypoints(pose_estimator, bbox_det_dict_next)[0]["keypoints"]
                 logging.error('kp start')
-                keypoints_next = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+                keypoints_next = detectOnePeopleKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
                 logging.error('kp end')
 
                 end_time_pose = time.time()
@@ -462,23 +463,31 @@ def light_track(pose_estimator,
                                     flag_track=True)
         print("Visualization Finished!")
 
-        img_paths = get_immediate_childfile_paths(visualize_folder)
+        img_path_list = get_immediate_childfile_paths(visualize_folder)
         avg_fps = total_num_FRAMES / total_time_ALL
-        # make_video_from_images(img_paths, output_video_path, fps=avg_fps, size=None, is_color=True, format="XVID")
-        make_video_from_images(img_paths, output_video_path, fps=25, size=None, is_color=True, format="XVID")
+        # make_video_from_images(img_path_list, output_video_path, fps=avg_fps, size=None, is_color=True, format="XVID")
+        make_video_from_images(img_path_list, output_video_path, fps=25, size=None, is_color=True, format="XVID")
+
 
 from ml_base import visual_util
-def showDetectRes(box_bundle, human_candidates, img_path, kp_detector):
+
+
+def test_showDetectResult(img_path, human_detector, kp_detector):
+    '''
+    测试用
+    每张图片上展示人体框和关键点检测效果
+    '''
+    box_bundle = human_detector.infer(img_path)
     img = cv2.imread(img_path)
-    num_dets = len(human_candidates)
+    num_dets = len(box_bundle)
     out_dir = '/D/MLProject/PoseTrack/LightTrackV2/data/demo/detect_out_img'
     for det_id in range(num_dets):
         # obtain bbox position and track id
-        box = human_candidates[det_id]
+        box = human_detector.getHumanBox(box_bundle[det_id])
         bbox_det_paddle = box.copy()
         score = box_bundle[det_id][1]
         visual_util.drawRectWh(img, box[0], box[1], box[2], box[3])
-        keypoints = detectKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
+        keypoints = detectOnePeopleKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
         if keypoints is not None:
             for i, kp in enumerate(keypoints):
                 if i % 3 == 0:
@@ -919,7 +928,7 @@ if __name__ == '__main__':
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path',
-                        default="data/demo/video_test.mp4")
+                        default="data/demo/video1.mp4")
     parser.add_argument('--model', '-m', type=str, dest='test_model',
                         default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()
