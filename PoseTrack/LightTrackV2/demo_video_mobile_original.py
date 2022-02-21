@@ -787,7 +787,7 @@ if __name__ == '__main__':
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path',
-                        default="data/demo/video_test.mp4")
+                        default="demo/video_test.mp4")
     parser.add_argument('--model', '-m', type=str, dest='test_model',
                         default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()
@@ -799,10 +799,10 @@ if __name__ == '__main__':
     pose_estimator.load_weights(args.test_model)
 
     video_path = args.video_path
-    visualize_folder = "data/demo/video_out_img"
-    input_img_folder = "data/demo/video_input_img"
-    output_video_folder = "data/demo/videos_out"
-    output_json_folder = "data/demo/jsons"
+    visualize_folder = "demo/video_out_img"
+    input_img_folder = "demo/video_input_img"
+    output_video_folder = "demo/videos_out"
+    output_json_folder = "demo/jsons"
 
     video_name = os.path.basename(video_path)
     video_name = os.path.splitext(video_name)[0]

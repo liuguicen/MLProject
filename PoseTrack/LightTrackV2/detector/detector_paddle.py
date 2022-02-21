@@ -42,10 +42,20 @@ logger = setup_logger('train')
 
 
 class PaddleHumanDetector:
+    @classmethod
+    def getConfig416(cls):
+        FLAGS = cls.parse_args()
+        FLAGS.config = '/D/tools/PaddleDetection/configs/picodet/picodet_m_416_coco.yml'
+        FLAGS.draw_threshold = 0.35
+        FLAGS.opt = {'use_gpu': True,
+                          'weights': '/D/tools/PaddleDetection/picodet_m_416_coco.pdparams'}
+        FLAGS.output_dir = 'output'
+        return FLAGS
 
-    def __init__(self):
-        self.loadModel()
+    def __init__(self, config):
+        self.loadModel(config)
 
+    @classmethod
     def parse_args(self):
         parser = ArgsParser()
         # parser.add_argument(
@@ -98,7 +108,7 @@ class PaddleHumanDetector:
 
     def infer(self, imgPath):
         '''
-        @:return 0,score, x,y,w,h
+        @:return 0, score, x,y,w,h
         '''
 
         # get inference images
@@ -111,13 +121,8 @@ class PaddleHumanDetector:
             output_dir=self.FLAGS.output_dir,
             save_txt=self.FLAGS.save_txt)
 
-    def loadModel(self):
-        self.FLAGS = self.parse_args()
-        self.FLAGS.config = '/D/tools/PaddleDetection/configs/picodet/application/pedestrian_detection/picodet_s_320_pedestrian.yml'
-        self.FLAGS.draw_threshold = 0.35
-        self.FLAGS.opt = {'use_gpu': True,
-                          'weights': '/D/MLProject/PoseTrack/LightTrackV2/weights/pp-predestrain/picodet_s_320_pedestrian.pdparams'}
-        self.FLAGS.output_dir = 'output'
+    def loadModel(self, flags):
+        self.FLAGS = flags
         cfg = load_config(self.FLAGS.config)
         cfg['use_vdl'] = self.FLAGS.use_vdl
         cfg['vdl_log_dir'] = self.FLAGS.vdl_log_dir

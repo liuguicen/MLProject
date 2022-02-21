@@ -198,5 +198,7 @@ print(kv)
 >>> for key,value in a.items():
 print(key+':'+value)
 
+for循环生成
+[v for v in list if v ...]
  
 小技巧:

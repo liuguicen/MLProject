@@ -136,7 +136,8 @@ def run(FLAGS, cfg):
 
 def main():
     FLAGS = parse_args()
-    FLAGS.infer_img='/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_input_img/video_test/frame00047.jpg'
+    FLAGS.infer_img=\
+        '/D/MLProject/PoseTrack/LightTrackV2/demo/video_input_img/video2/frame00026.jpg'
 
     cfg = load_config(FLAGS.config)
     cfg['use_vdl'] = FLAGS.use_vdl

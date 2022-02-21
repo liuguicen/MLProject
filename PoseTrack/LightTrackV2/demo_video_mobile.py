@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 import pyximport
 
+import ml_base.FileUtil
 import one_human_kp_detector
 from HPE.config import cfg
 # pose estimation utils
@@ -134,7 +135,7 @@ def showBBox(img_path, boxList):
 import logging
 
 
-def light_track(pose_estimator,
+def light_track(detector_name,
                 image_folder, output_json_path,
                 visualize_folder, output_video_path, human_detector, kp_detector):
     global total_time_POSE, total_time_DET, total_time_ALL, total_num_FRAMES, total_num_PERSONS
@@ -166,7 +167,7 @@ def light_track(pose_estimator,
         frame_cur = img_id
         if (frame_cur == frame_prev):
             frame_prev -= 1
-        test_showDetectResult(img_path, human_detector, kp_detector)
+        test_showDetectResult(detector_name, img_path, human_detector, kp_detector)
 
         ''' KEYFRAME: loading results from other modules '''
         if is_keyframe(img_id, keyframe_interval) or flag_mandatory_keyframe:
@@ -472,7 +473,7 @@ def light_track(pose_estimator,
 from ml_base import visual_util
 
 
-def test_showDetectResult(img_path, human_detector, kp_detector):
+def test_showDetectResult(detector_name, img_path, human_detector, kp_detector):
     '''
     测试用
     每张图片上展示人体框和关键点检测效果
@@ -480,7 +481,9 @@ def test_showDetectResult(img_path, human_detector, kp_detector):
     box_bundle = human_detector.infer(img_path)
     img = cv2.imread(img_path)
     num_dets = len(box_bundle)
-    out_dir = '/D/MLProject/PoseTrack/LightTrackV2/data/demo/detect_out_img'
+    out_dir = '/D/MLProject/PoseTrack/LightTrackV2/demo/detect_out_img_' + detector_name
+    if not os.path.exists(out_dir):
+        ml_base.FileUtil.mkdir(out_dir)
     for det_id in range(num_dets):
         # obtain bbox position and track id
         box = human_detector.getHumanBox(box_bundle[det_id])
@@ -919,16 +922,22 @@ def bbox_invalid(bbox):
 
 from one_human_kp_detector import OneHumanKpDetector_Paddle
 import paddle
+from detector.detector_nanodet import NanoHumanDetector
 
 if __name__ == '__main__':
-    human_detector = PaddleHumanDetector()
+    # detector_name = 'nano'
+    detector_name = 'paddle'
+    if detector_name == 'paddle':
+         human_detector = PaddleHumanDetector(PaddleHumanDetector.getConfig416())
+    else:
+        human_detector = NanoHumanDetector()
 
     kp_detector = OneHumanKpDetector_Paddle()
     # phd.infer("/D/tools/PaddleDetection/demo/000000014439.jpg")
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path',
-                        default="data/demo/video1.mp4")
+                        default="demo/video2.mp4")
     parser.add_argument('--model', '-m', type=str, dest='test_model',
                         default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()
@@ -940,10 +949,10 @@ if __name__ == '__main__':
     pose_estimator.load_weights(args.test_model)
 
     video_path = args.video_path
-    visualize_folder = "data/demo/video_out_img"
-    input_img_folder = "data/demo/video_input_img"
-    output_video_folder = "data/demo/videos_out"
-    output_json_folder = "data/demo/jsons"
+    visualize_folder = "demo/video_out_img" + "_" + detector_name
+    input_img_folder = "demo/video_input_img"
+    output_video_folder = "demo/videos_out" + "_" + detector_name
+    output_json_folder = "demo/jsons" + "_" + detector_name
 
     video_name = os.path.basename(video_path)
     video_name = os.path.splitext(video_name)[0]
@@ -958,7 +967,7 @@ if __name__ == '__main__':
         create_folder(output_video_folder)
         create_folder(output_json_folder)
 
-        light_track(pose_estimator,
+        light_track(detector_name,
                     input_img_folder, output_json_path,
                     visualize_folder, output_video_path, human_detector, kp_detector)
 

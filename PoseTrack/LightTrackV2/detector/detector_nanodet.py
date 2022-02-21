@@ -166,7 +166,7 @@ def main():
             else:
                 break
 
-class NanoHumanDetector:
+class NanoHumanDetector():
     def __init__(self):
         self.args = parse_args()
         local_rank = 0
@@ -189,30 +189,33 @@ class NanoHumanDetector:
         meta, res = self.predictor.inference(img_path)
         print('nanodet end', time.time() - start)
 
-        result_image = self.predictor.visualize(res[0], meta, cfg.class_names, 0.35)
+        # result_image = self.predictor.visualize(res[0], meta, cfg.class_names, 0.35)
         dets = res[0]
         all_box = []
-        for label in dets:
-            for bbox in dets[label]:
-                score = bbox[-1]
-                if score > 0.35:
-                    x0, y0, x1, y1 = [int(i) for i in bbox[:4]]
-                    all_box.append([label, x0, y0, x1, y1, score])
-        all_box.sort(key=lambda v: v[5])
-        if self.args.save_result:
-            save_folder = os.path.join(
-                cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", time.time())
-            )
-            mkdir(0, save_folder)
-            save_file_name = os.path.join(save_folder, os.path.basename(img_path))
-            cv2.imwrite(save_file_name, result_image)
-        ch = cv2.waitKey(0)
-       
+
+        for bbox in dets[0]:  # dets[0] 就是检测到的所有人体框
+            score = bbox[-1]
+            if score > 0.35:
+                x0, y0, x1, y1 = [int(i) for i in bbox[:4]]
+                all_box.append([0, score, x0, y0, x1 - x0, y1 - y0])
+        all_box.sort(key=lambda v: v[1])
+        return all_box
+        # if self.args.save_result:
+        #     save_folder = os.path.join(
+        #         cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", time.time())
+        #     )
+        #     mkdir(0, save_folder)
+        #     save_file_name = os.path.join(save_folder, os.path.basename(img_path))
+        #     cv2.imwrite(save_file_name, result_image)
+        # ch = cv2.waitKey(0)
+
+    def getHumanBox(self, box_bundle):
+        return box_bundle[2:]
             
             
         
 if __name__ == "__main__":
     human_detector = NanoHumanDetector()
     human_detector.infer(
-        '/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_input_img/video_test/frame00020.jpg')
+        '/D/MLProject/PoseTrack/LightTrackV2/demo/video_input_img/video2/frame00026.jpg')
 
