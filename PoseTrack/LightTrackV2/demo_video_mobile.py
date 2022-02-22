@@ -135,6 +135,32 @@ def showBBox(img_path, boxList):
 import logging
 
 
+class BoxBundle:
+    img_id = 'img_id'
+    det_id = "det_id"
+    track_id = "track_id"
+    img_path = "imgpath"
+    bbox = "bbox"
+
+    @classmethod
+    def getBoxBundleDict(cls, img_id, det_id=0, track_id=None, img_path=None, bbox=[0, 0, 2, 2]):
+        return {BoxBundle.img_id: img_id,
+                BoxBundle.det_id: det_id,
+                BoxBundle.track_id: track_id,
+                BoxBundle.img_path: img_path,
+                BoxBundle.bbox: bbox}
+
+
+class KpBoundle:
+    @classmethod
+    def getKpBoundDict(cls, img_id, det_id=0, track_id=None, img_path=None, keypoints=[]):
+        return {"img_id": img_id,
+                "det_id": det_id,
+                "track_id": track_id,
+                "imgpath": img_path,
+                "keypoints": keypoints}
+
+
 def light_track(detector_name,
                 image_folder, output_json_path,
                 visualize_folder, output_video_path, human_detector, kp_detector):
@@ -148,10 +174,10 @@ def light_track(detector_name,
     img_id = -1
     next_id = 0
     bbox_dets_list_list = []
-    '''可以看成轨迹的目标框的列表'''
+    '''将每一帧的框放入列表，然后放入这个总的列表里面 也即是说每一帧会放一个子列表进来，不管有无检测到数据'''
 
     keypoints_list_list = []
-    '''可以看成轨迹的关键点的列表'''
+    '''将每一帧的关键点放入列表，然后放入这个总的列表里面 也即是说每一帧会放一个子列表进来，不管有无检测到数据'''
 
     flag_mandatory_keyframe = False
 
@@ -165,13 +191,15 @@ def light_track(detector_name,
         logging.error("start Current tracking: [image_id:{}]".format(img_id))
 
         frame_cur = img_id
-        if (frame_cur == frame_prev):
+        if frame_cur == frame_prev:
             frame_prev -= 1
+        # 在每一帧绘制和展示人体检测和关键点检测的结果
         test_showDetectResult(detector_name, img_path, human_detector, kp_detector)
 
         ''' KEYFRAME: loading results from other modules '''
         if is_keyframe(img_id, keyframe_interval) or flag_mandatory_keyframe:
             flag_mandatory_keyframe = False
+            # 一张图片有多个人体目标，对应多个人体框，对应一个列表
             bbox_dets_list = []  # keyframe: start from empty
             keypoints_list = []  # keyframe: start from empty
 
@@ -180,35 +208,25 @@ def light_track(detector_name,
             # 这里需要的是相对原始图片的范围框
             # human_candidates1 = inference_yolov3(img_path)
             logging.error('human start')
-            box_bundle = human_detector.infer(img_path)
-            human_candidates = [human_detector.getHumanBox(bundle) for bundle in box_bundle]
+            box_bundle_list = human_detector.infer(img_path)
+            '''带有分数，类别的box列表'''
+            box_list = [human_detector.getHumanBox(bundle) for bundle in box_bundle_list]
             logging.error('human end')
 
-            # showBBox(img_path, human_candidates)
-            '''人体框'''
+            # showBBox(img_path, box_list)
+            total_time_DET += (time.time() - st_time_detection)
 
-            end_time_detection = time.time()
-            total_time_DET += (end_time_detection - st_time_detection)
-
-            num_dets = len(human_candidates)
+            num_dets = len(box_list)
             print("Keyframe: {} detections".format(num_dets))
 
             # if nothing detected at keyframe, regard next frame as keyframe because there is nothing to track
             # 沒有检测到人体框，使用下一帧作为关键帧
             if num_dets <= 0:
                 # add empty result
-                bbox_det_dict = {"img_id": img_id,
-                                 "det_id": 0,
-                                 "track_id": None,
-                                 "imgpath": img_path,
-                                 "bbox": [0, 0, 2, 2]}
+                bbox_det_dict = BoxBundle.getBoxBundleDict(img_id, img_path=img_path)
                 bbox_dets_list.append(bbox_det_dict)
 
-                keypoints_dict = {"img_id": img_id,
-                                  "det_id": 0,
-                                  "track_id": None,
-                                  "imgpath": img_path,
-                                  "keypoints": []}
+                keypoints_dict = KpBoundle.getKpBoundDict(img_id, img_path=img_path)
                 keypoints_list.append(keypoints_dict)
 
                 bbox_dets_list_list.append(bbox_dets_list)
@@ -227,34 +245,21 @@ def light_track(detector_name,
             # For each candidate, perform pose estimation and data association based on Spatial Consistency (SC)
             for det_id in range(num_dets):
                 # obtain bbox position and track id
-                bbox_det = human_candidates[det_id]
+                bbox_det = box_list[det_id]
                 bbox_det_paddle = bbox_det.copy()
-                score = box_bundle[det_id][1]
+                score = box_bundle_list[det_id][1]
 
                 # enlarge bbox by 20% with same center position
-                bbox_x1y1x2y2 = xywh_to_x1y1x2y2(bbox_det)
-                bbox_in_xywh = enlarge_bbox(bbox_x1y1x2y2, enlarge_scale)
-                bbox_det = x1y1x2y2_to_xywh(bbox_in_xywh)
+                bbox_det = enlarge_box(bbox_det)
 
                 # Keyframe: use provided bbox
                 # 无效的人体框，跳过
                 if bbox_invalid(bbox_det):
-                    track_id = None  # this id means null
-                    keypoints = []
-                    bbox_det = [0, 0, 2, 2]
                     # update current frame bbox
-                    bbox_det_dict = {"img_id": img_id,
-                                     "det_id": det_id,
-                                     "track_id": track_id,
-                                     "imgpath": img_path,
-                                     "bbox": bbox_det}
+                    bbox_det_dict = BoxBundle.getBoxBundleDict(img_id, det_id=det_id, img_path=img_path)
                     bbox_dets_list.append(bbox_det_dict)
                     # update current frame keypoints
-                    keypoints_dict = {"img_id": img_id,
-                                      "det_id": det_id,
-                                      "track_id": track_id,
-                                      "imgpath": img_path,
-                                      "keypoints": keypoints}
+                    keypoints_dict = KpBoundle.getKpBoundDict(img_id, det_id=det_id, img_path=img_path)
                     keypoints_list.append(keypoints_dict)
                     continue
 
@@ -270,22 +275,11 @@ def light_track(detector_name,
                 # keypoints = inference_keypoints(pose_estimator, bbox_det_dict)[0]["keypoints"]
                 keypoints = detectOnePeopleKp_paddle(img_path, bbox_det_paddle, score, kp_detector)
                 if keypoints == None:
-                    track_id = None  # this id means null
-                    keypoints = []
-                    bbox_det = [0, 0, 2, 2]
                     # update current frame bbox
-                    bbox_det_dict = {"img_id": img_id,
-                                     "det_id": det_id,
-                                     "track_id": track_id,
-                                     "imgpath": img_path,
-                                     "bbox": bbox_det}
+                    bbox_det_dict = BoxBundle.getBoxBundleDict(img_id, det_id=det_id, img_path=img_path)
                     bbox_dets_list.append(bbox_det_dict)
                     # update current frame keypoints
-                    keypoints_dict = {"img_id": img_id,
-                                      "det_id": det_id,
-                                      "track_id": track_id,
-                                      "imgpath": img_path,
-                                      "keypoints": keypoints}
+                    keypoints_dict = KpBoundle.getKpBoundDict(img_id, det_id=det_id, img_path=img_path)
                     keypoints_list.append(keypoints_dict)
                     continue
                 # showKp(img_path, keypoints, keypoints1)
@@ -307,19 +301,13 @@ def light_track(detector_name,
                         del keypoints_list_prev_frame[match_index]
 
                 # update current frame bbox
-                bbox_det_dict = {"img_id": img_id,
-                                 "det_id": det_id,
-                                 "track_id": track_id,
-                                 "imgpath": img_path,
-                                 "bbox": bbox_det}
+                bbox_det_dict = BoxBundle.getBoxBundleDict(img_id, det_id=det_id, track_id=track_id,
+                                                           img_path=img_path, bbox=bbox_det)
                 bbox_dets_list.append(bbox_det_dict)
 
                 # update current frame keypoints
-                keypoints_dict = {"img_id": img_id,
-                                  "det_id": det_id,
-                                  "track_id": track_id,
-                                  "imgpath": img_path,
-                                  "keypoints": keypoints}
+                keypoints_dict = KpBoundle.getKpBoundDict(img_id, det_id=det_id, track_id=track_id,
+                                                          img_path=img_path, keypoints=keypoints)
                 keypoints_list.append(keypoints_dict)
 
             # For candidate that is not assopciated yet, perform data association based on Pose Similarity (SGCN)
@@ -377,11 +365,8 @@ def light_track(detector_name,
                     bbox_det_next = [0, 0, 2, 2]
                     total_num_PERSONS -= 1
                 assert (bbox_det_next[2] != 0 and bbox_det_next[3] != 0)  # width and height must not be zero
-                bbox_det_dict_next = {"img_id": img_id,
-                                      "det_id": det_id,
-                                      "track_id": track_id,
-                                      "imgpath": img_path,
-                                      "bbox": bbox_det_next}
+                bbox_det_dict_next = BoxBundle.getBoxBundleDict(img_id, det_id=det_id, track_id=track_id,
+                                                                img_path=img_path, bbox=bbox_det_next)
 
                 # next frame keypoints
                 st_time_pose = time.time()
@@ -400,28 +385,17 @@ def light_track(detector_name,
 
                 if target_lost is False:
                     bbox_dets_list_next.append(bbox_det_dict_next)
-                    keypoints_dict_next = {"img_id": img_id,
-                                           "det_id": det_id,
-                                           "track_id": track_id,
-                                           "imgpath": img_path,
-                                           "keypoints": keypoints_next}
+                    keypoints_dict_next = KpBoundle.getKpBoundDict(img_id, det_id=det_id, track_id=track_id,
+                                                                   img_path=img_path, keypoints=keypoints_next)
                     keypoints_list_next.append(keypoints_dict_next)
 
                 else:
                     # remove this bbox, do not register its keypoints
-                    bbox_det_dict_next = {"img_id": img_id,
-                                          "det_id": det_id,
-                                          "track_id": None,
-                                          "imgpath": img_path,
-                                          "bbox": [0, 0, 2, 2]}
+                    bbox_det_dict_next = BoxBundle.getBoxBundleDict(img_id, det_id=det_id, img_path=img_path)
                     bbox_dets_list_next.append(bbox_det_dict_next)
 
                     keypoints_null = 45 * [0]
-                    keypoints_dict_next = {"img_id": img_id,
-                                           "det_id": det_id,
-                                           "track_id": None,
-                                           "imgpath": img_path,
-                                           "keypoints": []}
+                    keypoints_dict_next = KpBoundle.getKpBoundDict(img_id, det_id=det_id, img_path=img_path)
                     keypoints_list_next.append(keypoints_dict_next)
                     print("Target lost. Process this frame again as keyframe. \n")
                     flag_mandatory_keyframe = True
@@ -468,6 +442,13 @@ def light_track(detector_name,
         avg_fps = total_num_FRAMES / total_time_ALL
         # make_video_from_images(img_path_list, output_video_path, fps=avg_fps, size=None, is_color=True, format="XVID")
         make_video_from_images(img_path_list, output_video_path, fps=25, size=None, is_color=True, format="XVID")
+
+
+def enlarge_box(bbox_det):
+    bbox_x1y1x2y2 = xywh_to_x1y1x2y2(bbox_det)
+    bbox_in_xywh = enlarge_bbox(bbox_x1y1x2y2, enlarge_scale)
+    bbox_det = x1y1x2y2_to_xywh(bbox_in_xywh)
+    return bbox_det
 
 
 from ml_base import visual_util
@@ -923,12 +904,13 @@ def bbox_invalid(bbox):
 from one_human_kp_detector import OneHumanKpDetector_Paddle
 import paddle
 from detector.detector_nanodet import NanoHumanDetector
+from ml_base.common_lib_import import *
 
 if __name__ == '__main__':
     # detector_name = 'nano'
     detector_name = 'paddle'
     if detector_name == 'paddle':
-         human_detector = PaddleHumanDetector(PaddleHumanDetector.getConfig416())
+        human_detector = PaddleHumanDetector(PaddleHumanDetector.getConfig416())
     else:
         human_detector = NanoHumanDetector()
 
@@ -937,7 +919,7 @@ if __name__ == '__main__':
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path',
-                        default="demo/video2.mp4")
+                        default="demo/video_test.mp4")
     parser.add_argument('--model', '-m', type=str, dest='test_model',
                         default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()
@@ -949,27 +931,27 @@ if __name__ == '__main__':
     pose_estimator.load_weights(args.test_model)
 
     video_path = args.video_path
-    visualize_folder = "demo/video_out_img" + "_" + detector_name
+    video_out_img_folder = "demo/video_out_img" + "_" + detector_name
     input_img_folder = "demo/video_input_img"
     output_video_folder = "demo/videos_out" + "_" + detector_name
     output_json_folder = "demo/jsons" + "_" + detector_name
 
-    video_name = os.path.basename(video_path)
-    video_name = os.path.splitext(video_name)[0]
-    visualize_folder = os.path.join(visualize_folder, video_name)
-    input_img_folder = os.path.join(input_img_folder, video_name)
-    output_json_path = os.path.join(output_json_folder, video_name + ".json")
-    output_video_path = os.path.join(output_video_folder, video_name + "_out.mp4")
+    video_name = FileUtil.getFileName(video_path)
+
+    video_out_img_folder = path.join(video_out_img_folder, video_name)
+    input_img_folder = path.join(input_img_folder, video_name)
+    output_json_path = path.join(output_json_folder, video_name + ".json")
+    output_video_path = path.join(output_video_folder, video_name + "_out.mp4")
 
     if is_video(video_path):
         video_to_images(video_path, output_img_folder_path=input_img_folder)
-        create_folder(visualize_folder)
+        create_folder(video_out_img_folder)
         create_folder(output_video_folder)
         create_folder(output_json_folder)
 
         light_track(detector_name,
                     input_img_folder, output_json_path,
-                    visualize_folder, output_video_path, human_detector, kp_detector)
+                    video_out_img_folder, output_video_path, human_detector, kp_detector)
 
         print("Finished video {}".format(output_video_path))
 

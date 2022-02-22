@@ -202,3 +202,5 @@ for循环生成
 [v for v in list if v ...]
  
 小技巧:
+del语法 删除引用
+del list[id] 可以删除列表元素的作用，因为python中列表=引用集合

@@ -39,6 +39,15 @@ def getChildPath_firstLeve(path):
         return child_list
 
 
+from os import path
+
+
+def getFileName(pathObj):
+    if isinstance(pathObj, str):
+        return path.splitext(path.basename(pathObj))[0]
+    return None
+
+
 def getChildPath_AllLeve(dir, suffix: str):
     child_list = []
     for root, dir_name, file_list in os.walk(dir):
