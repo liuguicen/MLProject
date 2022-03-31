@@ -141,6 +141,7 @@ class KeyPoint_Detector(Detector):
             imshape = inputs['im_shape'][:, ::-1]
             center = np.round(imshape / 2.)
             scale = imshape / 200.
+            # 后处理 darknet里面提到的
             keypoint_postprocess = HRNetPostProcess(use_dark=self.use_dark)
             results['keypoint'] = keypoint_postprocess(np_boxes, center, scale)
             return results

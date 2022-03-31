@@ -339,7 +339,7 @@ class OneHumanKpDetector_Paddle:
         img 完整图片
         box_results 人体框检测结果
         结构 dict{
-        'boxes': ndarray = 2维度{ 6维人体框数据的列表=种类，分数，box(x,y,w,h), ... }
+        'boxes':  2维ndarray = { 6维人体框数据的列表=种类，分数，box(x,y,w,h), ... }
         'boxes_num':一维ndarray，人体框个数
         '''
         # predict from image
