@@ -87,18 +87,19 @@ except Exception as e:  # Exception就是异常根父类
 创建目录 os.makedirs
 
 获取父目录路径 os.path.dirname('...') # 注意写的是名字，实际上就是路径 os.path.split(path)[0]
-获取路径中的文件名
+## 获取路径中的文件名
 
-# 带后缀
+- 带后缀
 
 os.path.basename(path)
 或者 os.path.split(path)[1]
 
-# 不带后缀
+- 不带后缀
 
 os.path.splitext(带后缀的文件名)[0]
 获取后缀 os.path.splitext(path)[1] # 带有一个.
 
+## 获取所有子文件
 os.walk 遍历整个目录树，包含自己 for root, dir_list, file_list in os.walk(path)
 第一个是文件夹，第二个是文件夹下面的文件夹名字列表，第三个是文件夹下面的文件的名字列表 
 如果想要只处理一级目录下的，那么只处理它的第一组返回值就行了
