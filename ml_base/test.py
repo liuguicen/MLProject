@@ -1,5 +1,5 @@
-import os
-from PIL import Image
-import image_util
-import numpy as np
-image_util.cv_imread_CN(r'E:\dataset\LIP\TrainVal_images\val_images\100034_483681.jpg')
+from common_lib_import_and_set import *
+
+
+
+image_util.showImage('/E/dataset/COCO/COCO2017/val2017/000000397133.jpg')

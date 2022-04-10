@@ -1,14 +1,4 @@
-import os
-
-import cv2
-import cv2 as cv
-import numpy as np
-import torch
-from PIL import Image
-from matplotlib import pyplot as plt
-
-import FileUtil
-
+from common_lib_import_and_set import *
 
 def colorConvert(img: np.ndarray, dst=None):
     '''
@@ -114,23 +104,25 @@ def seeTensorIm(tensorIm):
     plt.imshow(im)
     plt.show()
 
-def showImage(im: np.ndarray):
-    imShow(im)
+def showImage(im):
+    '''
+    支持多种类型图片显示，
+    '''
+    if isinstance(im, str):
+        im = Image.open(im)  # type:Image
+    elif isinstance(im, torch.Tensor):
+        im = Image.fromarray(tensorToRgbArray(im))
 
-def imShow(im: np.ndarray):
-    plt.figure("  ")
-    plt.imshow(im)
-    plt.show()
+    if isinstance(im, Image.Image):
+        plt.figure("  ")
+        plt.imshow(im)
+        plt.show()
+    else:
+        plt.text(0, 0.5, '图片类型不支持')
+        plt.show()
 
 
 if __name__ == '__main__':
-    src = Image.open(
-        r"C:\Users\Administrator\Desktop\QQ截图20210528120031.png")  # type:Image
-
-    plt.figure("dog")
-    plt.imshow(src)
-    plt.show()
-
     src = np.array(src)
 
     # res = black2Alpha(src)
