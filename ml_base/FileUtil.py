@@ -55,3 +55,15 @@ def getChildPath_AllLeve(dir, suffix: str):
             if suffix is None or file_name.endswith(suffix):
                 child_list.append(os.path.join(root, file_name))
     return child_list
+
+def getChildFirst():
+    '''
+    os.listdir
+    '''
+    pass
+
+def getAllChild():
+    '''
+    os.walk
+    '''
+    pass

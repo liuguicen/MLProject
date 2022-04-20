@@ -20,10 +20,14 @@ import cv2
 # 自己的
 import FileUtil
 import image_util
+import video_util
+
+
 # 设置plt支持中文
 plt.rcParams['font.sans-serif'] = ['simhei'] # simhei 这个字体需要先手动下载放到plt的目录下，参考网上方法
 plt.rcParams['axes.unicode_minus'] = False
 if __name__ == '__main__':
+    video_util
     os
     FileUtil
     image_util

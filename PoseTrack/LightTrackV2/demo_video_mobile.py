@@ -904,7 +904,7 @@ def bbox_invalid(bbox):
 from one_human_kp_detector import OneHumanKpDetector_Paddle
 import paddle
 from detector.detector_nanodet import NanoHumanDetector
-from ml_base.common_lib_import import *
+from ml_base.common_lib_import_and_set import *
 
 if __name__ == '__main__':
     # detector_name = 'nano'

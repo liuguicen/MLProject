@@ -1,5 +1,6 @@
 from common_lib_import_and_set import *
 
+
 def colorConvert(img: np.ndarray, dst=None):
     '''
     反转图片颜色，结果直接保存在图片中
@@ -104,6 +105,7 @@ def seeTensorIm(tensorIm):
     plt.imshow(im)
     plt.show()
 
+
 def showImage(im):
     '''
     支持多种类型图片显示，
@@ -112,6 +114,8 @@ def showImage(im):
         im = Image.open(im)  # type:Image
     elif isinstance(im, torch.Tensor):
         im = Image.fromarray(tensorToRgbArray(im))
+    elif isinstance(im, np.ndarray):
+        im = Image.fromarray(im)
 
     if isinstance(im, Image.Image):
         plt.figure("  ")
