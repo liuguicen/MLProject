@@ -15,11 +15,15 @@ protoc -h
 cd ncnn
 mkdir -p build
 cd build
-build$ cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=OFF -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON ..
-build$ make -j$(nproc)
+cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=OFF -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON ..
+make -j$(nproc)
 # 测试ncnn是否构建成功
 cd ../examples
 ../build/examples/squeezenet ../images/256-ncnn.png
+终端打印出信息就说明成功了
+532 = 0.165951
+920 = 0.094098
+716 = 0.062193
 
 # 查看onnx相关是否构建成功
 需要onnx目录下有
