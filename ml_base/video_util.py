@@ -41,9 +41,6 @@ def make_video_from_images(img_paths, outvid_path, fps=25, size=None,
     return vid
 from common_lib_import_and_set import *
 
-file_path = path.join(common_dataset.dataset_dir, r'动画漫画\宫崎骏\天空之城.mp4')
-
-
 def get_frame_types(video_fn):
     command = 'ffprobe -v error -show_entries frame=pict_type -of default=noprint_wrappers=1'.split()
     # print('ffmpeg find key frame')

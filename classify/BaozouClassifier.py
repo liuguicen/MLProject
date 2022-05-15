@@ -1,24 +1,8 @@
-import random
 
-import path
-from torchvision.models import MobileNetV3
-import sys
 
-sys.path.append('..')
+from common_lib_import_and_set import *
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision
-import torchvision.transforms as transforms
-import numpy as np
-from torchvision import datasets, models, transforms
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
-from PIL import Image
-from torch.utils.data import Dataset
-from ml_base import CommonConstantParam
+import shutil
 
 # 定义是否使用GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,7 +31,6 @@ transform_test = transforms.Compose([
     transforms.Normalize(CommonConstantParam.image_net_mean, CommonConstantParam.image_net_std),
 ])
 
-import shutil
 
 
 def prePareData(dir):
@@ -126,9 +109,9 @@ class MobileNet(nn.Module):
         super(MobileNet, self).__init__()
         net = models.mobilenet_v2(pretrained=True)  # 从预训练模型加载VGG16网络参数
         net.classifier = nn.Sequential()  # 将分类层置空，下面将改变我们的分类层
-        self.features = net  # 保留VGG16的特征层
+        self.features = net  # 特征层
         self.classifier = nn.Sequential(  # 定义自己的分类层
-            nn.Linear(1280, 1000),  # 512 * 7 * 7不能改变 ，由VGG16网络决定的，第二个参数为神经元个数可以微调
+            nn.Linear(1280, 1000),  # 输入通道数不能改变？第二个参数为神经元个数可以微调
             nn.ReLU(True),
             nn.Dropout(0.5),
             #                 nn.Linear(1024, 1024),
@@ -174,7 +157,6 @@ from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-from ml_base.common_lib_import import *
 
 
 # 训练
