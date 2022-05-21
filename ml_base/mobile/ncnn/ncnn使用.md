@@ -46,7 +46,7 @@ python3 -m onnxsim name.onnx name-sim.onnx
 cd ncnn/build/tools/onnx
 # 转换
 /D/tools/ncnn/ncnn/build/tools/onnx/onnx2ncnn my_mobileface-sim.onnx my_mobileface.param my_mobileface.bin
-
+onnx2ncnn 注意不能直接在父目录下用文件名运行，必须用路径或者./onnx2ncnn 后面的一样
 # 优化
 **优化应该是很重要的！！测试一个picodet模型大小减半！！！ 参数文件287行优化到了187行，**
 现在在 ncnn/build/tools/onnx 目录下

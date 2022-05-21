@@ -65,6 +65,13 @@ def cv_save_image_CN(save_path, img):
     cv2.imencode(tail, img)[1].tofile(save_path)
 
 
+def read_from_url(url):
+    image = io.imread(url)  # 返回类型 np.ndarray
+    # io.imshow(image)
+    # io.show()
+    return image
+
+
 def saveImageNdArray(path, imgArr):
     dir = os.path.dirname(path)
     FileUtil.mkdir(dir)
@@ -126,14 +133,19 @@ def showImage(im):
         plt.show()
 
 
+from skimage import io
+
+
 if __name__ == '__main__':
-    src = np.array(src)
-
-    # res = black2Alpha(src)
-    res = Image.fromarray(res)
-
-    plt.figure('res')
-    plt.imshow(res)
-    plt.show()
-
-    res.save(r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\res.png")
+    # src = np.array(src)
+    #
+    # # res = black2Alpha(src)
+    # res = Image.fromarray(res)
+    #
+    # plt.figure('res')
+    # plt.imshow(res)
+    # plt.show()
+    #
+    # res.save(r"C:\Users\liugu\Documents\Tencent Files\2583657917\FileRecv\MobileFile\res.png")
+    read_from_url(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Bruce_McCandless_II_during_EVA_in_1984.jpg/768px-Bruce_McCandless_II_during_EVA_in_1984.jpg")
