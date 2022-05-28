@@ -35,6 +35,9 @@ import video_util
 import CommonConstantParam
 
 import common_dataset
+import math
+import math_util
+from functools import *
 
 # 设置plt支持中文
 plt.rcParams['font.sans-serif'] = ['simhei']  # simhei 这个字体需要先手动下载放到plt的目录下，参考网上方法
@@ -48,6 +51,9 @@ if __name__ == '__main__':
     Image
     cv2
     common_dataset
+    math
+    math_util
+    functools
     random.random()
     path.join('a', 'b')
     np.ndarray

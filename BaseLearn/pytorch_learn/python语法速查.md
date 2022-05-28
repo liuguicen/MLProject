@@ -2,9 +2,14 @@
 python里面列表乘以一个数，不是数乘，而是扩大列表尺寸？？？这又是什么反常语法
 [1] * 2 = [2, 2]
 反常语法
-
-1、变量后面注释 `#type: Image.Image`
+# 注释
+- 1、变量后面注释 `#type: Image.Image`
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201108111402524.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2huX2xnYw==,size_16,color_FFFFFF,t_70#pic_center)
+- 2、注释里面引用其它的类，方法等
+这个功能很垃圾，采用如下语法，有的情况下能支持，有的情况下不能
+* :class:`torch.nn.Conv1d` when called on CUDA tensor
+* :func:`torch.bmm` when called on sparse-dense CUDA tensors
+* 这个*表示一个列表项
 
 2、使用isinstance指定
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201115041028583.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2huX2xnYw==,size_16,color_FFFFFF,t_70#pic_center)
@@ -53,12 +58,6 @@ or返回遇到的第一个非空对象，包括字符串非空
 andand 在布尔上下文中从左到右演算表达式的值，如果布尔上下文中的所有值都为真，那么 and 返回最后一个值。  
 如果布尔上下文中的某个值为假，则 and 返回第一个假值
 
-# zip()
-
-函数用于将可迭代的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些元组组成的列表  
-zip( iterable, ...) 注意里面的迭代器可以是多个，不是只能2个  
-如果各个迭代器的元素个数不一致，则返回列表长度与最短的对象相同，利用 * 号操作符，可以将元组解压为列表  
-另外在 Python 3.x 中为了减少内存，zip() 返回的是一个对象。如需展示列表，需手动 list() 转换
 
 # 导入包 导入模块
 
@@ -173,8 +172,47 @@ m(参数)
 区别于类对象
 类对象创建的时候要加括号
 
-切片操作
+
+# 列表 list
+
+# for循环生成
+[x ** 2 for x in list if x % 2 == 0]
+ 
+## 切片操作
 ::两个冒号，大概表示每隔xx个切片
+## 列表运算
+- zip()
+将可迭代的对象对应元素打包成元组
+zip(iterable, ...) 注意里面的迭代器可以是多个，不是只能2个  
+zip() 返回的是一个对象，需手动 list() 转换
+
+## 所谓map，reduce，filter
+映射 
+ndarray列表可以直接做数乘运算，相当于map，
+
+用比较运算符做比较，返回的是比较结果，不是过滤，过滤要把比较结果传入原来数组的[]运算符中
+### python自带map，使用
+list(map(lambda x: x**2, items))
+squared = list(map(lambda x: x**2, items))
+
+map还可以针对多个列表
+list1 = [2,4,5,3,5,4]
+list2 = [4,1,2,9,7,5]
+product = list(map(lambda x,y: x*y ,list1,list2))
+不能应用于多维数组
+
+### reduce 累积运算
+注意，一般要设置初始值才行
+这个函数默认没有初始值，初始值是a[0], 也就是你如果想对每个值先做一个计算再累积是不行的，比如求平方和
+
+先要导入函数
+from functools import reduce
+reduce(lambda s, y: s + y**2, [1, 2, 3], 0)  # 使用 lambda 匿名函数, 0就是初始值
+s 表示前面的累积值
+
+结果 14
+
+
 
 # dict
 a.update(b) # 把b的键值对更新到a中
@@ -202,21 +240,7 @@ print(kv)
 （4）遍历字典健值
 >>> for key,value in a.items():
 print(key+':'+value)
-# 列表操作
-所谓map，reduce，filter
-映射 
-ndarray列表可以直接做数乘运算，相当于map，
 
-用比较运算符做比较，返回的是比较结果，不是过滤，过滤要把比较结果传入原来数组的[]运算符中
-python自定map，使用
-list(map(lambda x: x**2, items))
-squared = list(map(lambda x: x**2, items))
-
-
-
-for循环生成
-[v for v in list if v ...]
- 
 小技巧:
 del语法 删除引用
 del list[id] 可以删除列表元素的作用，因为python中列表=引用集合
