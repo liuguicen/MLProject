@@ -113,7 +113,7 @@ def seeTensorIm(tensorIm):
     plt.show()
 
 
-def showImage(im):
+def showImage(im, isOpencv):
     '''
     支持多种类型图片显示，
     '''
@@ -122,6 +122,8 @@ def showImage(im):
     elif isinstance(im, torch.Tensor):
         im = Image.fromarray(tensorToRgbArray(im))
     elif isinstance(im, np.ndarray):
+        if isOpencv:  # OpenCV颜色通道不同
+            cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         im = Image.fromarray(im)
 
     if isinstance(im, Image.Image):
@@ -134,7 +136,6 @@ def showImage(im):
 
 
 from skimage import io
-
 
 if __name__ == '__main__':
     # src = np.array(src)

@@ -23,10 +23,10 @@ def parse_args():
         "--demo", default="image", help="demo type, eg. image, video and webcam"
     )
     parser.add_argument("--config",
-                        default='/D/MLProject/ObjectDetection/nanodet/config/nanodet-plus-m_320.yml',
+                        default='/D/MLProject/ObjectDetection/nanodet/config/nanodet-plus-m_416.yml',
                         help="model config file path")
     parser.add_argument("--model",
-                        default='/D/MLProject/ObjectDetection/nanodet/model/nanodet-plus-m_320_checkpoint.ckpt',
+                        default='/E/pretrain_model/detection/nanodet/nanodet-plus-m_416_checkpoint.ckpt',
                         help="model file path")
     parser.add_argument("--path",
  default="/D/MLProject/PoseTrack/LightTrackV2/data/demo/video_input_img/video_test/frame00020.jpg",
@@ -193,7 +193,7 @@ class NanoHumanDetector():
         dets = res[0]
         all_box = []
 
-        for bbox in dets[0]:  # dets[0] 就是检测到的所有人体框
+        for bbox in dets[0][0]:  # dets[0] 就是检测到的所有人体框
             score = bbox[-1]
             if score > 0.35:
                 x0, y0, x1, y1 = [int(i) for i in bbox[:4]]

@@ -907,8 +907,8 @@ from detector.detector_nanodet import NanoHumanDetector
 from ml_base.common_lib_import_and_set import *
 
 if __name__ == '__main__':
-    # detector_name = 'nano'
-    detector_name = 'paddle'
+    detector_name = 'nano'
+    # detector_name = 'paddle'
     if detector_name == 'paddle':
         human_detector = PaddleHumanDetector(PaddleHumanDetector.getConfig416())
     else:
@@ -919,7 +919,7 @@ if __name__ == '__main__':
     global args
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_path', '-v', type=str, dest='video_path',
-                        default="demo/video_test.mp4")
+                        default="demo/video8.mp4")
     parser.add_argument('--model', '-m', type=str, dest='test_model',
                         default="weights/mobile-deconv/snapshot_296.ckpt")
     args = parser.parse_args()

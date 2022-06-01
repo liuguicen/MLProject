@@ -14,7 +14,7 @@ def useCanny(img):
 import os
 import ImageUtil
 import numpy as np
-import edge.Hed_edge_detect as hed
+import mobile.edge.Hed_edge_detect as hed
 import json
 
 

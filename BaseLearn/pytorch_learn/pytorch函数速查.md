@@ -72,7 +72,7 @@ out (Tensor, optional) ：可选，指定输出的张量.
 ## torch.cat(list, dim)
 cat是concatnate的意思：拼接 
 在给定维度上对输入的张量序列seq 进行连接操作
-对于不同的参数形式，要风情拼接的是哪个，通过边长参数输入，拼接参数，通过list输入，拼接list内部的数据，不是list
+对于不同的参数形式，要分清接的是哪个，通过边长参数输入，拼接参数，通过list输入，拼接list内部的数据，不是list
 参数
 inputs : 待连接的张量序列，可以是任意相同Tensor类型的python 序列
 dim : 选择的扩维, 必须在0到len(inputs[0])之间，沿着此维连接张量序列。

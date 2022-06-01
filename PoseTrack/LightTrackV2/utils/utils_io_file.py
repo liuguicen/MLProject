@@ -60,10 +60,11 @@ def file_to_video(filepath):
         video = cv2.VideoCapture(filepath)
     except IOError:
         print('cannot open video file: ' + filepath)
-    else:
-        print('unknown error reading video file')
+    # else:
+        # print('unknown error reading video file')
     return video
 
+from common_lib_import_and_set import *
 
 def video_to_images(video_file_path, output_img_folder_path = None):
     print('开始获取视频帧图像')
@@ -86,7 +87,7 @@ def video_to_images(video_file_path, output_img_folder_path = None):
         img_name = "frame%05d.jpg" % count
         img_path = os.path.join(output_img_folder_path, img_name)
         cv2.imwrite(img_path, image)     # save frame as JPEG file
-        success,image = video.read()
+        success, image = video.read()
         #print('Read a new frame: ', success)
         count += 1
     return True

@@ -6,6 +6,7 @@
 # 用法 from ml_base.common_lib_import import *
 
 # torch
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     common_dataset
     math
     math_util
-    functools
+    reduce()
     random.random()
     path.join('a', 'b')
     np.ndarray

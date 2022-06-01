@@ -2,6 +2,7 @@
 python里面列表乘以一个数，不是数乘，而是扩大列表尺寸？？？这又是什么反常语法
 [1] * 2 = [2, 2]
 反常语法
+导入包冲突，提示找不到name
 # 注释
 - 1、变量后面注释 `#type: Image.Image`
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201108111402524.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2huX2xnYw==,size_16,color_FFFFFF,t_70#pic_center)
