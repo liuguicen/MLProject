@@ -9,7 +9,7 @@ import torch
 
 
 def _save_tracker_output(seq: Sequence, tracker: Tracker, output: dict):
-    """Saves the output of the tracker."""
+    """Saves the output of the tracker. 保存结果 写入结果数据"""
 
     if not os.path.exists(tracker.results_dir):
         print("create tracking result dir:", tracker.results_dir)

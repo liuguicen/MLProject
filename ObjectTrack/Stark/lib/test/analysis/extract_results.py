@@ -101,6 +101,7 @@ def calc_seq_err_robust(pred_bb, anno_bb, dataset, target_visible=None):
 
 def extract_results(trackers, dataset, report_name, skip_missing_seq=False, plot_bin_gap=0.05,
                     exclude_invalid_frames=False):
+    # 提取数据，只需要预测框和真实框就行了
     settings = env_settings()
     eps = 1e-16
 
