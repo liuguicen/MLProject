@@ -31,6 +31,8 @@ if __name__ == "__main__":
     # fps是帧率，意思是每一秒刷新图片的数量，frames是一整段视频中总的图片数量。
     print("fps=", fps, "frames=", frames)
 
+
+
     for i in range(int(frames)):
         ret, frame = videoCapture.read()
         image_util.showImage(frame)

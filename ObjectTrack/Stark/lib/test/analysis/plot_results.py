@@ -182,6 +182,7 @@ def check_and_load_precomputed_results(trackers, dataset, report_name, force_eva
         # print('Pre-computed evaluation data not found. Computing results!')
         eval_data = extract_results(trackers, dataset, report_name, **kwargs)
 
+    # 结果不存在，重新提取
     if not check_eval_data_is_valid(eval_data, trackers, dataset):
         # print('Pre-computed evaluation data invalid. Re-computing results!')
         eval_data = extract_results(trackers, dataset, report_name, **kwargs)

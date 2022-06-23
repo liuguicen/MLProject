@@ -146,6 +146,7 @@ class LaSOTDataset(BaseDataset):
             #              'guitar-8',
             #              'guitar-10',
             #              'guitar-16',
+            # 'person-0test', 这个用于快速测试
             'person-1',
             'person-2',
             'person-3',

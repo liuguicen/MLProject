@@ -109,7 +109,7 @@ def env_settings():
     env_module_name = 'lib.test.evaluation.local'
     try:
         env_module = importlib.import_module(env_module_name)
-        return env_module.local_env_settings()
+        return env_module.local_env_settings() # local.local_env_setting()
     except:
         env_file = os.path.join(os.path.dirname(__file__), 'local.py')
 

@@ -173,7 +173,7 @@ def run_dataset(dataset, trackers, debug=False, threads=0, num_gpus=8):
         mode = 'parallel'
 
     if mode == 'sequential':
-        for seq in dataset:
+        for seq in dataset: # 数据集循环
             for tracker_info in trackers:
                 run_sequence(seq, tracker_info, debug=debug)
     elif mode == 'parallel':

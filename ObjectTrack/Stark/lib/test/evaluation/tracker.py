@@ -44,7 +44,7 @@ class Tracker:
         self.dataset_name = dataset_name
         self.run_id = run_id
         self.display_name = display_name
-
+        # 就是获取本地化的配置，各种路径等
         env = env_settings()
         if self.run_id is None:
             self.results_dir = '{}/{}/{}'.format(env.results_path, self.name, self.parameter_name)

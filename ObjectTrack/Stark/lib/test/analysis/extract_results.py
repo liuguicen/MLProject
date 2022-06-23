@@ -108,11 +108,11 @@ def extract_results(trackers, dataset, report_name, skip_missing_seq=False, plot
 
     if not os.path.exists(result_plot_path):
         os.makedirs(result_plot_path)
-
+    # 重叠率 就是IOU，中心点距离，规范化中心点距离
     threshold_set_overlap = torch.arange(0.0, 1.0 + plot_bin_gap, plot_bin_gap, dtype=torch.float64)
     threshold_set_center = torch.arange(0, 51, dtype=torch.float64)
     threshold_set_center_norm = torch.arange(0, 51, dtype=torch.float64) / 100.0
-
+    # 这里指标的图 增加了数据集和 跟踪器维度，高维数组直接统一处理！！！如果自己的话或者面向对象肯定是抽象成方法，每个数据集在每个跟踪器调用一遍，哪个好？
     avg_overlap_all = torch.zeros((len(dataset), len(trackers)), dtype=torch.float64)
     ave_success_rate_plot_overlap = torch.zeros((len(dataset), len(trackers), threshold_set_overlap.numel()),
                                                 dtype=torch.float32)
