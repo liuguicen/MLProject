@@ -56,14 +56,12 @@ def getChildPath_AllLeve(dir, suffix: str):
                 child_list.append(os.path.join(root, file_name))
     return child_list
 
-def getChildFirst():
+def getChild_firstLevel(dir_path):
     '''
     os.listdir
     '''
-    pass
-
-def getAllChild():
-    '''
-    os.walk
-    '''
-    pass
+    path_list = []
+    child_name_list = os.listdir(dir_path)
+    for name in child_name_list:
+        path_list.append(path.join(dir_path, name))
+    return path_list

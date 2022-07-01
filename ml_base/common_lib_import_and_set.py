@@ -44,6 +44,8 @@ from functools import *
 plt.rcParams['font.sans-serif'] = ['simhei']  # simhei 这个字体需要先手动下载放到plt的目录下，参考网上方法
 plt.rcParams['axes.unicode_minus'] = False
 if __name__ == '__main__':
+    torch
+    transforms
     video_util
     os
     FileUtil

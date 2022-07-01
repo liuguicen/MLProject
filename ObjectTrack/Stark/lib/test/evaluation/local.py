@@ -10,6 +10,7 @@ def local_env_settings():
     settings.got10k_path = '/E/dataset/ObjectTracking/got10k'
     settings.got_packed_results_path = ''
     settings.got_reports_path = ''
+    settings.posetrack2018_path = "/E/dataset/PoseTrack/PoseTrack2018/images/val"
     settings.lasot_lmdb_path = '/E/dataset/ObjectTracking/lasot_lmdb'
     settings.lasot_path = '/E/dataset/ObjectTracking/lasot'
     settings.network_path = '/D/MLProject/ObjectTrack/Stark/tracking/test/networks'    # Where tracking networks are stored.
@@ -27,6 +28,7 @@ def local_env_settings():
     settings.uav_path = '/E/dataset/ObjectTracking/UAV123'
     settings.vot_path = '/E/dataset/ObjectTracking/VOT2019'
     settings.youtubevos_dir = ''
+
 
     return settings
 

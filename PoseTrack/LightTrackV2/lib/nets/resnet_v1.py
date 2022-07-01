@@ -57,12 +57,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.contrib import layers
-from tensorflow.contrib.framework.python.ops import add_arg_scope
-from tensorflow.contrib.framework.python.ops import arg_scope
-from tensorflow.contrib.layers.python.layers import layers as layers_lib
-from tensorflow.contrib.layers.python.layers import utils
+# from tensorflow.contrib import layers
+# from tensorflow.contrib.framework.python.ops import add_arg_scope
+# from tensorflow.contrib.framework.python.ops import arg_scope
+# from tensorflow.contrib.layers.python.layers import layers as layers_lib
+# from tensorflow.contrib.layers.python.layers import utils
 #from tensorflow.contrib.slim.python.slim.nets import resnet_utils
+from tf_slim import layers
+from tf_slim import add_arg_scope
+from tf_slim import arg_scope
+
 from . import resnet_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops

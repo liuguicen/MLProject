@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 import pyximport
 
+import FileUtil
 import ml_base.FileUtil
 import one_human_kp_detector
 from HPE.config import cfg
@@ -23,11 +24,11 @@ from network_mobile_deconv import Network
 from tfflat.base import Tester
 
 pyximport.install()
-from lib.lib_kernel.lib_nms.nms import gpu_nms
-from lib.lib_kernel.lib_nms.nms import cpu_nms
+from PoseTrack.LightTrackV2.lib.lib_kernel.lib_nms.nms import gpu_nms
+from PoseTrack.LightTrackV2.lib.lib_kernel.lib_nms.nms import cpu_nms
 
 # import GCN utils
-from graph.visualize_pose_matching import *
+from PoseTrack.LightTrackV2.graph.visualize_pose_matching import *
 
 # import my own utils
 import sys, os, time
@@ -618,6 +619,9 @@ def iou(boxA, boxB):
 
 
 def get_bbox_from_keypoints(keypoints_python_data):
+    '''
+    keypoints_python_data [x0,y0,score0,x1,y1,score1]
+    '''
     if keypoints_python_data == [] or keypoints_python_data == 45 * [0]:
         return [0, 0, 2, 2]
 
@@ -907,6 +911,14 @@ from detector.detector_nanodet import NanoHumanDetector
 from ml_base.common_lib_import_and_set import *
 
 if __name__ == '__main__':
+    for i in [3, 4,5,7]:
+        img_dir = r"/E/dataset/ObjectTracking/lasot/person/person-{}".format(i)
+        img_path_list = FileUtil.getChildPath_firstLeve(path.join(img_dir,'img'))
+        output_video_path = path.join(img_dir, "video.mp4")
+        make_video_from_images(img_path_list, output_video_path, fps=25, size=None, is_color=True, format="mp4v")
+
+
+
     detector_name = 'nano'
     # detector_name = 'paddle'
     if detector_name == 'paddle':

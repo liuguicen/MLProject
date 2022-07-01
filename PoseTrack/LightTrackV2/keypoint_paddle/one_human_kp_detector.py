@@ -333,21 +333,28 @@ class OneHumanKpDetector_Paddle:
             enable_mkldnn=self.FLAGS.enable_mkldnn,
             use_dark=self.FLAGS.use_dark)
 
-    def detectPeopleKp(self, img, box_results):
+    def detectPeopleKp(self, img, box_results, det_threshold = 0.5):
         '''
         检测一个人体的关键点，
         img 完整图片
         box_results 人体框检测结果
-        结构 dict{
+        结构 = dict{
         'boxes':  2维ndarray = { 6维人体框数据的列表=种类，分数，box(x,y,w,h), ... }
         'boxes_num':一维ndarray，人体框个数
+
+        返回值:
+dict {
+'keypoint':[所有人体关键点数据列表[套了一层啥都没有[关键点的列表[关键点数据列表[x,y, score]]],
+            所有人体关键点得分列表[套了一层啥都没有[得分]]]
+'bbox':[所有人体框列表[人体框列表]]
+}
         '''
         # predict from image
         # img_list = get_test_images(self.FLAGS.image_dir, self.FLAGS.image_file)
 
         keypoint_res = predict_with_given_det(
             img, box_results, self.kp_detector, self.FLAGS.keypoint_batch_size,
-            self.FLAGS.det_threshold, self.FLAGS.keypoint_threshold, self.FLAGS.run_benchmark)
+            det_threshold, self.FLAGS.keypoint_threshold, self.FLAGS.run_benchmark)
 
         # mode = self.FLAGS.run_mode
         # keypoint_model_dir = self.FLAGS.keypoint_model_dir
